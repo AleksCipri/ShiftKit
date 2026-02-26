@@ -1,6 +1,10 @@
 # ShiftKit
 Test repo for scientific domain adaptation solutions
 
+## Overview
+
+![ShiftKit Framework](outputs/framework_overview.png)
+
 ## Framework structure
 
 ```
@@ -30,7 +34,8 @@ examples/
 
 **Diagnostics** — `shiftkit/diagnostics/plots.py`
 - `plot_latent_space`: t-SNE reduction → two panels (by domain / by class label)
-- `plot_training_history`: loss curves + source accuracy
+- `compare_latent_spaces`: side-by-side grid comparing multiple models
+- `plot_training_history`: CE loss + source & target accuracy, supports multi-model overlay
 
 ## To run
 
@@ -39,4 +44,8 @@ pip install -r requirements.txt
 python examples/mnist_mmd.py
 ```
 
-Outputs saved to `./outputs/`: `latent_space.png` and `training_history.png`. The `CONFIG` block at the top of the example lets you toggle between CNN/MLP, adjust `mmd_weight`, noise level, etc.
+Outputs saved to `./outputs/`:
+- `training_history.png` — CE loss and source/target accuracy curves for both models
+- `latent_space_comparison.png` — 2×2 t-SNE grid comparing Source-Only vs MMD latent spaces
+
+The `CONFIG` block at the top of the example lets you toggle between CNN/MLP, adjust `mmd_weight`, noise level, epochs, etc.
