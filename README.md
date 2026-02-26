@@ -1,5 +1,5 @@
 # ShiftKit
-Test repo for scientific domain adaptation solutions
+Test repo for scientific domain adaptation solutions - Check out more details in the [Documentation](https://alekscipri.github.io/ShiftKit/)
 
 ## Overview
 
