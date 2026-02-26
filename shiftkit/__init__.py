@@ -11,13 +11,13 @@ from shiftkit.diagnostics import plot_latent_space, plot_training_history
 
 from .data.datasets      import DataManager
 from .models.networks    import MLP, CNN
-from .methods.mmd        import MMDLoss, MMDTrainer
-from .diagnostics.plots  import plot_latent_space, plot_training_history
+from .methods.mmd        import MMDLoss, MMDTrainer, SourceOnlyTrainer
+from .diagnostics.plots  import plot_latent_space, plot_training_history, compare_latent_spaces
 
 __version__ = "0.1.0"
 __all__ = [
     "DataManager",
     "MLP", "CNN",
-    "MMDLoss", "MMDTrainer",
-    "plot_latent_space", "plot_training_history",
+    "MMDLoss", "MMDTrainer", "SourceOnlyTrainer",
+    "plot_latent_space", "plot_training_history", "compare_latent_spaces",
 ]

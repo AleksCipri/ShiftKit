@@ -57,13 +57,14 @@ def _register_defaults():
             root=root, train=train, noise_std=noise_std,
             transform=base_tf, download=True
         )
+        pin = torch.cuda.is_available()
         source_loader = DataLoader(
             source_ds, batch_size=batch_size, shuffle=train,
-            num_workers=num_workers, pin_memory=True
+            num_workers=num_workers, pin_memory=pin
         )
         target_loader = DataLoader(
             target_ds, batch_size=batch_size, shuffle=train,
-            num_workers=num_workers, pin_memory=True
+            num_workers=num_workers, pin_memory=pin
         )
         return source_loader, target_loader
 
@@ -94,7 +95,7 @@ class DataManager:
         self,
         root: str = "./data",
         batch_size: int = 64,
-        num_workers: int = 2,
+        num_workers: int = 0,
     ):
         self.root = root
         self.batch_size = batch_size
