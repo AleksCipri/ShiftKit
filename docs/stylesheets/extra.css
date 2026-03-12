@@ -5,6 +5,17 @@
   --md-accent-fg-color:         #2E86AB;
 }
 
+/* Nav bar logo — larger and present on every page */
+.md-header__button.md-logo img,
+.md-header__button.md-logo svg {
+  height: 2.4rem;
+}
+
+/* Hide the "ShiftKit" text next to the logo (it's already in the logo image) */
+.md-header__title {
+  display: none;
+}
+
 /* Subtle tint on admonition-style parameter tables */
 .md-typeset table:not([class]) th {
   background-color: #f0f7fb;
