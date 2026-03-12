@@ -1,0 +1,18 @@
+:root {
+  --md-primary-fg-color:        #2E86AB;
+  --md-primary-fg-color--light: #5BA4C4;
+  --md-primary-fg-color--dark:  #1A5F7A;
+  --md-accent-fg-color:         #2E86AB;
+}
+
+/* Subtle tint on admonition-style parameter tables */
+.md-typeset table:not([class]) th {
+  background-color: #f0f7fb;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color:        #5BA4C4;
+  --md-primary-fg-color--light: #7DC0D8;
+  --md-primary-fg-color--dark:  #2E86AB;
+  --md-accent-fg-color:         #5BA4C4;
+}
