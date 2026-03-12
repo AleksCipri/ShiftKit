@@ -1,4 +1,6 @@
-# ShiftKit
+<p align="center">
+  <img src="logo.png" alt="ShiftKit" width="340"/>
+</p>
 
 A lightweight, modular **domain adaptation** framework for PyTorch. Transfer knowledge from a labelled *source* domain to an unlabelled *target* domain using deep latent-space alignment.
 
