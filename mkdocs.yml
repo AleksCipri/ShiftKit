@@ -23,11 +23,13 @@ theme:
         icon: material/weather-sunny
         name: Switch to light mode
   features:
-    - navigation.tabs
     - navigation.sections
     - navigation.top
+    - navigation.instant
+    - toc.follow
     - content.code.copy
     - search.highlight
+    - search.suggest
   icon:
     repo: fontawesome/brands/github
 
@@ -36,16 +38,21 @@ extra_css:
 
 nav:
   - Home: index.md
-  - Modules:
-    - Data: data.md
-    - Models: models.md
-    - Methods: methods.md
-    - Diagnostics: diagnostics.md
+  - Tutorials & Examples: tutorials.md
+  - API Reference:
+      - Data: data.md
+      - Models: models.md
+      - Methods: methods.md
+      - Diagnostics: diagnostics.md
+  - Citation: citation.md
+  - Credits: credits.md
 
 markdown_extensions:
   - admonition
   - tables
   - attr_list
+  - toc:
+      permalink: true
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
@@ -54,6 +61,12 @@ markdown_extensions:
   - pymdownx.details
   - pymdownx.tabbed:
       alternate_style: true
+  - pymdownx.arithmatex:
+      generic: true
+
+extra_javascript:
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
 
 plugins:
   - search
