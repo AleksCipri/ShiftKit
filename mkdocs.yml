@@ -44,7 +44,11 @@ nav:
   - API Reference:
       - Data: data.md
       - Models: models.md
-      - Methods: methods.md
+      - Methods:
+          - Overview: methods/index.md
+          - Source Only: methods/source_only.md
+          - MMD: methods/mmd.md
+          - DANN: methods/dann.md
       - Diagnostics: diagnostics.md
   - Citation: citation.md
   - Credits: credits.md
