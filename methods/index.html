@@ -662,6 +662,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="sidda/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SIDDA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -868,6 +896,12 @@ identical per-epoch history dicts so their results can be directly compared.</p>
 <td><code>domain_weight</code> λ</td>
 <td><a href="dann/">→</a></td>
 </tr>
+<tr>
+<td><a href="sidda/"><code>SIDDATrainer</code></a></td>
+<td>Sinkhorn optimal transport + learnable η weights</td>
+<td><code>warmup_epochs</code></td>
+<td><a href="sidda/">→</a></td>
+</tr>
 </tbody>
 </table>
 <p>All trainers share the same interface:</p>
@@ -908,6 +942,26 @@ identical per-epoch history dicts so their results can be directly compared.</p>
 <td>Adversarial domain loss (<code>0.0</code> if not applicable)</td>
 </tr>
 <tr>
+<td><code>da_loss</code></td>
+<td><code>float</code></td>
+<td>Sinkhorn DA loss (<code>0.0</code> if not applicable)</td>
+</tr>
+<tr>
+<td><code>eta1</code></td>
+<td><code>float</code></td>
+<td>Learned CE weight η₁ (SIDDA only)</td>
+</tr>
+<tr>
+<td><code>eta2</code></td>
+<td><code>float</code></td>
+<td>Learned DA weight η₂ (SIDDA only)</td>
+</tr>
+<tr>
+<td><code>sigma</code></td>
+<td><code>float</code></td>
+<td>Sinkhorn blur used (SIDDA only)</td>
+</tr>
+<tr>
 <td><code>total_loss</code></td>
 <td><code>float</code></td>
 <td>Total combined loss</td>
@@ -933,7 +987,8 @@ identical per-epoch history dicts so their results can be directly compared.</p>
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="s2">&quot;Source Only&quot;</span><span class="p">:</span> <span class="n">history_baseline</span><span class="p">,</span>
 </span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="s2">&quot;MMD&quot;</span><span class="p">:</span>         <span class="n">history_mmd</span><span class="p">,</span>
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="s2">&quot;DANN&quot;</span><span class="p">:</span>        <span class="n">history_dann</span><span class="p">,</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="p">})</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="s2">&quot;SIDDA&quot;</span><span class="p">:</span>       <span class="n">history_sidda</span><span class="p">,</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="p">})</span>
 </span></code></pre></div>
 <p>The right panel shows source accuracy (solid) and target accuracy (dashed) —
 the gap between them quantifies the remaining domain shift.</p>

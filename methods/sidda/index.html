@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://AleksCipri.github.io/ShiftKit/methods/mmd/">
+        <link rel="canonical" href="https://AleksCipri.github.io/ShiftKit/methods/sidda/">
       
       
-        <link rel="prev" href="../source_only/">
+        <link rel="prev" href="../dann/">
       
       
-        <link rel="next" href="../dann/">
+        <link rel="next" href="../../diagnostics/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>MMD - ShiftKit</title>
+        <title>SIDDA - ShiftKit</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#mmdtrainer" class="md-skip">
+        <a href="#siddatrainer" class="md-skip">
           Skip to content
         </a>
       
@@ -115,7 +115,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              MMD
+              SIDDA
             
           </span>
         </div>
@@ -530,6 +530,62 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../mmd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MMD
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dann/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DANN
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -549,7 +605,7 @@
   <span class="md-ellipsis">
     
   
-    MMD
+    SIDDA
   
 
     
@@ -567,7 +623,7 @@
   <span class="md-ellipsis">
     
   
-    MMD
+    SIDDA
   
 
     
@@ -615,10 +671,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#fitepochs10" class="md-nav__link">
+  <a href="#fitepochs50" class="md-nav__link">
     <span class="md-ellipsis">
       
-        fit(epochs=10)
+        fit(epochs=50)
       
     </span>
   </a>
@@ -637,41 +693,35 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#mmdloss" class="md-nav__link">
+  <a href="#warmup-phase" class="md-nav__link">
     <span class="md-ellipsis">
       
-        MMDLoss
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="MMDLoss">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#constructor_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Constructor
+        Warmup phase
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#forwardsource-target" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#dynamic-sinkhorn-blur" class="md-nav__link">
     <span class="md-ellipsis">
       
-        forward(source, target)
+        Dynamic Sinkhorn blur
       
     </span>
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#learnable-loss-weights" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Learnable loss weights η
+      
+    </span>
+  </a>
   
 </li>
       
@@ -679,62 +729,6 @@
   
 </nav>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../dann/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    DANN
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../sidda/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    SIDDA
-  
-
-    
-  </span>
-  
-  
-
-      </a>
     </li>
   
 
@@ -886,10 +880,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#fitepochs10" class="md-nav__link">
+  <a href="#fitepochs50" class="md-nav__link">
     <span class="md-ellipsis">
       
-        fit(epochs=10)
+        fit(epochs=50)
       
     </span>
   </a>
@@ -908,41 +902,35 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#mmdloss" class="md-nav__link">
+  <a href="#warmup-phase" class="md-nav__link">
     <span class="md-ellipsis">
       
-        MMDLoss
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="MMDLoss">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#constructor_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Constructor
+        Warmup phase
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#forwardsource-target" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#dynamic-sinkhorn-blur" class="md-nav__link">
     <span class="md-ellipsis">
       
-        forward(source, target)
+        Dynamic Sinkhorn blur
       
     </span>
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#learnable-loss-weights" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Learnable loss weights η
+      
+    </span>
+  </a>
   
 </li>
       
@@ -963,32 +951,56 @@
 
 
 
-<h1 id="mmdtrainer">MMDTrainer<a class="headerlink" href="#mmdtrainer" title="Permanent link">&para;</a></h1>
-<p>Trains a model by minimising a combined supervised + domain alignment loss:</p>
-<div class="arithmatex">\[\mathcal{L} = \underbrace{\text{CrossEntropy}(\hat{y}_\text{src}, y_\text{src})}_{\text{supervised}} + \lambda \cdot \underbrace{\widehat{\text{MMD}}^2(z_\text{src}, z_\text{tgt})}_{\text{domain alignment}}\]</div>
-<p>The classifier head is supervised on source labels only. The encoder is pulled
-toward domain-invariant representations by minimising the <strong>Maximum Mean
-Discrepancy (MMD)</strong> between source and target latent vectors.</p>
+<h1 id="siddatrainer">SIDDATrainer<a class="headerlink" href="#siddatrainer" title="Permanent link">&para;</a></h1>
+<p><strong>SIDDA</strong> (SInkhorn Dynamic Domain Adaptation) trains a model using an
+<strong>optimal-transport</strong> domain alignment loss combined with <strong>learnable, dynamically-weighted</strong>
+loss terms.  Two key ideas distinguish it from MMD and DANN:</p>
+<ol>
+<li>
+<p><strong>Sinkhorn divergence</strong> as the DA loss — a debiased, entropy-regularised
+   optimal transport distance that interpolates between MMD and the Wasserstein distance.</p>
+</li>
+<li>
+<p><strong>Automatic loss balancing</strong> — two scalar parameters η₁ (CE weight) and η₂ (DA weight)
+   are jointly learned with the model, eliminating the need to hand-tune λ.</p>
+</li>
+</ol>
+<div class="arithmatex">\[\mathcal{L} = \frac{1}{2\eta_1^2}\mathcal{L}_\text{CE} + \frac{1}{2\eta_2^2}\mathcal{S}_\sigma(z_\text{src}, z_\text{tgt}) + \log|\eta_1\eta_2|\]</div>
+<p>where <span class="arithmatex">\(\mathcal{S}_\sigma\)</span> is the Sinkhorn divergence:</p>
+<div class="arithmatex">\[\mathcal{S}_\sigma(\mu,\nu) = \text{OT}_\sigma(\mu,\nu) - \tfrac{1}{2}\text{OT}_\sigma(\mu,\mu) - \tfrac{1}{2}\text{OT}_\sigma(\nu,\nu)\]</div>
+<p>The log term regularises η, preventing collapse to zero or unbounded growth.</p>
+<div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>encoder(x) ──► z_src ──► classify(z_src) ──► CE loss ──────┐
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>encoder(x) ──► z_tgt ──►                                     ├─► ℒ (weighted)
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>               Sinkhorn_σ(z_src, z_tgt) ──► DA loss ─────────┘
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>               ↑ σ recomputed each batch from feature distances
+</span></code></pre></div>
 <blockquote>
-<p><strong>Reference:</strong> Gretton, A., Borgwardt, K. M., Rasch, M. J., Schölkopf, B., &amp; Smola, A. (2012).
-A Kernel Two-Sample Test. <em>Journal of Machine Learning Research</em>, 13, 723–773.
-<a href="https://jmlr.csail.mit.edu/papers/volume13/gretton12a/gretton12a.pdf">[PDF]</a></p>
+<p><strong>Reference:</strong> Ciprijanovic, A., Lewis, A., Pedro, K., Downey, E., Nord, B.,
+&amp; Stark, A. (2025). SIDDA: SInkhorn Dynamic Domain Adaptation for Image
+Classification with Equivariant Neural Networks. <em>arXiv:2501.14048</em>.
+<a href="https://arxiv.org/abs/2501.14048">[Paper]</a> · <a href="https://github.com/deepskies/SIDDA">[Code]</a></p>
 </blockquote>
+<div class="admonition note">
+<p class="admonition-title">Dependency</p>
+<p>SIDDA requires <strong>geomloss</strong> for the Sinkhorn divergence computation:
+<div class="highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>pip<span class="w"> </span>install<span class="w"> </span>geomloss
+</span></code></pre></div></p>
+</div>
 <hr />
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">MMDTrainer</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">MMDTrainer</span><span class="p">(</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">source_loader</span><span class="o">=</span><span class="n">train_src</span><span class="p">,</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">target_loader</span><span class="o">=</span><span class="n">train_tgt</span><span class="p">,</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">mmd_weight</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="p">)</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="n">history</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="n">result</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">test_tgt</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="s2">&quot;target-test&quot;</span><span class="p">)</span>
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Target accuracy: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">SIDDATrainer</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">SIDDATrainer</span><span class="p">(</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">source_loader</span><span class="o">=</span><span class="n">train_src</span><span class="p">,</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">target_loader</span><span class="o">=</span><span class="n">train_tgt</span><span class="p">,</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">lr</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">,</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">warmup_epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>   <span class="c1"># source-only pre-training before DA begins</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="p">)</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="n">history</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">epochs</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="n">result</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">test_tgt</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="s2">&quot;target-test&quot;</span><span class="p">)</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Target accuracy: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
 </span></code></pre></div>
 <hr />
 <h2 id="constructor">Constructor<a class="headerlink" href="#constructor" title="Permanent link">&para;</a></h2>
@@ -1006,7 +1018,7 @@ A Kernel Two-Sample Test. <em>Journal of Machine Learning Research</em>, 13, 723
 <td><code>model</code></td>
 <td><code>nn.Module</code></td>
 <td>—</td>
-<td>Network with <code>.encode()</code> and <code>.classify()</code> methods</td>
+<td>Network with <code>.encode()</code>, <code>.classify()</code>, and <code>.latent_dim</code></td>
 </tr>
 <tr>
 <td><code>source_loader</code></td>
@@ -1021,16 +1033,40 @@ A Kernel Two-Sample Test. <em>Journal of Machine Learning Research</em>, 13, 723
 <td>Target DataLoader (labels used for <code>tgt_acc</code> tracking only)</td>
 </tr>
 <tr>
-<td><code>mmd_weight</code></td>
-<td><code>float</code></td>
-<td><code>1.0</code></td>
-<td>λ — weight on the MMD regularisation term</td>
-</tr>
-<tr>
 <td><code>lr</code></td>
 <td><code>float</code></td>
+<td><code>1e-2</code></td>
+<td>AdamW learning rate (model + η parameters)</td>
+</tr>
+<tr>
+<td><code>weight_decay</code></td>
+<td><code>float</code></td>
 <td><code>1e-3</code></td>
-<td>Adam learning rate</td>
+<td>AdamW weight decay</td>
+</tr>
+<tr>
+<td><code>warmup_epochs</code></td>
+<td><code>int</code></td>
+<td><code>0</code></td>
+<td>Epochs of source-only pre-training before DA begins</td>
+</tr>
+<tr>
+<td><code>sigma_scale</code></td>
+<td><code>float</code></td>
+<td><code>0.05</code></td>
+<td>Scale factor for dynamic blur: σ = max(scale · max‖z‖, floor)</td>
+</tr>
+<tr>
+<td><code>sigma_floor</code></td>
+<td><code>float</code></td>
+<td><code>0.01</code></td>
+<td>Minimum blur value (prevents degenerate OT plans)</td>
+</tr>
+<tr>
+<td><code>grad_clip</code></td>
+<td><code>float</code></td>
+<td><code>10.0</code></td>
+<td>Gradient clipping max-norm</td>
 </tr>
 <tr>
 <td><code>device</code></td>
@@ -1038,16 +1074,10 @@ A Kernel Two-Sample Test. <em>Journal of Machine Learning Research</em>, 13, 723
 <td><code>None</code></td>
 <td><code>'cuda'</code>, <code>'mps'</code>, or <code>'cpu'</code>; auto-detected if <code>None</code></td>
 </tr>
-<tr>
-<td><code>mmd_sigmas</code></td>
-<td><code>list[float] \| None</code></td>
-<td><code>None</code></td>
-<td>RBF kernel bandwidths; defaults to <code>[0.1, 1, 5, 10, 50]</code></td>
-</tr>
 </tbody>
 </table>
 <hr />
-<h2 id="fitepochs10"><code>fit(epochs=10)</code><a class="headerlink" href="#fitepochs10" title="Permanent link">&para;</a></h2>
+<h2 id="fitepochs50"><code>fit(epochs=50)</code><a class="headerlink" href="#fitepochs50" title="Permanent link">&para;</a></h2>
 <p>Train for <code>epochs</code> epochs and return the history.</p>
 <p><strong>Returns:</strong> <code>list[dict]</code> — one dict per epoch:</p>
 <table>
@@ -1067,12 +1097,16 @@ A Kernel Two-Sample Test. <em>Journal of Machine Learning Research</em>, 13, 723
 <td>Mean cross-entropy loss</td>
 </tr>
 <tr>
+<td><code>da_loss</code></td>
+<td>Mean Sinkhorn divergence loss (<code>0.0</code> during warmup)</td>
+</tr>
+<tr>
 <td><code>mmd_loss</code></td>
-<td>Mean MMD² loss</td>
+<td>Always <code>0.0</code> (for history-format compatibility)</td>
 </tr>
 <tr>
 <td><code>total_loss</code></td>
-<td>Mean total loss (CE + λ·MMD²)</td>
+<td>Mean total weighted loss</td>
 </tr>
 <tr>
 <td><code>src_acc</code></td>
@@ -1080,7 +1114,19 @@ A Kernel Two-Sample Test. <em>Journal of Machine Learning Research</em>, 13, 723
 </tr>
 <tr>
 <td><code>tgt_acc</code></td>
-<td>Target domain accuracy (tracked, not optimised directly)</td>
+<td>Target domain accuracy (tracked, not directly optimised)</td>
+</tr>
+<tr>
+<td><code>eta1</code></td>
+<td>Current η₁ (CE weight) at epoch end</td>
+</tr>
+<tr>
+<td><code>eta2</code></td>
+<td>Current η₂ (DA weight) at epoch end</td>
+</tr>
+<tr>
+<td><code>sigma</code></td>
+<td>Mean Sinkhorn blur σ used this epoch (<code>0.0</code> during warmup)</td>
 </tr>
 </tbody>
 </table>
@@ -1089,58 +1135,52 @@ A Kernel Two-Sample Test. <em>Journal of Machine Learning Research</em>, 13, 723
 <p>Compute classification accuracy on any labelled DataLoader.</p>
 <p><strong>Returns:</strong> <code>dict</code> with keys <code>domain</code> (str), <code>accuracy</code> (float), <code>n_samples</code> (int).</p>
 <hr />
-<h2 id="mmdloss">MMDLoss<a class="headerlink" href="#mmdloss" title="Permanent link">&para;</a></h2>
-<p>The raw MMD² loss module, exposed for use in custom training loops.</p>
-<div class="arithmatex">\[\widehat{\text{MMD}}^2(P, Q) = \sum_{\sigma} \left[ \mathbb{E}[k_\sigma(x,x')] - 2\,\mathbb{E}[k_\sigma(x,y)] + \mathbb{E}[k_\sigma(y,y')] \right]\]</div>
-<p>where <span class="arithmatex">\(k_\sigma(x, y) = \exp\!\left(-\|x-y\|^2 / 2\sigma^2\right)\)</span> is the RBF kernel.
-Summing over multiple bandwidths σ captures domain discrepancy at different scales.</p>
-<div class="highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">MMDLoss</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">mmd</span> <span class="o">=</span> <span class="n">MMDLoss</span><span class="p">(</span><span class="n">sigmas</span><span class="o">=</span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">50.0</span><span class="p">])</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">loss</span> <span class="o">=</span> <span class="n">mmd</span><span class="p">(</span><span class="n">z_source</span><span class="p">,</span> <span class="n">z_target</span><span class="p">)</span>   <span class="c1"># scalar tensor</span>
+<h2 id="warmup-phase">Warmup phase<a class="headerlink" href="#warmup-phase" title="Permanent link">&para;</a></h2>
+<p>During the warmup phase the encoder trains on source classification only — no DA
+loss, no η updates.  This ensures the latent space carries class-discriminative
+structure before Sinkhorn alignment begins.</p>
+<div class="highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">SIDDATrainer</span><span class="p">(</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">source_loader</span><span class="o">=</span><span class="n">train_src</span><span class="p">,</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">target_loader</span><span class="o">=</span><span class="n">train_tgt</span><span class="p">,</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">warmup_epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>   <span class="c1"># first 10 epochs: source-only CE</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">lr</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">,</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="p">)</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="n">history</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">epochs</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="c1"># Epochs 1–10:  [warmup]  CE only</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="c1"># Epochs 11–50: [SIDDA ]  CE + Sinkhorn DA + learnable η</span>
 </span></code></pre></div>
-<h3 id="constructor_1">Constructor<a class="headerlink" href="#constructor_1" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>sigmas</code></td>
-<td><code>list[float] \| None</code></td>
-<td><code>None</code></td>
-<td>Kernel bandwidths; defaults to <code>[0.1, 1.0, 5.0, 10.0, 50.0]</code></td>
-</tr>
-</tbody>
-</table>
-<h3 id="forwardsource-target"><code>forward(source, target)</code><a class="headerlink" href="#forwardsource-target" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>source</code></td>
-<td><code>Tensor (n, d)</code></td>
-<td>Latent vectors from source domain</td>
-</tr>
-<tr>
-<td><code>target</code></td>
-<td><code>Tensor (m, d)</code></td>
-<td>Latent vectors from target domain</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Returns:</strong> Scalar MMD² estimate.</p>
+<div class="admonition tip">
+<p class="admonition-title">Choosing warmup length</p>
+<p>The paper found that equivariant networks require a shorter warmup than
+standard CNNs (e.g. 5–10 vs 10–30 epochs).  As a rule of thumb, warmup
+should be long enough that source accuracy is reasonable but short enough
+to avoid overfitting the source domain before adaptation starts.</p>
+</div>
+<hr />
+<h2 id="dynamic-sinkhorn-blur">Dynamic Sinkhorn blur<a class="headerlink" href="#dynamic-sinkhorn-blur" title="Permanent link">&para;</a></h2>
+<p>The Sinkhorn regularisation strength σ is adapted <strong>each batch</strong>:</p>
+<div class="arithmatex">\[\sigma = \max\!\left(0.05 \cdot \max_{i,j}\|z_i - z_j^*\|_2,\; 0.01\right)\]</div>
+<p>Layer normalisation is applied to the latent features before computing pairwise
+distances, preventing a small number of outlier features from inflating σ.
+As training progresses and source/target distributions align, σ shrinks
+naturally, giving a progressively sharper (more exact) OT plan.</p>
+<hr />
+<h2 id="learnable-loss-weights">Learnable loss weights η<a class="headerlink" href="#learnable-loss-weights" title="Permanent link">&para;</a></h2>
+<p>η₁ and η₂ are scalar <code>nn.Parameter</code> values optimised jointly with the model.
+Hard constraints are enforced after every gradient step:</p>
+<ul>
+<li>η₁ ≥ 1e-3 (prevents CE from being silenced)</li>
+<li>η₂ ≥ 0.25 · η₁ (prevents DA from completely dominating)</li>
+</ul>
+<p>You can inspect how the balance evolves during training:</p>
+<div class="highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">epochs</span> <span class="o">=</span> <span class="p">[</span><span class="n">h</span><span class="p">[</span><span class="s2">&quot;epoch&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">history</span><span class="p">]</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">epochs</span><span class="p">,</span> <span class="p">[</span><span class="n">h</span><span class="p">[</span><span class="s2">&quot;eta1&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">history</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;η₁ (CE)&quot;</span><span class="p">)</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">epochs</span><span class="p">,</span> <span class="p">[</span><span class="n">h</span><span class="p">[</span><span class="s2">&quot;eta2&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">history</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;η₂ (DA)&quot;</span><span class="p">)</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Epoch&quot;</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;η&quot;</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+</span></code></pre></div>
 
 
 
