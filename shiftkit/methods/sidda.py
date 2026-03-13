@@ -1,0 +1,289 @@
+"""
+SIDDA: SInkhorn Dynamic Domain Adaptation (Ciprijanovic et al., 2025).
+
+Uses the Sinkhorn divergence as the domain alignment loss with two key ideas:
+
+1. **Dynamic regularisation** — the Sinkhorn blur parameter σ is adapted each
+   batch based on the maximum pairwise distance between source and target latent
+   features, so the optimal-transport plan automatically adjusts to the current
+   state of the encoder.
+
+2. **Learnable loss weighting** — two scalar parameters η₁ (CE) and η₂ (DA) are
+   jointly optimised with the model.  The multi-task loss formulation:
+
+       ℒ = (1/2η₁²)ℒ_CE + (1/2η₂²)ℒ_DA + log(|η₁||η₂|)
+
+   automatically balances classification and domain alignment without a fixed λ.
+   The log term prevents η from collapsing to zero or growing unboundedly.
+
+An optional **warmup phase** trains the encoder on source classification only
+(no DA loss) for a fixed number of epochs before domain adaptation begins.
+This ensures the encoder produces meaningful representations before alignment
+is attempted — equivariant networks typically need a shorter warmup than CNNs.
+
+Architecture
+------------
+encoder(x) ──► z_src ──► classify(z_src) ──► CE loss  ──┐
+encoder(x) ──► z_tgt ──►                                  ├─► weighted sum
+               Sinkhorn(z_src, z_tgt) ──► DA loss  ───────┘
+
+Reference
+---------
+Ciprijanovic, A., Lewis, A., Pedro, K., Downey, E., Nord, B., & Stark, A. (2025).
+SIDDA: SInkhorn Dynamic Domain Adaptation for Image Classification with
+Equivariant Neural Networks.
+arXiv:2501.14048.
+https://arxiv.org/abs/2501.14048
+
+Sinkhorn divergence (optimal transport background):
+Feydy, J., Séjourné, T., Vialard, F.-X., Amari, S., Trouvé, A., &
+Peyré, G. (2019). Interpolating between Optimal Transport and MMD using
+Sinkhorn Divergences. AISTATS 2019. https://arxiv.org/abs/1810.08278
+"""
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+from torch.utils.data import DataLoader
+from tqdm import tqdm
+from typing import Optional, List
+
+
+# ─── helpers ──────────────────────────────────────────────────────────────────
+
+def _auto_device() -> torch.device:
+    if torch.cuda.is_available():
+        return torch.device("cuda")
+    if torch.backends.mps.is_available():
+        return torch.device("mps")
+    return torch.device("cpu")
+
+
+def _dynamic_blur(
+    z_src: torch.Tensor,
+    z_tgt: torch.Tensor,
+    scale: float = 0.05,
+    floor: float = 0.01,
+) -> float:
+    """
+    Compute the per-batch Sinkhorn blur σ.
+
+    Following the paper:  σ = max(scale · max_{i,j}||z_i − z*_j||₂, floor)
+
+    Layer normalisation is applied before computing distances to prevent
+    outlier features from inflating σ and dominating the OT plan.
+    """
+    with torch.no_grad():
+        z_s = F.layer_norm(z_src.detach().float(), [z_src.shape[-1]])
+        z_t = F.layer_norm(z_tgt.detach().float(), [z_tgt.shape[-1]])
+        max_dist = torch.cdist(z_s, z_t).max().item()
+    return max(scale * max_dist, floor)
+
+
+# ─── SIDDA Trainer ────────────────────────────────────────────────────────────
+
+class SIDDATrainer:
+    """
+    SIDDA trainer (Ciprijanovic et al., 2025).
+
+    Trains the encoder jointly with a Sinkhorn domain alignment loss and two
+    learnable loss-weighting parameters (η₁, η₂).  The Sinkhorn regularisation
+    strength σ is adapted each batch from the latent feature distances.
+
+    Total loss (after warmup)
+    -------------------------
+    ℒ = (1/2η₁²)·CE(z_src, y_src)
+      + (1/2η₂²)·Sinkhorn_σ(z_src, z_tgt)
+      + log(|η₁|·|η₂|)
+
+    Warmup phase
+    ------------
+    For the first ``warmup_epochs`` epochs only CE loss is used (no DA).
+    This builds a good source-domain representation before alignment begins.
+    η₁ and η₂ are not updated during warmup.
+
+    Parameters
+    ----------
+    model          : network with .encode() and .classify() methods
+                     (must expose .latent_dim)
+    source_loader  : labelled source DataLoader
+    target_loader  : target DataLoader (labels used for tgt_acc tracking only)
+    lr             : AdamW learning rate
+    weight_decay   : AdamW weight decay
+    warmup_epochs  : epochs of source-only pre-training before DA begins
+    sigma_scale    : scale factor for dynamic blur (default 0.05 from paper)
+    sigma_floor    : minimum blur value to prevent degenerate OT (default 0.01)
+    grad_clip      : gradient clipping max-norm (default 10.0 from paper)
+    device         : 'cuda', 'mps', or 'cpu' (auto-detected if None)
+
+    History keys
+    ------------
+    epoch, ce_loss, da_loss, mmd_loss (always 0), total_loss,
+    src_acc, tgt_acc, eta1, eta2, sigma
+    """
+
+    def __init__(
+        self,
+        model: nn.Module,
+        source_loader: DataLoader,
+        target_loader: DataLoader,
+        lr: float = 1e-2,
+        weight_decay: float = 1e-3,
+        warmup_epochs: int = 0,
+        sigma_scale: float = 0.05,
+        sigma_floor: float = 0.01,
+        grad_clip: float = 10.0,
+        device: Optional[str] = None,
+    ):
+        try:
+            from geomloss import SamplesLoss
+            self._SamplesLoss = SamplesLoss
+        except ImportError as e:
+            raise ImportError(
+                "geomloss is required for SIDDATrainer. "
+                "Install it with:  pip install geomloss"
+            ) from e
+
+        self.device = torch.device(device) if device else _auto_device()
+        self.model = model.to(self.device)
+        self.source_loader = source_loader
+        self.target_loader = target_loader
+        self.warmup_epochs = warmup_epochs
+        self.sigma_scale = sigma_scale
+        self.sigma_floor = sigma_floor
+        self.grad_clip = grad_clip
+
+        # Learnable loss-weighting scalars, initialised to 1
+        self.eta1 = nn.Parameter(torch.ones(1, device=self.device))  # CE
+        self.eta2 = nn.Parameter(torch.ones(1, device=self.device))  # DA
+
+        self.ce_loss = nn.CrossEntropyLoss()
+
+        self.optimizer = optim.AdamW(
+            list(model.parameters()) + [self.eta1, self.eta2],
+            lr=lr,
+            weight_decay=weight_decay,
+        )
+
+        self.history: List[dict] = []
+
+    # ------------------------------------------------------------------
+    def fit(self, epochs: int = 50) -> List[dict]:
+        """Train for *epochs* epochs. Returns per-epoch history list."""
+        for epoch in range(1, epochs + 1):
+            is_warmup = epoch <= self.warmup_epochs
+            stats = self._train_epoch(epoch, epochs, is_warmup)
+            self.history.append(stats)
+
+            phase = "warmup" if is_warmup else "SIDDA "
+            da_str = (
+                f"  DA={stats['da_loss']:.4f}"
+                f"  η₁={stats['eta1']:.3f}  η₂={stats['eta2']:.3f}"
+                f"  σ={stats['sigma']:.4f}"
+                if not is_warmup else ""
+            )
+            print(
+                f"[{epoch:>3}/{epochs}] [{phase}]  "
+                f"CE={stats['ce_loss']:.4f}{da_str}  "
+                f"Total={stats['total_loss']:.4f}  "
+                f"Src={stats['src_acc']*100:.1f}%  "
+                f"Tgt={stats['tgt_acc']*100:.1f}%"
+            )
+        return self.history
+
+    # ------------------------------------------------------------------
+    def _train_epoch(self, epoch: int, total_epochs: int, warmup: bool) -> dict:
+        self.model.train()
+
+        total_ce = total_da = total_loss_sum = 0.0
+        src_correct = tgt_correct = n_src = n_tgt = 0
+        last_sigma = 0.0
+
+        n_batches = min(len(self.source_loader), len(self.target_loader))
+        loader = zip(self.source_loader, self.target_loader)
+
+        for (x_src, y_src), (x_tgt, y_tgt) in tqdm(
+            loader, total=n_batches,
+            desc=f"Epoch {epoch}/{total_epochs}", leave=False
+        ):
+            x_src, y_src = x_src.to(self.device), y_src.to(self.device)
+            x_tgt, y_tgt = x_tgt.to(self.device), y_tgt.to(self.device)
+
+            z_src = self.model.encode(x_src)
+            z_tgt = self.model.encode(x_tgt)
+
+            logits = self.model.classify(z_src)
+            ce = self.ce_loss(logits, y_src)
+
+            if warmup:
+                # ── warmup: source-only CE loss, no DA ────────────────
+                loss = ce
+                da_val = 0.0
+
+            else:
+                # ── SIDDA loss ─────────────────────────────────────────
+                # 1. Dynamic Sinkhorn blur
+                sigma = _dynamic_blur(z_src, z_tgt, self.sigma_scale, self.sigma_floor)
+                last_sigma = sigma
+
+                # 2. Sinkhorn divergence S_σ(z_src, z_tgt)
+                sinkhorn = self._SamplesLoss("sinkhorn", p=2, blur=sigma, scaling=0.9)
+                da_loss = sinkhorn(z_src, z_tgt)
+                da_val = da_loss.item()
+
+                # 3. Weighted combination with learnable etas
+                loss = (
+                    (1.0 / (2.0 * self.eta1 ** 2)) * ce
+                    + (1.0 / (2.0 * self.eta2 ** 2)) * da_loss
+                    + torch.log(self.eta1.abs() * self.eta2.abs())
+                )
+
+            self.optimizer.zero_grad()
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(
+                list(self.model.parameters()) + [self.eta1, self.eta2],
+                self.grad_clip,
+            )
+            self.optimizer.step()
+
+            # Enforce η constraints: η₁ ≥ 1e-3,  η₂ ≥ 0.25·η₁
+            if not warmup:
+                with torch.no_grad():
+                    self.eta1.clamp_(min=1e-3)
+                    self.eta2.clamp_(min=0.25 * self.eta1.item())
+
+            total_ce       += ce.item()
+            total_da       += da_val
+            total_loss_sum += loss.item()
+            src_correct    += (logits.argmax(1) == y_src).sum().item()
+            n_src          += y_src.size(0)
+
+            with torch.no_grad():
+                tgt_correct += (self.model(x_tgt).argmax(1) == y_tgt).sum().item()
+                n_tgt       += y_tgt.size(0)
+
+        return {
+            "epoch":      epoch,
+            "ce_loss":    total_ce       / n_batches,
+            "da_loss":    total_da       / n_batches,
+            "mmd_loss":   0.0,            # history-format compatibility
+            "total_loss": total_loss_sum / n_batches,
+            "src_acc":    src_correct / n_src,
+            "tgt_acc":    tgt_correct / n_tgt,
+            "eta1":       self.eta1.item(),
+            "eta2":       self.eta2.item(),
+            "sigma":      last_sigma,
+        }
+
+    # ------------------------------------------------------------------
+    @torch.no_grad()
+    def evaluate(self, loader: DataLoader, domain: str = "source") -> dict:
+        """Compute accuracy on a labelled DataLoader."""
+        self.model.eval()
+        correct = total = 0
+        for x, y in loader:
+            x, y = x.to(self.device), y.to(self.device)
+            correct += (self.model(x).argmax(1) == y).sum().item()
+            total   += y.size(0)
+        return {"domain": domain, "accuracy": correct / total, "n_samples": total}

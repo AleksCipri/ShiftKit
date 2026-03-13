@@ -49,6 +49,7 @@ nav:
           - Source Only: methods/source_only.md
           - MMD: methods/mmd.md
           - DANN: methods/dann.md
+          - SIDDA: methods/sidda.md
       - Diagnostics: diagnostics.md
   - Citation: citation.md
   - Credits: credits.md
