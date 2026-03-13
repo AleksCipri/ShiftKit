@@ -711,6 +711,56 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#projection-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Projection methods
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Projection methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#t-sne" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        t-SNE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isomap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Isomap
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#umap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UMAP
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#plot_training_history" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -902,6 +952,56 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#projection-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Projection methods
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Projection methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#t-sne" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        t-SNE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isomap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Isomap
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#umap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UMAP
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#plot_training_history" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -961,22 +1061,34 @@
 <p><code>shiftkit.diagnostics</code> provides visualisation tools for inspecting latent spaces and training dynamics.</p>
 <hr />
 <h2 id="plot_latent_space">plot_latent_space<a class="headerlink" href="#plot_latent_space" title="Permanent link">&para;</a></h2>
-<p>Encode samples from source and target loaders, project to 2-D with t-SNE, and plot two panels:</p>
+<p>Encode samples from source and target loaders, project to 2-D, and plot two panels:</p>
 <ul>
 <li><strong>Left</strong> — coloured by domain (source = blue, target = orange)</li>
 <li><strong>Right</strong> — coloured by class label (10 colours)</li>
 </ul>
+<p>Three projection methods are available via the <code>projection</code> parameter:
+<a href="#t-sne">t-SNE</a>, <a href="#isomap">Isomap</a>, and <a href="#umap">UMAP</a>.</p>
 <div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.diagnostics</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_latent_space</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">fig</span> <span class="o">=</span> <span class="n">plot_latent_space</span><span class="p">(</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">source_loader</span><span class="o">=</span><span class="n">test_src</span><span class="p">,</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">target_loader</span><span class="o">=</span><span class="n">test_tgt</span><span class="p">,</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">max_samples</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;CNN + MMD (noise_std=0.3, λ=1.0)&quot;</span><span class="p">,</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;outputs/latent_space.png&quot;</span><span class="p">,</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="p">)</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="c1"># t-SNE (default)</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">fig</span> <span class="o">=</span> <span class="n">plot_latent_space</span><span class="p">(</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">source_loader</span><span class="o">=</span><span class="n">test_src</span><span class="p">,</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">target_loader</span><span class="o">=</span><span class="n">test_tgt</span><span class="p">,</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">max_samples</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">projection</span><span class="o">=</span><span class="s2">&quot;tsne&quot;</span><span class="p">,</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;CNN + MMD&quot;</span><span class="p">,</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;outputs/latent_space.png&quot;</span><span class="p">,</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="p">)</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="c1"># Isomap</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="n">fig</span> <span class="o">=</span> <span class="n">plot_latent_space</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">test_src</span><span class="p">,</span> <span class="n">test_tgt</span><span class="p">,</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>                        <span class="n">projection</span><span class="o">=</span><span class="s2">&quot;isomap&quot;</span><span class="p">,</span> <span class="n">n_neighbors</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="c1"># UMAP</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="n">fig</span> <span class="o">=</span> <span class="n">plot_latent_space</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">test_src</span><span class="p">,</span> <span class="n">test_tgt</span><span class="p">,</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>                        <span class="n">projection</span><span class="o">=</span><span class="s2">&quot;umap&quot;</span><span class="p">,</span> <span class="n">n_neighbors</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">min_dist</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
 </span></code></pre></div>
 <h3 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h3>
 <table>
@@ -1011,19 +1123,37 @@
 <td><code>max_samples</code></td>
 <td><code>int</code></td>
 <td><code>2000</code></td>
-<td>Max samples per domain (keeps t-SNE tractable)</td>
+<td>Max samples per domain</td>
 </tr>
 <tr>
-<td><code>tsne_perplexity</code></td>
+<td><code>projection</code></td>
+<td><code>str</code></td>
+<td><code>"tsne"</code></td>
+<td>Projection method: <code>"tsne"</code>, <code>"isomap"</code>, or <code>"umap"</code></td>
+</tr>
+<tr>
+<td><code>perplexity</code></td>
 <td><code>float</code></td>
 <td><code>30.0</code></td>
-<td>t-SNE perplexity</td>
+<td>t-SNE perplexity <em>(t-SNE only)</em></td>
 </tr>
 <tr>
-<td><code>tsne_n_iter</code></td>
+<td><code>n_iter</code></td>
 <td><code>int</code></td>
 <td><code>1000</code></td>
-<td>t-SNE number of iterations</td>
+<td>t-SNE number of iterations <em>(t-SNE only)</em></td>
+</tr>
+<tr>
+<td><code>n_neighbors</code></td>
+<td><code>int</code></td>
+<td><code>15</code></td>
+<td>Neighbourhood size <em>(Isomap and UMAP)</em></td>
+</tr>
+<tr>
+<td><code>min_dist</code></td>
+<td><code>float</code></td>
+<td><code>0.1</code></td>
+<td>Minimum distance between embedded points <em>(UMAP only)</em></td>
 </tr>
 <tr>
 <td><code>title</code></td>
@@ -1065,13 +1195,15 @@
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">models</span><span class="o">=</span><span class="p">{</span>
 </span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>        <span class="s2">&quot;Source Only&quot;</span><span class="p">:</span> <span class="n">model_baseline</span><span class="p">,</span>
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>        <span class="s2">&quot;MMD&quot;</span><span class="p">:</span>         <span class="n">model_mmd</span><span class="p">,</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="p">},</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">source_loader</span><span class="o">=</span><span class="n">test_src</span><span class="p">,</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">target_loader</span><span class="o">=</span><span class="n">test_tgt</span><span class="p">,</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="n">max_samples</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;outputs/latent_space_comparison.png&quot;</span><span class="p">,</span>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="p">)</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>        <span class="s2">&quot;DANN&quot;</span><span class="p">:</span>        <span class="n">model_dann</span><span class="p">,</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="p">},</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">source_loader</span><span class="o">=</span><span class="n">test_src</span><span class="p">,</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="n">target_loader</span><span class="o">=</span><span class="n">test_tgt</span><span class="p">,</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">max_samples</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="n">projection</span><span class="o">=</span><span class="s2">&quot;tsne&quot;</span><span class="p">,</span>          <span class="c1"># or &quot;isomap&quot; / &quot;umap&quot;</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;outputs/latent_space_comparison.png&quot;</span><span class="p">,</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="p">)</span>
 </span></code></pre></div>
 <p><strong>Output:</strong></p>
 <p><img alt="Latent Space Comparison" src="../assets/latent_space_comparison.png" />
@@ -1112,16 +1244,34 @@
 <td>Max samples per domain per model</td>
 </tr>
 <tr>
-<td><code>tsne_perplexity</code></td>
-<td><code>float</code></td>
-<td><code>30.0</code></td>
-<td>t-SNE perplexity</td>
+<td><code>projection</code></td>
+<td><code>str</code></td>
+<td><code>"tsne"</code></td>
+<td>Projection method: <code>"tsne"</code>, <code>"isomap"</code>, or <code>"umap"</code></td>
 </tr>
 <tr>
-<td><code>tsne_n_iter</code></td>
+<td><code>perplexity</code></td>
+<td><code>float</code></td>
+<td><code>30.0</code></td>
+<td>t-SNE perplexity <em>(t-SNE only)</em></td>
+</tr>
+<tr>
+<td><code>n_iter</code></td>
 <td><code>int</code></td>
 <td><code>1000</code></td>
-<td>t-SNE number of iterations</td>
+<td>t-SNE iterations <em>(t-SNE only)</em></td>
+</tr>
+<tr>
+<td><code>n_neighbors</code></td>
+<td><code>int</code></td>
+<td><code>15</code></td>
+<td>Neighbourhood size <em>(Isomap and UMAP)</em></td>
+</tr>
+<tr>
+<td><code>min_dist</code></td>
+<td><code>float</code></td>
+<td><code>0.1</code></td>
+<td>Minimum distance between points <em>(UMAP only)</em></td>
 </tr>
 <tr>
 <td><code>save_path</code></td>
@@ -1145,26 +1295,80 @@
 </table>
 <p><strong>Returns:</strong> <code>matplotlib.figure.Figure</code></p>
 <hr />
+<h2 id="projection-methods">Projection methods<a class="headerlink" href="#projection-methods" title="Permanent link">&para;</a></h2>
+<h3 id="t-sne">t-SNE<a class="headerlink" href="#t-sne" title="Permanent link">&para;</a></h3>
+<p><strong>t-Distributed Stochastic Neighbour Embedding</strong> converts high-dimensional
+similarities into a probability distribution and minimises the KL divergence
+between this distribution and one over the 2-D embedding. It excels at revealing
+tight clusters but does not preserve global structure, and distances between
+clusters are not directly interpretable.</p>
+<p>Key hyperparameter: <code>perplexity</code> (5–50). Higher values consider larger
+neighbourhoods and produce coarser cluster structure.</p>
+<blockquote>
+<p><strong>Reference:</strong> van der Maaten, L., &amp; Hinton, G. (2008).
+Visualizing Data using t-SNE.
+<em>Journal of Machine Learning Research</em>, 9, 2579–2605.
+<a href="https://www.jmlr.org/papers/volume9/vandermaaten08a/vandermaaten08a.pdf">[PDF]</a></p>
+</blockquote>
+<hr />
+<h3 id="isomap">Isomap<a class="headerlink" href="#isomap" title="Permanent link">&para;</a></h3>
+<p><strong>Isometric Mapping</strong> extends classical MDS by replacing Euclidean distances
+with shortest-path (geodesic) distances on the data manifold, estimated from a
+k-nearest-neighbour graph. Unlike t-SNE, Isomap is deterministic and better
+preserves <strong>global geometry</strong>, making relative distances between clusters more
+meaningful.</p>
+<p>Key hyperparameter: <code>n_neighbors</code> — the neighbourhood size for the graph. Smaller values
+capture fine local structure; larger values smooth the manifold estimate.</p>
+<blockquote>
+<p><strong>Reference:</strong> Tenenbaum, J. B., de Silva, V., &amp; Langford, J. C. (2000).
+A Global Geometric Framework for Nonlinear Dimensionality Reduction.
+<em>Science</em>, 290(5500), 2319–2323.
+<a href="https://www.robots.ox.ac.uk/~az/lectures/ml/tenenbaum-isomap-Science2000.pdf">[PDF]</a></p>
+</blockquote>
+<hr />
+<h3 id="umap">UMAP<a class="headerlink" href="#umap" title="Permanent link">&para;</a></h3>
+<p><strong>Uniform Manifold Approximation and Projection</strong> constructs a fuzzy topological
+representation of the data and optimises a low-dimensional embedding to have a
+similar topological structure. It is significantly <strong>faster</strong> than t-SNE on large
+datasets and better preserves <strong>both local and global structure</strong>.</p>
+<p>Key hyperparameters:</p>
+<ul>
+<li><code>n_neighbors</code> — controls the balance between local and global structure. Smaller values focus on local neighbourhood; larger values give a more global view.</li>
+<li><code>min_dist</code> — minimum distance between embedded points. Smaller values pack clusters more tightly; larger values spread them out.</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">UMAP requires an optional dependency</p>
+<div class="highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>pip<span class="w"> </span>install<span class="w"> </span>umap-learn
+</span></code></pre></div>
+</div>
+<blockquote>
+<p><strong>Reference:</strong> McInnes, L., Healy, J., &amp; Melville, J. (2018).
+UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction.
+<em>arXiv:1802.03426</em>.
+<a href="https://arxiv.org/pdf/1802.03426">[PDF]</a></p>
+</blockquote>
+<hr />
 <h2 id="plot_training_history">plot_training_history<a class="headerlink" href="#plot_training_history" title="Permanent link">&para;</a></h2>
 <p>Plot CE loss and accuracy curves from one or more training histories on the same axes.</p>
 <ul>
 <li><strong>Left panel</strong> — cross-entropy loss per model</li>
 <li><strong>Right panel</strong> — source accuracy (solid) and target accuracy (dashed) per model</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.diagnostics</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_training_history</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1"># Single history (backward-compatible)</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">plot_training_history</span><span class="p">(</span><span class="n">history_mmd</span><span class="p">)</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="c1"># Multi-model comparison</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">fig</span> <span class="o">=</span> <span class="n">plot_training_history</span><span class="p">(</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">histories</span><span class="o">=</span><span class="p">{</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>        <span class="s2">&quot;Source Only&quot;</span><span class="p">:</span> <span class="n">history_baseline</span><span class="p">,</span>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>        <span class="s2">&quot;MMD&quot;</span><span class="p">:</span>         <span class="n">history_mmd</span><span class="p">,</span>
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="p">},</span>
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>    <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;outputs/training_history.png&quot;</span><span class="p">,</span>
-</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.diagnostics</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_training_history</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="c1"># Single history (backward-compatible)</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">plot_training_history</span><span class="p">(</span><span class="n">history_mmd</span><span class="p">)</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="c1"># Multi-model comparison</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="n">fig</span> <span class="o">=</span> <span class="n">plot_training_history</span><span class="p">(</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">histories</span><span class="o">=</span><span class="p">{</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        <span class="s2">&quot;Source Only&quot;</span><span class="p">:</span> <span class="n">history_baseline</span><span class="p">,</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>        <span class="s2">&quot;MMD&quot;</span><span class="p">:</span>         <span class="n">history_mmd</span><span class="p">,</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>        <span class="s2">&quot;DANN&quot;</span><span class="p">:</span>        <span class="n">history_dann</span><span class="p">,</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    <span class="p">},</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>    <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;outputs/training_history.png&quot;</span><span class="p">,</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>    <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="p">)</span>
 </span></code></pre></div>
 <p><strong>Output:</strong></p>
 <p><img alt="Training History" src="../assets/training_history.png" />
