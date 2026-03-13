@@ -21,15 +21,27 @@
          <lastmod>2026-03-13</lastmod>
     </url>
     <url>
-         <loc>https://AleksCipri.github.io/ShiftKit/methods/</loc>
-         <lastmod>2026-03-13</lastmod>
-    </url>
-    <url>
          <loc>https://AleksCipri.github.io/ShiftKit/models/</loc>
          <lastmod>2026-03-13</lastmod>
     </url>
     <url>
          <loc>https://AleksCipri.github.io/ShiftKit/tutorials/</loc>
+         <lastmod>2026-03-13</lastmod>
+    </url>
+    <url>
+         <loc>https://AleksCipri.github.io/ShiftKit/methods/</loc>
+         <lastmod>2026-03-13</lastmod>
+    </url>
+    <url>
+         <loc>https://AleksCipri.github.io/ShiftKit/methods/dann/</loc>
+         <lastmod>2026-03-13</lastmod>
+    </url>
+    <url>
+         <loc>https://AleksCipri.github.io/ShiftKit/methods/mmd/</loc>
+         <lastmod>2026-03-13</lastmod>
+    </url>
+    <url>
+         <loc>https://AleksCipri.github.io/ShiftKit/methods/source_only/</loc>
          <lastmod>2026-03-13</lastmod>
     </url>
 </urlset>

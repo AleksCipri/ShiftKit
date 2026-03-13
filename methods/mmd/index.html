@@ -10,31 +10,31 @@
       
       
       
-        <link rel="canonical" href="https://AleksCipri.github.io/ShiftKit/diagnostics/">
+        <link rel="canonical" href="https://AleksCipri.github.io/ShiftKit/methods/mmd/">
       
       
-        <link rel="prev" href="../methods/dann/">
+        <link rel="prev" href="../source_only/">
       
       
-        <link rel="next" href="../citation/">
+        <link rel="next" href="../dann/">
       
       
         
       
       
-      <link rel="icon" href="../logo.png">
+      <link rel="icon" href="../../logo.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
     
     
       
-        <title>Diagnostics - ShiftKit</title>
+        <title>MMD - ShiftKit</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -53,9 +53,9 @@
       
     
     
-      <link rel="stylesheet" href="../stylesheets/extra.css">
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
     
-    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#diagnostics" class="md-skip">
+        <a href="#mmdtrainer" class="md-skip">
           Skip to content
         </a>
       
@@ -96,9 +96,9 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="ShiftKit" class="md-header__button md-logo" aria-label="ShiftKit" data-md-component="logo">
+    <a href="../.." title="ShiftKit" class="md-header__button md-logo" aria-label="ShiftKit" data-md-component="logo">
       
-  <img src="../logo.png" alt="logo">
+  <img src="../../logo.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -115,7 +115,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Diagnostics
+              MMD
             
           </span>
         </div>
@@ -233,9 +233,9 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="ShiftKit" class="md-nav__button md-logo" aria-label="ShiftKit" data-md-component="logo">
+    <a href="../.." title="ShiftKit" class="md-nav__button md-logo" aria-label="ShiftKit" data-md-component="logo">
       
-  <img src="../logo.png" alt="logo">
+  <img src="../../logo.png" alt="logo">
 
     </a>
     ShiftKit
@@ -262,7 +262,7 @@
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -289,7 +289,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../tutorials/" class="md-nav__link">
+      <a href="../../tutorials/" class="md-nav__link">
         
   
   
@@ -370,7 +370,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../data/" class="md-nav__link">
+      <a href="../../data/" class="md-nav__link">
         
   
   
@@ -398,7 +398,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../models/" class="md-nav__link">
+      <a href="../../models/" class="md-nav__link">
         
   
   
@@ -423,6 +423,8 @@
                 
   
   
+    
+  
   
   
     
@@ -432,11 +434,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" checked>
         
           
           <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
@@ -457,7 +459,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -475,7 +477,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../methods/" class="md-nav__link">
+      <a href="../" class="md-nav__link">
         
   
   
@@ -503,7 +505,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../methods/source_only/" class="md-nav__link">
+      <a href="../source_only/" class="md-nav__link">
         
   
   
@@ -528,10 +530,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../methods/mmd/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MMD
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -547,6 +576,109 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#constructor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Constructor
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fitepochs10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fit(epochs=10)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#evaluateloader-domainsource" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        evaluate(loader, domain="source")
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mmdloss" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MMDLoss
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MMDLoss">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#constructor_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Constructor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#forwardsource-target" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        forward(source, target)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -559,7 +691,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../methods/dann/" class="md-nav__link">
+      <a href="../dann/" class="md-nav__link">
         
   
   
@@ -592,37 +724,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Diagnostics
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../diagnostics/" class="md-nav__link">
         
   
   
@@ -638,121 +743,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#plot_latent_space" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        plot_latent_space
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="plot_latent_space">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Parameters
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#compare_latent_spaces" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        compare_latent_spaces
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="compare_latent_spaces">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#parameters_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Parameters
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#plot_training_history" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        plot_training_history
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="plot_training_history">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#parameters_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Parameters
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#history-dict-format" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        History dict format
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -772,7 +762,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../citation/" class="md-nav__link">
+      <a href="../../citation/" class="md-nav__link">
         
   
   
@@ -799,7 +789,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../credits/" class="md-nav__link">
+      <a href="../../credits/" class="md-nav__link">
         
   
   
@@ -846,78 +836,66 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#plot_latent_space" class="md-nav__link">
+  <a href="#usage" class="md-nav__link">
     <span class="md-ellipsis">
       
-        plot_latent_space
+        Usage
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="plot_latent_space">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Parameters
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#compare_latent_spaces" class="md-nav__link">
+  <a href="#constructor" class="md-nav__link">
     <span class="md-ellipsis">
       
-        compare_latent_spaces
+        Constructor
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="compare_latent_spaces">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#parameters_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Parameters
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#plot_training_history" class="md-nav__link">
+  <a href="#fitepochs10" class="md-nav__link">
     <span class="md-ellipsis">
       
-        plot_training_history
+        fit(epochs=10)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="plot_training_history">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#evaluateloader-domainsource" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        evaluate(loader, domain="source")
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mmdloss" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MMDLoss
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MMDLoss">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#parameters_2" class="md-nav__link">
+  <a href="#constructor_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Parameters
+        Constructor
       
     </span>
   </a>
@@ -925,10 +903,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#history-dict-format" class="md-nav__link">
+  <a href="#forwardsource-target" class="md-nav__link">
     <span class="md-ellipsis">
       
-        History dict format
+        forward(source, target)
       
     </span>
   </a>
@@ -957,28 +935,35 @@
 
 
 
-<h1 id="diagnostics">Diagnostics<a class="headerlink" href="#diagnostics" title="Permanent link">&para;</a></h1>
-<p><code>shiftkit.diagnostics</code> provides visualisation tools for inspecting latent spaces and training dynamics.</p>
+<h1 id="mmdtrainer">MMDTrainer<a class="headerlink" href="#mmdtrainer" title="Permanent link">&para;</a></h1>
+<p>Trains a model by minimising a combined supervised + domain alignment loss:</p>
+<div class="arithmatex">\[\mathcal{L} = \underbrace{\text{CrossEntropy}(\hat{y}_\text{src}, y_\text{src})}_{\text{supervised}} + \lambda \cdot \underbrace{\widehat{\text{MMD}}^2(z_\text{src}, z_\text{tgt})}_{\text{domain alignment}}\]</div>
+<p>The classifier head is supervised on source labels only. The encoder is pulled
+toward domain-invariant representations by minimising the <strong>Maximum Mean
+Discrepancy (MMD)</strong> between source and target latent vectors.</p>
+<blockquote>
+<p><strong>Reference:</strong> Gretton, A., Borgwardt, K. M., Rasch, M. J., Schölkopf, B., &amp; Smola, A. (2012).
+A Kernel Two-Sample Test. <em>Journal of Machine Learning Research</em>, 13, 723–773.
+<a href="https://jmlr.csail.mit.edu/papers/volume13/gretton12a/gretton12a.pdf">[PDF]</a></p>
+</blockquote>
 <hr />
-<h2 id="plot_latent_space">plot_latent_space<a class="headerlink" href="#plot_latent_space" title="Permanent link">&para;</a></h2>
-<p>Encode samples from source and target loaders, project to 2-D with t-SNE, and plot two panels:</p>
-<ul>
-<li><strong>Left</strong> — coloured by domain (source = blue, target = orange)</li>
-<li><strong>Right</strong> — coloured by class label (10 colours)</li>
-</ul>
-<div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.diagnostics</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_latent_space</span>
+<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">MMDTrainer</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">fig</span> <span class="o">=</span> <span class="n">plot_latent_space</span><span class="p">(</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">MMDTrainer</span><span class="p">(</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">source_loader</span><span class="o">=</span><span class="n">test_src</span><span class="p">,</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">target_loader</span><span class="o">=</span><span class="n">test_tgt</span><span class="p">,</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">max_samples</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;CNN + MMD (noise_std=0.3, λ=1.0)&quot;</span><span class="p">,</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;outputs/latent_space.png&quot;</span><span class="p">,</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="p">)</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">source_loader</span><span class="o">=</span><span class="n">train_src</span><span class="p">,</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">target_loader</span><span class="o">=</span><span class="n">train_tgt</span><span class="p">,</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">mmd_weight</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="p">)</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="n">history</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="n">result</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">test_tgt</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="s2">&quot;target-test&quot;</span><span class="p">)</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Target accuracy: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
 </span></code></pre></div>
-<h3 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="constructor">Constructor<a class="headerlink" href="#constructor" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -993,257 +978,141 @@
 <td><code>model</code></td>
 <td><code>nn.Module</code></td>
 <td>—</td>
-<td>Trained model with <code>.encode()</code> method</td>
+<td>Network with <code>.encode()</code> and <code>.classify()</code> methods</td>
 </tr>
 <tr>
 <td><code>source_loader</code></td>
 <td><code>DataLoader</code></td>
 <td>—</td>
-<td>Source domain DataLoader</td>
+<td>Labelled source DataLoader</td>
 </tr>
 <tr>
 <td><code>target_loader</code></td>
 <td><code>DataLoader</code></td>
 <td>—</td>
-<td>Target domain DataLoader</td>
+<td>Target DataLoader (labels used for <code>tgt_acc</code> tracking only)</td>
 </tr>
 <tr>
-<td><code>max_samples</code></td>
-<td><code>int</code></td>
-<td><code>2000</code></td>
-<td>Max samples per domain (keeps t-SNE tractable)</td>
-</tr>
-<tr>
-<td><code>tsne_perplexity</code></td>
+<td><code>mmd_weight</code></td>
 <td><code>float</code></td>
-<td><code>30.0</code></td>
-<td>t-SNE perplexity</td>
+<td><code>1.0</code></td>
+<td>λ — weight on the MMD regularisation term</td>
 </tr>
 <tr>
-<td><code>tsne_n_iter</code></td>
-<td><code>int</code></td>
-<td><code>1000</code></td>
-<td>t-SNE number of iterations</td>
-</tr>
-<tr>
-<td><code>title</code></td>
-<td><code>str</code></td>
-<td><code>"Latent Space"</code></td>
-<td>Figure suptitle</td>
-</tr>
-<tr>
-<td><code>save_path</code></td>
-<td><code>str \| None</code></td>
-<td><code>None</code></td>
-<td>If set, save figure to this path</td>
-</tr>
-<tr>
-<td><code>class_names</code></td>
-<td><code>list \| None</code></td>
-<td><code>None</code></td>
-<td>Class label strings; uses integers if <code>None</code></td>
-</tr>
-<tr>
-<td><code>show</code></td>
-<td><code>bool</code></td>
-<td><code>True</code></td>
-<td>Whether to call <code>plt.show()</code></td>
-</tr>
-</tbody>
-</table>
-<p><strong>Returns:</strong> <code>matplotlib.figure.Figure</code></p>
-<div class="admonition tip">
-<p class="admonition-title">Interpreting the domain panel</p>
-<p>A well-adapted model will show blue and orange points <strong>interleaved</strong> in the domain panel — the encoder has learned to ignore domain-specific variation. A non-adapted model will show two clearly separated clusters.</p>
-</div>
-<hr />
-<h2 id="compare_latent_spaces">compare_latent_spaces<a class="headerlink" href="#compare_latent_spaces" title="Permanent link">&para;</a></h2>
-<p>Compare latent spaces of <strong>multiple models</strong> in a single figure. Each model gets one row with the same two panels (by domain, by class). Rows appear in dict insertion order.</p>
-<div class="highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.diagnostics</span><span class="w"> </span><span class="kn">import</span> <span class="n">compare_latent_spaces</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">fig</span> <span class="o">=</span> <span class="n">compare_latent_spaces</span><span class="p">(</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">models</span><span class="o">=</span><span class="p">{</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>        <span class="s2">&quot;Source Only&quot;</span><span class="p">:</span> <span class="n">model_baseline</span><span class="p">,</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>        <span class="s2">&quot;MMD&quot;</span><span class="p">:</span>         <span class="n">model_mmd</span><span class="p">,</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="p">},</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">source_loader</span><span class="o">=</span><span class="n">test_src</span><span class="p">,</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">target_loader</span><span class="o">=</span><span class="n">test_tgt</span><span class="p">,</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="n">max_samples</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;outputs/latent_space_comparison.png&quot;</span><span class="p">,</span>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="p">)</span>
-</span></code></pre></div>
-<p><strong>Output:</strong></p>
-<p><img alt="Latent Space Comparison" src="../assets/latent_space_comparison.png" />
-<em>Top row: Source-Only baseline. Bottom row: MMD-adapted model. Left column: by domain, right column: by class label.</em></p>
-<h3 id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>models</code></td>
-<td><code>dict[str, nn.Module]</code></td>
-<td>—</td>
-<td><code>{label: model}</code> mapping — one row per entry</td>
-</tr>
-<tr>
-<td><code>source_loader</code></td>
-<td><code>DataLoader</code></td>
-<td>—</td>
-<td>Source domain DataLoader</td>
-</tr>
-<tr>
-<td><code>target_loader</code></td>
-<td><code>DataLoader</code></td>
-<td>—</td>
-<td>Target domain DataLoader</td>
-</tr>
-<tr>
-<td><code>max_samples</code></td>
-<td><code>int</code></td>
-<td><code>2000</code></td>
-<td>Max samples per domain per model</td>
-</tr>
-<tr>
-<td><code>tsne_perplexity</code></td>
+<td><code>lr</code></td>
 <td><code>float</code></td>
-<td><code>30.0</code></td>
-<td>t-SNE perplexity</td>
+<td><code>1e-3</code></td>
+<td>Adam learning rate</td>
 </tr>
 <tr>
-<td><code>tsne_n_iter</code></td>
-<td><code>int</code></td>
-<td><code>1000</code></td>
-<td>t-SNE number of iterations</td>
-</tr>
-<tr>
-<td><code>save_path</code></td>
+<td><code>device</code></td>
 <td><code>str \| None</code></td>
 <td><code>None</code></td>
-<td>If set, save figure to this path</td>
+<td><code>'cuda'</code>, <code>'mps'</code>, or <code>'cpu'</code>; auto-detected if <code>None</code></td>
 </tr>
 <tr>
-<td><code>class_names</code></td>
-<td><code>list \| None</code></td>
+<td><code>mmd_sigmas</code></td>
+<td><code>list[float] \| None</code></td>
 <td><code>None</code></td>
-<td>Class label strings; uses integers if <code>None</code></td>
-</tr>
-<tr>
-<td><code>show</code></td>
-<td><code>bool</code></td>
-<td><code>True</code></td>
-<td>Whether to call <code>plt.show()</code></td>
+<td>RBF kernel bandwidths; defaults to <code>[0.1, 1, 5, 10, 50]</code></td>
 </tr>
 </tbody>
 </table>
-<p><strong>Returns:</strong> <code>matplotlib.figure.Figure</code></p>
 <hr />
-<h2 id="plot_training_history">plot_training_history<a class="headerlink" href="#plot_training_history" title="Permanent link">&para;</a></h2>
-<p>Plot CE loss and accuracy curves from one or more training histories on the same axes.</p>
-<ul>
-<li><strong>Left panel</strong> — cross-entropy loss per model</li>
-<li><strong>Right panel</strong> — source accuracy (solid) and target accuracy (dashed) per model</li>
-</ul>
-<div class="highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.diagnostics</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_training_history</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1"># Single history (backward-compatible)</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">plot_training_history</span><span class="p">(</span><span class="n">history_mmd</span><span class="p">)</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="c1"># Multi-model comparison</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">fig</span> <span class="o">=</span> <span class="n">plot_training_history</span><span class="p">(</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">histories</span><span class="o">=</span><span class="p">{</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>        <span class="s2">&quot;Source Only&quot;</span><span class="p">:</span> <span class="n">history_baseline</span><span class="p">,</span>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>        <span class="s2">&quot;MMD&quot;</span><span class="p">:</span>         <span class="n">history_mmd</span><span class="p">,</span>
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="p">},</span>
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>    <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;outputs/training_history.png&quot;</span><span class="p">,</span>
-</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="p">)</span>
-</span></code></pre></div>
-<p><strong>Output:</strong></p>
-<p><img alt="Training History" src="../assets/training_history.png" />
-<em>Left: CE loss for both models. Right: source accuracy (solid) and target accuracy (dashed). The gap between solid and dashed lines shows the domain shift.</em></p>
-<h3 id="parameters_2">Parameters<a class="headerlink" href="#parameters_2" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>histories</code></td>
-<td><code>list \| dict[str, list]</code></td>
-<td>—</td>
-<td>Single history list, or <code>{label: history}</code> dict for multi-model overlay</td>
-</tr>
-<tr>
-<td><code>save_path</code></td>
-<td><code>str \| None</code></td>
-<td><code>None</code></td>
-<td>If set, save figure to this path</td>
-</tr>
-<tr>
-<td><code>show</code></td>
-<td><code>bool</code></td>
-<td><code>True</code></td>
-<td>Whether to call <code>plt.show()</code></td>
-</tr>
-</tbody>
-</table>
-<p><strong>Returns:</strong> <code>matplotlib.figure.Figure</code></p>
-<h3 id="history-dict-format">History dict format<a class="headerlink" href="#history-dict-format" title="Permanent link">&para;</a></h3>
-<p>Each history is a <code>list[dict]</code> returned by <code>trainer.fit()</code>. Required keys:</p>
+<h2 id="fitepochs10"><code>fit(epochs=10)</code><a class="headerlink" href="#fitepochs10" title="Permanent link">&para;</a></h2>
+<p>Train for <code>epochs</code> epochs and return the history.</p>
+<p><strong>Returns:</strong> <code>list[dict]</code> — one dict per epoch:</p>
 <table>
 <thead>
 <tr>
 <th>Key</th>
-<th>Type</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>epoch</code></td>
-<td><code>int</code></td>
-<td>Epoch number</td>
+<td>Epoch number (1-indexed)</td>
 </tr>
 <tr>
 <td><code>ce_loss</code></td>
-<td><code>float</code></td>
-<td>Cross-entropy loss</td>
+<td>Mean cross-entropy loss</td>
 </tr>
 <tr>
 <td><code>mmd_loss</code></td>
-<td><code>float</code></td>
-<td>MMD² loss (<code>0.0</code> for <code>SourceOnlyTrainer</code>)</td>
+<td>Mean MMD² loss</td>
 </tr>
 <tr>
 <td><code>total_loss</code></td>
-<td><code>float</code></td>
-<td>Total loss</td>
+<td>Mean total loss (CE + λ·MMD²)</td>
 </tr>
 <tr>
 <td><code>src_acc</code></td>
-<td><code>float</code></td>
-<td>Source accuracy in <code>[0, 1]</code></td>
+<td>Source domain training accuracy</td>
 </tr>
 <tr>
 <td><code>tgt_acc</code></td>
-<td><code>float</code></td>
-<td>Target accuracy in <code>[0, 1]</code></td>
+<td>Target domain accuracy (tracked, not optimised directly)</td>
 </tr>
 </tbody>
 </table>
+<hr />
+<h2 id="evaluateloader-domainsource"><code>evaluate(loader, domain="source")</code><a class="headerlink" href="#evaluateloader-domainsource" title="Permanent link">&para;</a></h2>
+<p>Compute classification accuracy on any labelled DataLoader.</p>
+<p><strong>Returns:</strong> <code>dict</code> with keys <code>domain</code> (str), <code>accuracy</code> (float), <code>n_samples</code> (int).</p>
+<hr />
+<h2 id="mmdloss">MMDLoss<a class="headerlink" href="#mmdloss" title="Permanent link">&para;</a></h2>
+<p>The raw MMD² loss module, exposed for use in custom training loops.</p>
+<div class="arithmatex">\[\widehat{\text{MMD}}^2(P, Q) = \sum_{\sigma} \left[ \mathbb{E}[k_\sigma(x,x')] - 2\,\mathbb{E}[k_\sigma(x,y)] + \mathbb{E}[k_\sigma(y,y')] \right]\]</div>
+<p>where <span class="arithmatex">\(k_\sigma(x, y) = \exp\!\left(-\|x-y\|^2 / 2\sigma^2\right)\)</span> is the RBF kernel.
+Summing over multiple bandwidths σ captures domain discrepancy at different scales.</p>
+<div class="highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">MMDLoss</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">mmd</span> <span class="o">=</span> <span class="n">MMDLoss</span><span class="p">(</span><span class="n">sigmas</span><span class="o">=</span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">50.0</span><span class="p">])</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">loss</span> <span class="o">=</span> <span class="n">mmd</span><span class="p">(</span><span class="n">z_source</span><span class="p">,</span> <span class="n">z_target</span><span class="p">)</span>   <span class="c1"># scalar tensor</span>
+</span></code></pre></div>
+<h3 id="constructor_1">Constructor<a class="headerlink" href="#constructor_1" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sigmas</code></td>
+<td><code>list[float] \| None</code></td>
+<td><code>None</code></td>
+<td>Kernel bandwidths; defaults to <code>[0.1, 1.0, 5.0, 10.0, 50.0]</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="forwardsource-target"><code>forward(source, target)</code><a class="headerlink" href="#forwardsource-target" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>source</code></td>
+<td><code>Tensor (n, d)</code></td>
+<td>Latent vectors from source domain</td>
+</tr>
+<tr>
+<td><code>target</code></td>
+<td><code>Tensor (m, d)</code></td>
+<td>Latent vectors from target domain</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Returns:</strong> Scalar MMD² estimate.</p>
 
 
 
@@ -1299,10 +1168,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "navigation.instant", "toc.follow", "content.code.copy", "search.highlight", "search.suggest"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "navigation.instant", "toc.follow", "content.code.copy", "search.highlight", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       
