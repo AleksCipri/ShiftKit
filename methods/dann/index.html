@@ -665,6 +665,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#warmup-phase" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Warmup phase
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#alpha-scheduling" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -913,6 +924,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#warmup-phase" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Warmup phase
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#alpha-scheduling" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1060,13 +1082,19 @@ Domain-Adversarial Training of Neural Networks.
 <td><code>schedule_alpha</code></td>
 <td><code>bool</code></td>
 <td><code>True</code></td>
-<td>Ramp α from 0→<code>alpha</code> using the paper's sigmoid schedule</td>
+<td>Ramp α from 0→<code>alpha</code> using the paper's sigmoid schedule (counts only over the DA phase)</td>
 </tr>
 <tr>
 <td><code>discriminator_hidden</code></td>
 <td><code>int</code></td>
 <td><code>128</code></td>
 <td>Hidden dim of the domain discriminator MLP</td>
+</tr>
+<tr>
+<td><code>warmup_epochs</code></td>
+<td><code>int</code></td>
+<td><code>0</code></td>
+<td>Epochs of source-only CE pre-training before adversarial DA begins; α is held at 0 during warmup</td>
 </tr>
 <tr>
 <td><code>semantic_weight</code></td>
@@ -1145,6 +1173,25 @@ Domain-Adversarial Training of Neural Networks.
 <p>Compute classification accuracy on any labelled DataLoader.</p>
 <p><strong>Returns:</strong> <code>dict</code> with keys <code>domain</code> (str), <code>accuracy</code> (float), <code>n_samples</code> (int).</p>
 <hr />
+<h2 id="warmup-phase">Warmup phase<a class="headerlink" href="#warmup-phase" title="Permanent link">&para;</a></h2>
+<p>Set <code>warmup_epochs &gt; 0</code> to run source-only CE training before the adversarial
+loop begins. During warmup the GRL strength α is held at 0 and the discriminator
+receives no useful gradients, so neither is updated. The α schedule (if enabled)
+only starts ramping <strong>after</strong> warmup ends, over the remaining DA epochs.</p>
+<div class="highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">DANNTrainer</span><span class="p">(</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">source_loader</span><span class="o">=</span><span class="n">train_src</span><span class="p">,</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">target_loader</span><span class="o">=</span><span class="n">train_tgt</span><span class="p">,</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">domain_weight</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">warmup_epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>     <span class="c1"># first 5 epochs: CE only, α=0</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">schedule_alpha</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="c1"># then ramp α from 0→1 over epochs 6–N</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="p">)</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="n">history</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">epochs</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="c1"># Epochs 1–5:  [warmup]  CE only</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="c1"># Epochs 6–20: [DANN ]   CE + λ·BCE_GRL  (α ramping 0→1)</span>
+</span></code></pre></div>
+<hr />
 <h2 id="alpha-scheduling">Alpha scheduling<a class="headerlink" href="#alpha-scheduling" title="Permanent link">&para;</a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1165,17 +1212,17 @@ pseudo-labeled target features:</p>
 <div class="arithmatex">\[\mathbf{c}_k^\text{tgt} \leftarrow (1 - \beta)\,\mathbf{c}_k^\text{tgt} + \beta \cdot \overline{z}_k^\text{tgt}\]</div>
 <p>The EMA stabilises alignment when early pseudo-labels are noisy, since target
 centroids evolve smoothly rather than jumping each batch.</p>
-<div class="highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">DANNTrainer</span><span class="p">(</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">source_loader</span><span class="o">=</span><span class="n">train_src</span><span class="p">,</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">target_loader</span><span class="o">=</span><span class="n">train_tgt</span><span class="p">,</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">domain_weight</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">semantic_weight</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>     <span class="c1"># enable centroid alignment</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">centroid_momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>   <span class="c1"># β — how fast centroids track the current batch</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="p">)</span>
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="n">history</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">DANNTrainer</span><span class="p">(</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">source_loader</span><span class="o">=</span><span class="n">train_src</span><span class="p">,</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">target_loader</span><span class="o">=</span><span class="n">train_tgt</span><span class="p">,</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">domain_weight</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">semantic_weight</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>     <span class="c1"># enable centroid alignment</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">centroid_momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>   <span class="c1"># β — how fast centroids track the current batch</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="p">)</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="n">history</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </span></code></pre></div>
 <div class="admonition tip">
 <p class="admonition-title">Tuning tips</p>
@@ -1196,17 +1243,17 @@ Learning Semantic Representations for Unsupervised Domain Adaptation.
 <hr />
 <h2 id="gradientreversallayer">GradientReversalLayer<a class="headerlink" href="#gradientreversallayer" title="Permanent link">&para;</a></h2>
 <p>The GRL is also exposed as a standalone module for use in custom training loops:</p>
-<div class="highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">GradientReversalLayer</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">grl</span> <span class="o">=</span> <span class="n">GradientReversalLayer</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">z_reversed</span> <span class="o">=</span> <span class="n">grl</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>   <span class="c1"># identity forward, negated gradient backward</span>
+<div class="highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">GradientReversalLayer</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">grl</span> <span class="o">=</span> <span class="n">GradientReversalLayer</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">z_reversed</span> <span class="o">=</span> <span class="n">grl</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>   <span class="c1"># identity forward, negated gradient backward</span>
 </span></code></pre></div>
 <h2 id="domaindiscriminator">DomainDiscriminator<a class="headerlink" href="#domaindiscriminator" title="Permanent link">&para;</a></h2>
 <p>The domain discriminator is also available standalone:</p>
-<div class="highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">DomainDiscriminator</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">discriminator</span> <span class="o">=</span> <span class="n">DomainDiscriminator</span><span class="p">(</span><span class="n">latent_dim</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">logits</span> <span class="o">=</span> <span class="n">discriminator</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>   <span class="c1"># (B, 1) — source=0, target=1</span>
+<div class="highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">DomainDiscriminator</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">discriminator</span> <span class="o">=</span> <span class="n">DomainDiscriminator</span><span class="p">(</span><span class="n">latent_dim</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">logits</span> <span class="o">=</span> <span class="n">discriminator</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>   <span class="c1"># (B, 1) — source=0, target=1</span>
 </span></code></pre></div>
 
 
