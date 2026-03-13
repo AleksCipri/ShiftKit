@@ -3,8 +3,9 @@ Diagnostic visualisations for domain adaptation.
 
 plot_latent_space
 -----------------
-Encodes samples from source and target loaders, reduces to 2-D with t-SNE,
-and produces two side-by-side scatter plots:
+Encodes samples from source and target loaders, reduces to 2-D with a chosen
+projection method (t-SNE, Isomap, or UMAP), and produces two side-by-side
+scatter plots:
   - left panel:  coloured by domain (source / target)
   - right panel: coloured by class label
 
@@ -15,14 +16,13 @@ Left panel: CE loss per model. Right panel: source & target accuracy per model.
 
 compare_latent_spaces
 ---------------------
-Side-by-side 2×2 grid comparing two models' latent spaces (e.g. baseline vs DA).
+Side-by-side grid comparing multiple models' latent spaces (one row per model).
 """
 
 import torch
 import torch.nn as nn
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.manifold import TSNE
 from torch.utils.data import DataLoader
 from typing import Optional, Union
 
@@ -58,19 +58,63 @@ def _device_of(model: nn.Module) -> torch.device:
         return torch.device("cpu")
 
 
-def _run_tsne(z_src, z_tgt, perplexity, n_iter):
+_PROJ_AXIS_LABELS = {
+    "tsne":   ("t-SNE 1",   "t-SNE 2"),
+    "isomap": ("Isomap 1",  "Isomap 2"),
+    "umap":   ("UMAP 1",    "UMAP 2"),
+}
+
+
+def _run_projection(
+    z_src: np.ndarray,
+    z_tgt: np.ndarray,
+    method: str,
+    perplexity: float,
+    n_iter: int,
+    n_neighbors: int,
+    min_dist: float,
+) -> tuple:
+    """
+    Reduce concatenated [z_src; z_tgt] to 2-D using the chosen method.
+
+    Returns (z2d, domain_labels) where domain_labels is 0=source, 1=target.
+    """
     z_all = np.concatenate([z_src, z_tgt], axis=0)
     domain_labels = np.array([0] * len(z_src) + [1] * len(z_tgt))
-    class_labels  = np.concatenate([
-        np.zeros(len(z_src), dtype=int),   # placeholder; caller fills in
-        np.zeros(len(z_tgt), dtype=int),
-    ])
-    print(f"  Running t-SNE on {len(z_all)} points (dim={z_all.shape[1]}) …")
-    tsne = TSNE(
-        n_components=2, perplexity=perplexity, n_iter=n_iter,
-        random_state=42, init="pca", learning_rate="auto",
-    )
-    return tsne.fit_transform(z_all), domain_labels
+    method = method.lower()
+
+    if method not in _PROJ_AXIS_LABELS:
+        raise ValueError(
+            f"Unknown projection {method!r}. Choose from: "
+            + ", ".join(f"'{m}'" for m in _PROJ_AXIS_LABELS)
+        )
+
+    print(f"  Running {method.upper()} on {len(z_all)} points "
+          f"(dim={z_all.shape[1]}) …")
+
+    if method == "tsne":
+        from sklearn.manifold import TSNE
+        reducer = TSNE(
+            n_components=2, perplexity=perplexity, n_iter=n_iter,
+            random_state=42, init="pca", learning_rate="auto",
+        )
+    elif method == "isomap":
+        from sklearn.manifold import Isomap
+        reducer = Isomap(n_components=2, n_neighbors=n_neighbors)
+    elif method == "umap":
+        try:
+            from umap import UMAP
+        except ImportError as e:
+            raise ImportError(
+                "umap-learn is required for UMAP projection. "
+                "Install it with:  pip install umap-learn"
+            ) from e
+        reducer = UMAP(
+            n_components=2, n_neighbors=n_neighbors,
+            min_dist=min_dist, random_state=42,
+        )
+
+    return reducer.fit_transform(z_all), domain_labels
 
 
 def _draw_domain_panel(ax, z2d, domain_labels, title):
@@ -85,9 +129,9 @@ def _draw_domain_panel(ax, z2d, domain_labels, title):
 
 
 def _draw_class_panel(ax, z2d, y_src, y_tgt, title, class_names):
-    class_labels  = np.concatenate([y_src, y_tgt])
-    unique        = sorted(np.unique(class_labels))
-    palette       = plt.cm.tab10(np.linspace(0, 1, max(len(unique), 10)))
+    class_labels = np.concatenate([y_src, y_tgt])
+    unique       = sorted(np.unique(class_labels))
+    palette      = plt.cm.tab10(np.linspace(0, 1, max(len(unique), 10)))
     for i, c in enumerate(unique):
         mask  = class_labels == c
         label = class_names[c] if class_names else str(c)
@@ -105,18 +149,29 @@ def plot_latent_space(
     source_loader: DataLoader,
     target_loader: DataLoader,
     max_samples: int = 2000,
-    tsne_perplexity: float = 30.0,
-    tsne_n_iter: int = 1000,
+    projection: str = "tsne",
+    perplexity: float = 30.0,
+    n_iter: int = 1000,
+    n_neighbors: int = 15,
+    min_dist: float = 0.1,
     title: str = "Latent Space",
     save_path: Optional[str] = None,
     class_names: Optional[list] = None,
     show: bool = True,
 ) -> plt.Figure:
     """
-    Plot 2-D t-SNE projections of the latent space for a single model.
+    Plot 2-D projections of the latent space for a single model.
 
     Left panel  — coloured by domain (source = blue, target = orange)
     Right panel — coloured by class label
+
+    Parameters
+    ----------
+    projection  : dimensionality reduction method — 'tsne', 'isomap', or 'umap'
+    perplexity  : t-SNE perplexity (t-SNE only)
+    n_iter      : t-SNE iterations (t-SNE only)
+    n_neighbors : neighbourhood size (Isomap and UMAP)
+    min_dist    : minimum distance between embedded points (UMAP only)
     """
     device = _device_of(model)
     print("Collecting source embeddings …")
@@ -124,14 +179,17 @@ def plot_latent_space(
     print("Collecting target embeddings …")
     z_tgt, y_tgt = _collect_embeddings(model, target_loader, device, max_samples)
 
-    z2d, domain_labels = _run_tsne(z_src, z_tgt, tsne_perplexity, tsne_n_iter)
+    z2d, domain_labels = _run_projection(
+        z_src, z_tgt, projection, perplexity, n_iter, n_neighbors, min_dist
+    )
+    xlabel, ylabel = _PROJ_AXIS_LABELS[projection.lower()]
 
     fig, axes = plt.subplots(1, 2, figsize=(14, 6))
     fig.suptitle(title, fontsize=13, fontweight="bold")
     _draw_domain_panel(axes[0], z2d, domain_labels, "By Domain")
     _draw_class_panel (axes[1], z2d, y_src, y_tgt,  "By Class", class_names)
-    axes[0].set_xlabel("t-SNE 1"); axes[0].set_ylabel("t-SNE 2")
-    axes[1].set_xlabel("t-SNE 1")
+    axes[0].set_xlabel(xlabel); axes[0].set_ylabel(ylabel)
+    axes[1].set_xlabel(xlabel)
 
     plt.tight_layout()
     if save_path:
@@ -147,8 +205,11 @@ def compare_latent_spaces(
     source_loader: DataLoader,
     target_loader: DataLoader,
     max_samples: int = 2000,
-    tsne_perplexity: float = 30.0,
-    tsne_n_iter: int = 1000,
+    projection: str = "tsne",
+    perplexity: float = 30.0,
+    n_iter: int = 1000,
+    n_neighbors: int = 15,
+    min_dist: float = 0.1,
     save_path: Optional[str] = None,
     class_names: Optional[list] = None,
     show: bool = True,
@@ -160,12 +221,18 @@ def compare_latent_spaces(
 
     Parameters
     ----------
-    models  : dict mapping label -> model, e.g.
-              {"Source Only": baseline, "MMD": da_model}
-              Rows appear in dict insertion order.
+    models      : dict mapping label -> model, e.g.
+                  {"Source Only": baseline, "MMD": da_model}
+                  Rows appear in dict insertion order.
+    projection  : dimensionality reduction method — 'tsne', 'isomap', or 'umap'
+    perplexity  : t-SNE perplexity (t-SNE only)
+    n_iter      : t-SNE iterations (t-SNE only)
+    n_neighbors : neighbourhood size (Isomap and UMAP)
+    min_dist    : minimum distance between embedded points (UMAP only)
     """
     model_names = list(models.keys())
     n_models    = len(model_names)
+    xlabel, ylabel = _PROJ_AXIS_LABELS[projection.lower()]
 
     fig, axes = plt.subplots(
         n_models, 2,
@@ -184,14 +251,16 @@ def compare_latent_spaces(
         print("  Collecting target embeddings …")
         z_tgt, y_tgt = _collect_embeddings(model, target_loader, device, max_samples)
 
-        z2d, domain_labels = _run_tsne(z_src, z_tgt, tsne_perplexity, tsne_n_iter)
+        z2d, domain_labels = _run_projection(
+            z_src, z_tgt, projection, perplexity, n_iter, n_neighbors, min_dist
+        )
 
         _draw_domain_panel(axes[row, 0], z2d, domain_labels, f"{name} — By Domain")
         _draw_class_panel (axes[row, 1], z2d, y_src, y_tgt,  f"{name} — By Class",
                            class_names)
-        axes[row, 0].set_xlabel("t-SNE 1")
-        axes[row, 0].set_ylabel("t-SNE 2")
-        axes[row, 1].set_xlabel("t-SNE 1")
+        axes[row, 0].set_xlabel(xlabel)
+        axes[row, 0].set_ylabel(ylabel)
+        axes[row, 1].set_xlabel(xlabel)
 
     plt.tight_layout()
     if save_path:
@@ -229,16 +298,16 @@ def plot_training_history(
 
     for i, (label, history) in enumerate(histories.items()):
         color   = colors[i]
-        epochs  = [h["epoch"]        for h in history]
-        ce      = [h["ce_loss"]      for h in history]
+        epochs  = [h["epoch"]         for h in history]
+        ce      = [h["ce_loss"]       for h in history]
         src_acc = [h["src_acc"] * 100 for h in history]
         tgt_acc = [h["tgt_acc"] * 100 for h in history]
 
         ax1.plot(epochs, ce, color=color, marker="o", ms=4, label=label)
 
-        ax2.plot(epochs, src_acc, color=color, marker="o",  ms=4,
+        ax2.plot(epochs, src_acc, color=color, marker="o", ms=4,
                  ls="-",  label=f"{label} — Source")
-        ax2.plot(epochs, tgt_acc, color=color, marker="s",  ms=4,
+        ax2.plot(epochs, tgt_acc, color=color, marker="s", ms=4,
                  ls="--", label=f"{label} — Target")
 
     ax1.set_xlabel("Epoch"); ax1.set_ylabel("CE Loss")

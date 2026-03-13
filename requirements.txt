@@ -4,3 +4,6 @@ numpy>=1.24.0
 matplotlib>=3.7.0
 scikit-learn>=1.2.0
 tqdm>=4.65.0
+
+# Optional — required only for UMAP projection in diagnostics
+# umap-learn>=0.5.0

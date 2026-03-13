@@ -6,23 +6,36 @@
 
 ## plot_latent_space
 
-Encode samples from source and target loaders, project to 2-D with t-SNE, and plot two panels:
+Encode samples from source and target loaders, project to 2-D, and plot two panels:
 
 - **Left** — coloured by domain (source = blue, target = orange)
 - **Right** — coloured by class label (10 colours)
 
+Three projection methods are available via the `projection` parameter:
+[t-SNE](#t-sne), [Isomap](#isomap), and [UMAP](#umap).
+
 ```python
 from shiftkit.diagnostics import plot_latent_space
 
+# t-SNE (default)
 fig = plot_latent_space(
     model=model,
     source_loader=test_src,
     target_loader=test_tgt,
     max_samples=2000,
-    title="CNN + MMD (noise_std=0.3, λ=1.0)",
+    projection="tsne",
+    title="CNN + MMD",
     save_path="outputs/latent_space.png",
     show=False,
 )
+
+# Isomap
+fig = plot_latent_space(model, test_src, test_tgt,
+                        projection="isomap", n_neighbors=10)
+
+# UMAP
+fig = plot_latent_space(model, test_src, test_tgt,
+                        projection="umap", n_neighbors=15, min_dist=0.1)
 ```
 
 ### Parameters
@@ -32,9 +45,12 @@ fig = plot_latent_space(
 | `model` | `nn.Module` | — | Trained model with `.encode()` method |
 | `source_loader` | `DataLoader` | — | Source domain DataLoader |
 | `target_loader` | `DataLoader` | — | Target domain DataLoader |
-| `max_samples` | `int` | `2000` | Max samples per domain (keeps t-SNE tractable) |
-| `tsne_perplexity` | `float` | `30.0` | t-SNE perplexity |
-| `tsne_n_iter` | `int` | `1000` | t-SNE number of iterations |
+| `max_samples` | `int` | `2000` | Max samples per domain |
+| `projection` | `str` | `"tsne"` | Projection method: `"tsne"`, `"isomap"`, or `"umap"` |
+| `perplexity` | `float` | `30.0` | t-SNE perplexity *(t-SNE only)* |
+| `n_iter` | `int` | `1000` | t-SNE number of iterations *(t-SNE only)* |
+| `n_neighbors` | `int` | `15` | Neighbourhood size *(Isomap and UMAP)* |
+| `min_dist` | `float` | `0.1` | Minimum distance between embedded points *(UMAP only)* |
 | `title` | `str` | `"Latent Space"` | Figure suptitle |
 | `save_path` | `str \| None` | `None` | If set, save figure to this path |
 | `class_names` | `list \| None` | `None` | Class label strings; uses integers if `None` |
@@ -58,10 +74,12 @@ fig = compare_latent_spaces(
     models={
         "Source Only": model_baseline,
         "MMD":         model_mmd,
+        "DANN":        model_dann,
     },
     source_loader=test_src,
     target_loader=test_tgt,
     max_samples=2000,
+    projection="tsne",          # or "isomap" / "umap"
     save_path="outputs/latent_space_comparison.png",
     show=False,
 )
@@ -80,13 +98,78 @@ fig = compare_latent_spaces(
 | `source_loader` | `DataLoader` | — | Source domain DataLoader |
 | `target_loader` | `DataLoader` | — | Target domain DataLoader |
 | `max_samples` | `int` | `2000` | Max samples per domain per model |
-| `tsne_perplexity` | `float` | `30.0` | t-SNE perplexity |
-| `tsne_n_iter` | `int` | `1000` | t-SNE number of iterations |
+| `projection` | `str` | `"tsne"` | Projection method: `"tsne"`, `"isomap"`, or `"umap"` |
+| `perplexity` | `float` | `30.0` | t-SNE perplexity *(t-SNE only)* |
+| `n_iter` | `int` | `1000` | t-SNE iterations *(t-SNE only)* |
+| `n_neighbors` | `int` | `15` | Neighbourhood size *(Isomap and UMAP)* |
+| `min_dist` | `float` | `0.1` | Minimum distance between points *(UMAP only)* |
 | `save_path` | `str \| None` | `None` | If set, save figure to this path |
 | `class_names` | `list \| None` | `None` | Class label strings; uses integers if `None` |
 | `show` | `bool` | `True` | Whether to call `plt.show()` |
 
 **Returns:** `matplotlib.figure.Figure`
+
+---
+
+## Projection methods
+
+### t-SNE
+
+**t-Distributed Stochastic Neighbour Embedding** converts high-dimensional
+similarities into a probability distribution and minimises the KL divergence
+between this distribution and one over the 2-D embedding. It excels at revealing
+tight clusters but does not preserve global structure, and distances between
+clusters are not directly interpretable.
+
+Key hyperparameter: `perplexity` (5–50). Higher values consider larger
+neighbourhoods and produce coarser cluster structure.
+
+> **Reference:** van der Maaten, L., & Hinton, G. (2008).
+> Visualizing Data using t-SNE.
+> *Journal of Machine Learning Research*, 9, 2579–2605.
+> [[PDF]](https://www.jmlr.org/papers/volume9/vandermaaten08a/vandermaaten08a.pdf)
+
+---
+
+### Isomap
+
+**Isometric Mapping** extends classical MDS by replacing Euclidean distances
+with shortest-path (geodesic) distances on the data manifold, estimated from a
+k-nearest-neighbour graph. Unlike t-SNE, Isomap is deterministic and better
+preserves **global geometry**, making relative distances between clusters more
+meaningful.
+
+Key hyperparameter: `n_neighbors` — the neighbourhood size for the graph. Smaller values
+capture fine local structure; larger values smooth the manifold estimate.
+
+> **Reference:** Tenenbaum, J. B., de Silva, V., & Langford, J. C. (2000).
+> A Global Geometric Framework for Nonlinear Dimensionality Reduction.
+> *Science*, 290(5500), 2319–2323.
+> [[PDF]](https://www.robots.ox.ac.uk/~az/lectures/ml/tenenbaum-isomap-Science2000.pdf)
+
+---
+
+### UMAP
+
+**Uniform Manifold Approximation and Projection** constructs a fuzzy topological
+representation of the data and optimises a low-dimensional embedding to have a
+similar topological structure. It is significantly **faster** than t-SNE on large
+datasets and better preserves **both local and global structure**.
+
+Key hyperparameters:
+
+- `n_neighbors` — controls the balance between local and global structure. Smaller values focus on local neighbourhood; larger values give a more global view.
+- `min_dist` — minimum distance between embedded points. Smaller values pack clusters more tightly; larger values spread them out.
+
+!!! note "UMAP requires an optional dependency"
+    ```bash
+    pip install umap-learn
+    ```
+
+> **Reference:** McInnes, L., Healy, J., & Melville, J. (2018).
+> UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction.
+> *arXiv:1802.03426*.
+> [[PDF]](https://arxiv.org/pdf/1802.03426)
 
 ---
 
@@ -108,6 +191,7 @@ fig = plot_training_history(
     histories={
         "Source Only": history_baseline,
         "MMD":         history_mmd,
+        "DANN":        history_dann,
     },
     save_path="outputs/training_history.png",
     show=False,
