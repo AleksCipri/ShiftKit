@@ -889,6 +889,9 @@
 <p>Trains a model by minimising a combined loss:</p>
 <div class="arithmatex">\[\mathcal{L} = \underbrace{\text{CrossEntropy}(\hat{y}_\text{src}, y_\text{src})}_{\text{supervised}} + \lambda \cdot \underbrace{\widehat{\text{MMD}}^2(z_\text{src}, z_\text{tgt})}_{\text{domain alignment}}\]</div>
 <p>The classifier head is only supervised on source labels. The encoder is pulled toward domain-invariant representations by minimising the MMD between source and target latent vectors.</p>
+<blockquote>
+<p><strong>Reference:</strong> Gretton, A., Borgwardt, K. M., Rasch, M. J., Schölkopf, B., &amp; Smola, A. (2012). A Kernel Two-Sample Test. <em>Journal of Machine Learning Research</em>, 13, 723–773. <a href="https://jmlr.csail.mit.edu/papers/volume13/gretton12a/gretton12a.pdf">[PDF]</a></p>
+</blockquote>
 <div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">MMDTrainer</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">MMDTrainer</span><span class="p">(</span>
