@@ -19,7 +19,7 @@ $$\mathcal{S}_\sigma(\mu,\nu) = \text{OT}_\sigma(\mu,\nu) - \tfrac{1}{2}\text{OT
 The log term regularises η, preventing collapse to zero or unbounded growth.
 
 ```
-encoder(x) ──► z_src ──► classify(z_src) ──► CE loss ──────--┐
+encoder(x) ──► z_src ──► classify(z_src) ──► CE loss ────────┐
 encoder(x) ──► z_tgt ──►                                     ├─► ℒ (weighted)
                Sinkhorn_σ(z_src, z_tgt) ──► DA loss ─────────┘
                ↑ σ recomputed each batch from feature distances

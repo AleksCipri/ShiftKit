@@ -101,8 +101,65 @@ img, label = ds[0]   # img is a clipped noisy tensor in [0, 1]
 
 ---
 
+## SyntheticGraphDataset
+
+A purely synthetic graph classification dataset designed as a minimal benchmark for **graph-based domain adaptation**. No download required — graphs are generated on the fly.
+
+Each sample is a small graph with **N=10 nodes** and **2 classes**:
+
+| Class | Generator | Structure |
+|-------|-----------|-----------|
+| 0 | Stochastic Block Model (SBM) | Two tightly-connected communities (p_in=0.7, p_out=0.05) |
+| 1 | Erdős–Rényi (ER) | Uniform random edges (p=0.25) |
+
+**Domain shift** is introduced by two mechanisms in the target domain:
+
+- **Feature noise**: node features have higher Gaussian noise (σ=0.5 vs σ=0.1 in the source)
+- **Edge flips**: each edge is independently flipped with probability 5%
+
+**Tensor format** — each sample `x` has shape `(N, N + feat_dim)`. The first `N` columns are the adjacency matrix; the remaining columns are node features `[degree / (N-1), class-offset Gaussian noise]`. This packed format is compatible with standard `DataLoader` batching without requiring PyTorch Geometric.
+
+```python
+from shiftkit.data.datasets import SyntheticGraphDataset
+from torch.utils.data import DataLoader
+
+src_ds = SyntheticGraphDataset(feature_noise=0.1, edge_flip_prob=0.0)
+tgt_ds = SyntheticGraphDataset(feature_noise=0.5, edge_flip_prob=0.05, seed=99)
+
+src_loader = DataLoader(src_ds, batch_size=32, shuffle=True)
+x, y = next(iter(src_loader))
+# x: (32, 10, 14)   — 10 nodes, 10-col adj + 4-col features
+# y: (32,)          — class labels {0, 1}
+```
+
+Or via `DataManager`:
+
+```python
+dm = DataManager(batch_size=32)
+train_src, train_tgt = dm.load("synthetic_graphs", train=True)
+test_src,  test_tgt  = dm.load("synthetic_graphs", train=False)
+```
+
+### Constructor
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `n_graphs` | `int` | `1000` | Total number of graphs (split 80/20 train/test) |
+| `n_nodes` | `int` | `10` | Number of nodes per graph |
+| `feat_dim` | `int` | `4` | Number of node feature dimensions |
+| `feature_noise` | `float` | `0.1` | Std dev of additive Gaussian feature noise |
+| `edge_flip_prob` | `float` | `0.0` | Probability of flipping each edge |
+| `p_in` | `float` | `0.7` | SBM within-community edge probability (class 0) |
+| `p_out` | `float` | `0.05` | SBM between-community edge probability (class 0) |
+| `p_er` | `float` | `0.25` | Erdős–Rényi edge probability (class 1) |
+| `train` | `bool` | `True` | If `True` return training split (first 80%), else test split |
+| `seed` | `int` | `42` | Random seed for reproducibility |
+
+---
+
 ## Built-in dataset pairs
 
 | Key | Source | Target | Extra kwargs |
 |-----|--------|--------|-------------|
 | `"mnist_noisy_mnist"` | `torchvision.MNIST` | `NoisyMNIST` | `noise_std` (default `0.3`) |
+| `"synthetic_graphs"` | `SyntheticGraphDataset` (noise=0.1) | `SyntheticGraphDataset` (noise=0.5, flip=0.05) | `n_graphs`, `n_nodes`, `feat_dim`, `feature_noise_src`, `feature_noise_tgt`, `edge_flip_prob` |

@@ -92,6 +92,70 @@ For image inputs, **CNN is recommended**. MLP is useful when inputs are already 
 
 ---
 
+## SimpleGCN
+
+A two-layer **Graph Convolutional Network** for graph classification. Designed to work with [`SyntheticGraphDataset`](data.md#syntheticgraphdataset) and the packed `(B, N, N+feat_dim)` tensor format — **no PyTorch Geometric required**.
+
+```
+Input x: (B, N, N+feat_dim)
+  split → adj (B,N,N) + h₀ (B,N,feat_dim)
+  â = D̂⁻¹/²(A+I)D̂⁻¹/²              (symmetric normalisation with self-loops)
+  h₁ = ReLU(â · GCN₁(h₀))           (B, N, hidden_dim)
+  h₂ = ReLU(â · GCN₂(h₁))           (B, N, latent_dim)
+  z  = h₂.mean(dim=1)                (B, latent_dim)  — graph-level embedding
+  logits = Linear(latent_dim → num_classes)
+```
+
+```python
+from shiftkit.models import SimpleGCN
+
+model = SimpleGCN(n_nodes=10, feat_dim=4, latent_dim=64, num_classes=2)
+
+# x shape: (B, N, N+feat_dim)  — first N cols = adjacency, rest = features
+z      = model.encode(x)    # (B, 64)
+logits = model.classify(z)  # (B, 2)
+logits = model(x)           # equivalent
+```
+
+### Constructor
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `n_nodes` | `int` | `10` | Number of nodes per graph (must match dataset) |
+| `feat_dim` | `int` | `4` | Number of node feature dimensions |
+| `latent_dim` | `int` | `64` | Graph-level embedding dimensionality |
+| `num_classes` | `int` | `2` | Number of output classes |
+| `hidden_dim` | `int` | `64` | Hidden dimensionality of the first GCN layer |
+| `dropout` | `float` | `0.0` | Dropout probability between GCN layers |
+
+### End-to-end example
+
+```python
+from shiftkit.data import DataManager
+from shiftkit.models import SimpleGCN
+from shiftkit.methods import MMDTrainer
+
+dm = DataManager(batch_size=32)
+train_src, train_tgt = dm.load("synthetic_graphs", train=True)
+test_src,  test_tgt  = dm.load("synthetic_graphs", train=False)
+
+model = SimpleGCN(n_nodes=10, feat_dim=4, latent_dim=64, num_classes=2)
+
+trainer = MMDTrainer(
+    model=model,
+    source_loader=train_src,
+    target_loader=train_tgt,
+    mmd_weight=1.0,
+    warmup_epochs=5,
+    lr=1e-3,
+)
+history = trainer.fit(epochs=30)
+result  = trainer.evaluate(test_tgt, domain="target-test")
+print(f"Target accuracy: {result['accuracy']*100:.1f}%")
+```
+
+---
+
 ## Using a custom model
 
 Any model that exposes `.encode(x)` and `.classify(z)` can be used with `MMDTrainer` and `SourceOnlyTrainer`:

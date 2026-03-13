@@ -11,6 +11,7 @@ from shiftkit.diagnostics import plot_latent_space, plot_training_history
 
 from .data.datasets      import DataManager
 from .models.networks    import MLP, CNN
+from .models.gnn         import SimpleGCN
 from .methods.mmd        import MMDLoss, MMDTrainer, SourceOnlyTrainer
 from .methods.dann       import DANNTrainer, GradientReversalLayer, DomainDiscriminator
 from .methods.sidda      import SIDDATrainer
@@ -19,7 +20,7 @@ from .diagnostics.plots  import plot_latent_space, plot_training_history, compar
 __version__ = "0.1.0"
 __all__ = [
     "DataManager",
-    "MLP", "CNN",
+    "MLP", "CNN", "SimpleGCN",
     "MMDLoss", "MMDTrainer", "SourceOnlyTrainer",
     "DANNTrainer", "GradientReversalLayer", "DomainDiscriminator",
     "SIDDATrainer",
