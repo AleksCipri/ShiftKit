@@ -483,6 +483,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#danntrainer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DANNTrainer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#mmdloss" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1000,6 +1011,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#danntrainer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DANNTrainer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#mmdloss" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1322,7 +1344,33 @@
 </span></code></pre></div>
 <hr />
 <h2 id="domain-adaptation-methods">Domain Adaptation Methods<a class="headerlink" href="#domain-adaptation-methods" title="Permanent link">&para;</a></h2>
-<p><code>shiftkit.methods</code> provides training loops. Both trainers record identical per-epoch history dicts so their results can be compared directly.</p>
+<p><code>shiftkit.methods</code> provides training loops. All trainers record identical per-epoch history dicts so their results can be compared directly.</p>
+<table>
+<thead>
+<tr>
+<th>Trainer</th>
+<th>Mechanism</th>
+<th>Key parameter</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SourceOnlyTrainer</code></td>
+<td>No adaptation (baseline)</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>MMDTrainer</code></td>
+<td>Latent distribution matching via MMD</td>
+<td><code>mmd_weight</code> λ</td>
+</tr>
+<tr>
+<td><code>DANNTrainer</code></td>
+<td>Adversarial discriminator + Gradient Reversal Layer</td>
+<td><code>domain_weight</code> λ</td>
+</tr>
+</tbody>
+</table>
 <h3 id="mmdtrainer">MMDTrainer<a class="headerlink" href="#mmdtrainer" title="Permanent link">&para;</a></h3>
 <p>Minimises a combined supervised + domain alignment loss:</p>
 <div class="arithmatex">\[\mathcal{L} = \text{CrossEntropy}(\hat{y}_\text{src}, y_\text{src}) + \lambda \cdot \widehat{\text{MMD}}^2(z_\text{src}, z_\text{tgt})\]</div>
@@ -1415,43 +1463,94 @@
 </tr>
 </tbody>
 </table>
+<h3 id="danntrainer">DANNTrainer<a class="headerlink" href="#danntrainer" title="Permanent link">&para;</a></h3>
+<p>Adversarial training via a domain discriminator and a <strong>Gradient Reversal Layer (GRL)</strong>.
+The GRL negates the discriminator's gradients before they reach the encoder, forcing it
+to learn domain-invariant features.</p>
+<div class="highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>encoder(x) ──► z ──► classify(z) ──► CE loss
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>                └──► GRL ──► discriminator(z) ──► BCE loss
+</span></code></pre></div>
+<div class="highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">DANNTrainer</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">DANNTrainer</span><span class="p">(</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>    <span class="n">source_loader</span><span class="o">=</span><span class="n">train_src</span><span class="p">,</span>
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>    <span class="n">target_loader</span><span class="o">=</span><span class="n">train_tgt</span><span class="p">,</span>
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>    <span class="n">domain_weight</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>   <span class="c1"># λ</span>
+</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>    <span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>    <span class="n">schedule_alpha</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="c1"># ramp GRL strength from 0→1 (recommended)</span>
+</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>    <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span>
+</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="p">)</span>
+</span><span id="__span-13-12"><a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a><span class="n">history</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>domain_weight</code></td>
+<td><code>1.0</code></td>
+<td>λ — weight on the adversarial domain loss</td>
+</tr>
+<tr>
+<td><code>alpha</code></td>
+<td><code>1.0</code></td>
+<td>Final GRL reversal strength</td>
+</tr>
+<tr>
+<td><code>schedule_alpha</code></td>
+<td><code>True</code></td>
+<td>Ramp α using the paper's sigmoid schedule</td>
+</tr>
+<tr>
+<td><code>discriminator_hidden</code></td>
+<td><code>128</code></td>
+<td>Hidden dim of the domain discriminator MLP</td>
+</tr>
+</tbody>
+</table>
 <h3 id="mmdloss">MMDLoss<a class="headerlink" href="#mmdloss" title="Permanent link">&para;</a></h3>
 <p>The raw MMD² module for use in custom training loops:</p>
-<div class="highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">MMDLoss</span>
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="n">mmd</span> <span class="o">=</span> <span class="n">MMDLoss</span><span class="p">(</span><span class="n">sigmas</span><span class="o">=</span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">50.0</span><span class="p">])</span>
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="n">loss</span> <span class="o">=</span> <span class="n">mmd</span><span class="p">(</span><span class="n">z_source</span><span class="p">,</span> <span class="n">z_target</span><span class="p">)</span>   <span class="c1"># scalar tensor</span>
+<div class="highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">MMDLoss</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="n">mmd</span> <span class="o">=</span> <span class="n">MMDLoss</span><span class="p">(</span><span class="n">sigmas</span><span class="o">=</span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">50.0</span><span class="p">])</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="n">loss</span> <span class="o">=</span> <span class="n">mmd</span><span class="p">(</span><span class="n">z_source</span><span class="p">,</span> <span class="n">z_target</span><span class="p">)</span>   <span class="c1"># scalar tensor</span>
 </span></code></pre></div>
 <hr />
 <h2 id="diagnostics">Diagnostics<a class="headerlink" href="#diagnostics" title="Permanent link">&para;</a></h2>
 <p><code>shiftkit.diagnostics</code> provides visualisation tools for latent spaces and training dynamics.</p>
 <h3 id="plot_training_history">plot_training_history<a class="headerlink" href="#plot_training_history" title="Permanent link">&para;</a></h3>
 <p>Plots CE loss (left) and source/target accuracy (right). Accepts multiple histories for overlay comparison.</p>
-<div class="highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.diagnostics</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_training_history</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="n">plot_training_history</span><span class="p">(</span>
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>    <span class="n">histories</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Source Only&quot;</span><span class="p">:</span> <span class="n">history_baseline</span><span class="p">,</span> <span class="s2">&quot;MMD&quot;</span><span class="p">:</span> <span class="n">history_mmd</span><span class="p">},</span>
-</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>    <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;outputs/training_history.png&quot;</span><span class="p">,</span>
-</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.diagnostics</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_training_history</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="n">plot_training_history</span><span class="p">(</span>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    <span class="n">histories</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Source Only&quot;</span><span class="p">:</span> <span class="n">history_baseline</span><span class="p">,</span> <span class="s2">&quot;MMD&quot;</span><span class="p">:</span> <span class="n">history_mmd</span><span class="p">},</span>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>    <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;outputs/training_history.png&quot;</span><span class="p">,</span>
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="p">)</span>
 </span></code></pre></div>
 <p><img alt="Training History" src="assets/training_history.png" /></p>
 <h3 id="plot_latent_space">plot_latent_space<a class="headerlink" href="#plot_latent_space" title="Permanent link">&para;</a></h3>
 <p>Encodes samples from both domains, projects to 2-D with t-SNE, and plots by domain (left) and by class (right).</p>
-<div class="highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.diagnostics</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_latent_space</span>
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>
-</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="n">plot_latent_space</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">test_src</span><span class="p">,</span> <span class="n">test_tgt</span><span class="p">,</span> <span class="n">max_samples</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
-</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>                  <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;outputs/latent_space.png&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.diagnostics</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_latent_space</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="n">plot_latent_space</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">test_src</span><span class="p">,</span> <span class="n">test_tgt</span><span class="p">,</span> <span class="n">max_samples</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>                  <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;outputs/latent_space.png&quot;</span><span class="p">)</span>
 </span></code></pre></div>
 <h3 id="compare_latent_spaces">compare_latent_spaces<a class="headerlink" href="#compare_latent_spaces" title="Permanent link">&para;</a></h3>
 <p>Side-by-side grid comparing multiple models — one row per model, two panels per row.</p>
-<div class="highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.diagnostics</span><span class="w"> </span><span class="kn">import</span> <span class="n">compare_latent_spaces</span>
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="n">compare_latent_spaces</span><span class="p">(</span>
-</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    <span class="n">models</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Source Only&quot;</span><span class="p">:</span> <span class="n">model_baseline</span><span class="p">,</span> <span class="s2">&quot;MMD&quot;</span><span class="p">:</span> <span class="n">model_mmd</span><span class="p">},</span>
-</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>    <span class="n">source_loader</span><span class="o">=</span><span class="n">test_src</span><span class="p">,</span>
-</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>    <span class="n">target_loader</span><span class="o">=</span><span class="n">test_tgt</span><span class="p">,</span>
-</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>    <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;outputs/latent_space_comparison.png&quot;</span><span class="p">,</span>
-</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.diagnostics</span><span class="w"> </span><span class="kn">import</span> <span class="n">compare_latent_spaces</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="n">compare_latent_spaces</span><span class="p">(</span>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>    <span class="n">models</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Source Only&quot;</span><span class="p">:</span> <span class="n">model_baseline</span><span class="p">,</span> <span class="s2">&quot;MMD&quot;</span><span class="p">:</span> <span class="n">model_mmd</span><span class="p">},</span>
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>    <span class="n">source_loader</span><span class="o">=</span><span class="n">test_src</span><span class="p">,</span>
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>    <span class="n">target_loader</span><span class="o">=</span><span class="n">test_tgt</span><span class="p">,</span>
+</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>    <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;outputs/latent_space_comparison.png&quot;</span><span class="p">,</span>
+</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="p">)</span>
 </span></code></pre></div>
 <p><img alt="Latent Space Comparison" src="assets/latent_space_comparison.png" /></p>
 <div class="admonition tip">
