@@ -969,7 +969,7 @@ loss terms.  Two key ideas distinguish it from MMD and DANN:</p>
 <p>where <span class="arithmatex">\(\mathcal{S}_\sigma\)</span> is the Sinkhorn divergence:</p>
 <div class="arithmatex">\[\mathcal{S}_\sigma(\mu,\nu) = \text{OT}_\sigma(\mu,\nu) - \tfrac{1}{2}\text{OT}_\sigma(\mu,\mu) - \tfrac{1}{2}\text{OT}_\sigma(\nu,\nu)\]</div>
 <p>The log term regularises η, preventing collapse to zero or unbounded growth.</p>
-<div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>encoder(x) ──► z_src ──► classify(z_src) ──► CE loss ──────--┐
+<div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>encoder(x) ──► z_src ──► classify(z_src) ──► CE loss ────────┐
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>encoder(x) ──► z_tgt ──►                                     ├─► ℒ (weighted)
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>               Sinkhorn_σ(z_src, z_tgt) ──► DA loss ─────────┘
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>               ↑ σ recomputed each batch from feature distances
