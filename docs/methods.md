@@ -12,6 +12,8 @@ $$\mathcal{L} = \underbrace{\text{CrossEntropy}(\hat{y}_\text{src}, y_\text{src}
 
 The classifier head is only supervised on source labels. The encoder is pulled toward domain-invariant representations by minimising the MMD between source and target latent vectors.
 
+> **Reference:** Gretton, A., Borgwardt, K. M., Rasch, M. J., Schölkopf, B., & Smola, A. (2012). A Kernel Two-Sample Test. *Journal of Machine Learning Research*, 13, 723–773. [[PDF]](https://jmlr.csail.mit.edu/papers/volume13/gretton12a/gretton12a.pdf)
+
 ```python
 from shiftkit.methods import MMDTrainer
 
