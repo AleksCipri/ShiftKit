@@ -53,8 +53,9 @@ print(f"Target accuracy: {result['accuracy']*100:.1f}%")
 | `domain_weight` | `float` | `1.0` | λ_d — weight on the adversarial domain loss |
 | `lr` | `float` | `1e-3` | Adam learning rate (shared by model + discriminator) |
 | `alpha` | `float` | `1.0` | Final GRL reversal strength |
-| `schedule_alpha` | `bool` | `True` | Ramp α from 0→`alpha` using the paper's sigmoid schedule |
+| `schedule_alpha` | `bool` | `True` | Ramp α from 0→`alpha` using the paper's sigmoid schedule (counts only over the DA phase) |
 | `discriminator_hidden` | `int` | `128` | Hidden dim of the domain discriminator MLP |
+| `warmup_epochs` | `int` | `0` | Epochs of source-only CE pre-training before adversarial DA begins; α is held at 0 during warmup |
 | `semantic_weight` | `float` | `0.0` | λ_s — weight on the centroid alignment loss; `0.0` disables it |
 | `centroid_momentum` | `float` | `0.1` | EMA momentum β for updating target centroids |
 | `num_classes` | `int` | `10` | Number of classes (required when `semantic_weight > 0`) |
@@ -86,6 +87,30 @@ Train for `epochs` epochs and return the history.
 Compute classification accuracy on any labelled DataLoader.
 
 **Returns:** `dict` with keys `domain` (str), `accuracy` (float), `n_samples` (int).
+
+---
+
+## Warmup phase
+
+Set `warmup_epochs > 0` to run source-only CE training before the adversarial
+loop begins. During warmup the GRL strength α is held at 0 and the discriminator
+receives no useful gradients, so neither is updated. The α schedule (if enabled)
+only starts ramping **after** warmup ends, over the remaining DA epochs.
+
+```python
+trainer = DANNTrainer(
+    model=model,
+    source_loader=train_src,
+    target_loader=train_tgt,
+    domain_weight=1.0,
+    warmup_epochs=5,     # first 5 epochs: CE only, α=0
+    schedule_alpha=True, # then ramp α from 0→1 over epochs 6–N
+    lr=1e-3,
+)
+history = trainer.fit(epochs=20)
+# Epochs 1–5:  [warmup]  CE only
+# Epochs 6–20: [DANN ]   CE + λ·BCE_GRL  (α ramping 0→1)
+```
 
 ---
 

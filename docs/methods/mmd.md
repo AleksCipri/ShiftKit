@@ -43,6 +43,7 @@ print(f"Target accuracy: {result['accuracy']*100:.1f}%")
 | `target_loader` | `DataLoader` | — | Target DataLoader (labels used for `tgt_acc` tracking only) |
 | `mmd_weight` | `float` | `1.0` | λ — weight on the MMD regularisation term |
 | `lr` | `float` | `1e-3` | Adam learning rate |
+| `warmup_epochs` | `int` | `0` | Epochs of source-only CE pre-training before MMD DA begins |
 | `device` | `str \| None` | `None` | `'cuda'`, `'mps'`, or `'cpu'`; auto-detected if `None` |
 | `mmd_sigmas` | `list[float] \| None` | `None` | RBF kernel bandwidths; defaults to `[0.1, 1, 5, 10, 50]` |
 
@@ -58,8 +59,8 @@ Train for `epochs` epochs and return the history.
 |-----|-------------|
 | `epoch` | Epoch number (1-indexed) |
 | `ce_loss` | Mean cross-entropy loss |
-| `mmd_loss` | Mean MMD² loss |
-| `total_loss` | Mean total loss (CE + λ·MMD²) |
+| `mmd_loss` | Mean MMD² loss (`0.0` during warmup) |
+| `total_loss` | Mean total loss (CE + λ·MMD²; CE only during warmup) |
 | `src_acc` | Source domain training accuracy |
 | `tgt_acc` | Target domain accuracy (tracked, not optimised directly) |
 
@@ -70,6 +71,28 @@ Train for `epochs` epochs and return the history.
 Compute classification accuracy on any labelled DataLoader.
 
 **Returns:** `dict` with keys `domain` (str), `accuracy` (float), `n_samples` (int).
+
+---
+
+## Warmup phase
+
+Set `warmup_epochs > 0` to train the encoder on source classification only before
+MMD alignment begins. This ensures the latent space carries meaningful class
+structure before the MMD term tries to align the distributions.
+
+```python
+trainer = MMDTrainer(
+    model=model,
+    source_loader=train_src,
+    target_loader=train_tgt,
+    mmd_weight=1.0,
+    warmup_epochs=5,    # first 5 epochs: CE only
+    lr=1e-3,
+)
+history = trainer.fit(epochs=20)
+# Epochs 1–5:  [warmup]  CE only
+# Epochs 6–20: [MMD  ]   CE + λ·MMD²
+```
 
 ---
 

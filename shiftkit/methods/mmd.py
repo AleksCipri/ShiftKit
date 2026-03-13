@@ -91,6 +91,7 @@ class MMDTrainer:
     target_loader  : target DataLoader (labels used only for accuracy tracking)
     mmd_weight     : λ weighting the MMD term  (total = CE + λ·MMD²)
     lr             : learning rate
+    warmup_epochs  : epochs of source-only CE pre-training before MMD DA begins
     device         : 'cuda', 'mps', or 'cpu' (auto-detected if None)
     mmd_sigmas     : bandwidths for the RBF kernel mixture (passed to MMDLoss)
 
@@ -106,6 +107,7 @@ class MMDTrainer:
         target_loader: DataLoader,
         mmd_weight: float = 1.0,
         lr: float = 1e-3,
+        warmup_epochs: int = 0,
         device: Optional[str] = None,
         mmd_sigmas: Optional[List[float]] = None,
     ):
@@ -114,6 +116,7 @@ class MMDTrainer:
         self.source_loader = source_loader
         self.target_loader = target_loader
         self.mmd_weight = mmd_weight
+        self.warmup_epochs = warmup_epochs
 
         self.ce_loss = nn.CrossEntropyLoss()
         self.mmd_loss = MMDLoss(sigmas=mmd_sigmas)
@@ -124,19 +127,21 @@ class MMDTrainer:
     def fit(self, epochs: int = 10) -> List[dict]:
         """Train for *epochs* epochs. Returns per-epoch history list."""
         for epoch in range(1, epochs + 1):
-            stats = self._train_epoch(epoch, epochs)
+            is_warmup = epoch <= self.warmup_epochs
+            stats = self._train_epoch(epoch, epochs, is_warmup)
             self.history.append(stats)
+            phase = "warmup" if is_warmup else "MMD  "
+            mmd_str = f"  MMD={stats['mmd_loss']:.4f}" if not is_warmup else ""
             print(
-                f"[{epoch:>3}/{epochs}] "
-                f"CE={stats['ce_loss']:.4f}  "
-                f"MMD={stats['mmd_loss']:.4f}  "
+                f"[{epoch:>3}/{epochs}] [{phase}]  "
+                f"CE={stats['ce_loss']:.4f}{mmd_str}  "
                 f"Total={stats['total_loss']:.4f}  "
                 f"Src={stats['src_acc']*100:.1f}%  "
                 f"Tgt={stats['tgt_acc']*100:.1f}%"
             )
         return self.history
 
-    def _train_epoch(self, epoch: int, total_epochs: int) -> dict:
+    def _train_epoch(self, epoch: int, total_epochs: int, warmup: bool = False) -> dict:
         self.model.train()
         total_ce = total_mmd = total_loss_sum = 0.0
         src_correct = tgt_correct = n_src = n_tgt = 0
@@ -152,19 +157,25 @@ class MMDTrainer:
             x_tgt, y_tgt = x_tgt.to(self.device), y_tgt.to(self.device)
 
             z_src = self.model.encode(x_src)
-            z_tgt = self.model.encode(x_tgt)
 
             logits = self.model.classify(z_src)
-            ce  = self.ce_loss(logits, y_src)
-            mmd = self.mmd_loss(z_src, z_tgt)
-            loss = ce + self.mmd_weight * mmd
+            ce = self.ce_loss(logits, y_src)
+
+            if warmup:
+                loss = ce
+                mmd_val = 0.0
+            else:
+                z_tgt = self.model.encode(x_tgt)
+                mmd = self.mmd_loss(z_src, z_tgt)
+                loss = ce + self.mmd_weight * mmd
+                mmd_val = mmd.item()
 
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
 
             total_ce       += ce.item()
-            total_mmd      += mmd.item()
+            total_mmd      += mmd_val
             total_loss_sum += loss.item()
             src_correct    += (logits.argmax(1) == y_src).sum().item()
             n_src          += y_src.size(0)

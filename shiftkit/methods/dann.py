@@ -138,7 +138,11 @@ class DANNTrainer:
     schedule_alpha      : if True, ramp alpha from 0 → alpha using the
                           schedule from the original paper:
                           α(p) = alpha · (2/(1+exp(−10p)) − 1),  p ∈ [0,1]
+                          p counts only over the DA phase (after warmup).
     discriminator_hidden: hidden dim of the domain discriminator MLP
+    warmup_epochs       : epochs of source-only CE pre-training before
+                          adversarial DA begins; alpha is held at 0 during
+                          warmup regardless of schedule_alpha
     semantic_weight     : λ_s — weight on the centroid alignment loss.
                           Set to 0.0 (default) to disable.
     centroid_momentum   : β — EMA momentum for updating target centroids.
@@ -163,6 +167,7 @@ class DANNTrainer:
         alpha: float = 1.0,
         schedule_alpha: bool = True,
         discriminator_hidden: int = 128,
+        warmup_epochs: int = 0,
         semantic_weight: float = 0.0,
         centroid_momentum: float = 0.1,
         num_classes: int = 10,
@@ -175,6 +180,7 @@ class DANNTrainer:
         self.domain_weight = domain_weight
         self.alpha = alpha
         self.schedule_alpha = schedule_alpha
+        self.warmup_epochs = warmup_epochs
         self.semantic_weight = semantic_weight
         self.centroid_momentum = centroid_momentum
         self.num_classes = num_classes
@@ -206,23 +212,28 @@ class DANNTrainer:
     # ------------------------------------------------------------------
     def fit(self, epochs: int = 10) -> List[dict]:
         """Train for *epochs* epochs. Returns per-epoch history list."""
+        da_epochs = max(epochs - self.warmup_epochs, 1)
         for epoch in range(1, epochs + 1):
-            if self.schedule_alpha:
-                p = epoch / epochs
+            is_warmup = epoch <= self.warmup_epochs
+            if is_warmup:
+                self.grl.alpha = 0.0
+            elif self.schedule_alpha:
+                # ramp α only over the DA phase
+                p = (epoch - self.warmup_epochs) / da_epochs
                 self.grl.alpha = self.alpha * (
                     2.0 / (1.0 + torch.exp(torch.tensor(-10.0 * p)).item()) - 1.0
                 )
-            stats = self._train_epoch(epoch, epochs)
+            stats = self._train_epoch(epoch, epochs, is_warmup)
             self.history.append(stats)
-            sem_str = (
-                f"  Sem={stats['semantic_loss']:.4f}"
-                if self.semantic_weight > 0.0 else ""
-            )
+            phase = "warmup" if is_warmup else "DANN "
+            da_str = ""
+            if not is_warmup:
+                da_str = f"  Domain={stats['domain_loss']:.4f}"
+                if self.semantic_weight > 0.0:
+                    da_str += f"  Sem={stats['semantic_loss']:.4f}"
             print(
-                f"[{epoch:>3}/{epochs}] "
-                f"CE={stats['ce_loss']:.4f}  "
-                f"Domain={stats['domain_loss']:.4f}"
-                f"{sem_str}  "
+                f"[{epoch:>3}/{epochs}] [{phase}]  "
+                f"CE={stats['ce_loss']:.4f}{da_str}  "
                 f"Total={stats['total_loss']:.4f}  "
                 f"Src={stats['src_acc']*100:.1f}%  "
                 f"Tgt={stats['tgt_acc']*100:.1f}%"
@@ -230,7 +241,7 @@ class DANNTrainer:
         return self.history
 
     # ------------------------------------------------------------------
-    def _train_epoch(self, epoch: int, total_epochs: int) -> dict:
+    def _train_epoch(self, epoch: int, total_epochs: int, warmup: bool = False) -> dict:
         self.model.train()
         self.discriminator.train()
 
@@ -247,62 +258,63 @@ class DANNTrainer:
             x_src, y_src = x_src.to(self.device), y_src.to(self.device)
             x_tgt, y_tgt = x_tgt.to(self.device), y_tgt.to(self.device)
 
-            # encoder forward
             z_src = self.model.encode(x_src)
-            z_tgt = self.model.encode(x_tgt)
-
-            # task loss — source labels only
             logits = self.model.classify(z_src)
             ce = self.ce_loss(logits, y_src)
 
-            # domain adversarial loss — source=0, target=1
-            z_all    = torch.cat([z_src, z_tgt], dim=0)
-            z_rev    = self.grl(z_all)
-            d_logits = self.discriminator(z_rev).squeeze(1)
-            d_labels = torch.cat([
-                torch.zeros(z_src.size(0), device=self.device),
-                torch.ones( z_tgt.size(0), device=self.device),
-            ])
-            domain_loss = self.bce_loss(d_logits, d_labels)
+            if warmup:
+                # ── warmup: source-only CE loss ───────────────────────────
+                loss = ce
+                domain_val = 0.0
+                semantic_loss = torch.tensor(0.0, device=self.device)
 
-            loss = ce + self.domain_weight * domain_loss
+            else:
+                z_tgt = self.model.encode(x_tgt)
 
-            # ── semantic centroid alignment (Xie et al., 2018) ────────────
-            semantic_loss = torch.tensor(0.0, device=self.device)
-            if self.semantic_weight > 0.0:
-                # Step 1: update target centroids with EMA using pseudo-labels
-                with torch.no_grad():
-                    pseudo_y = self.model.classify(z_tgt).argmax(1)
+                # domain adversarial loss — source=0, target=1
+                z_all    = torch.cat([z_src, z_tgt], dim=0)
+                z_rev    = self.grl(z_all)
+                d_logits = self.discriminator(z_rev).squeeze(1)
+                d_labels = torch.cat([
+                    torch.zeros(z_src.size(0), device=self.device),
+                    torch.ones( z_tgt.size(0), device=self.device),
+                ])
+                domain_loss = self.bce_loss(d_logits, d_labels)
+                domain_val  = domain_loss.item()
+                loss = ce + self.domain_weight * domain_loss
+
+                # ── semantic centroid alignment (Xie et al., 2018) ────────
+                semantic_loss = torch.tensor(0.0, device=self.device)
+                if self.semantic_weight > 0.0:
+                    with torch.no_grad():
+                        pseudo_y = self.model.classify(z_tgt).argmax(1)
+                        for k in range(self.num_classes):
+                            mask_t = (pseudo_y == k)
+                            if mask_t.any():
+                                batch_mean = z_tgt[mask_t].detach().mean(0)
+                                self.tgt_centroids[k].mul_(1.0 - self.centroid_momentum).add_(
+                                    batch_mean * self.centroid_momentum
+                                )
+                    n_present = 0
                     for k in range(self.num_classes):
-                        mask_t = (pseudo_y == k)
-                        if mask_t.any():
-                            batch_mean = z_tgt[mask_t].detach().mean(0)
-                            self.tgt_centroids[k].mul_(1.0 - self.centroid_momentum).add_(
-                                batch_mean * self.centroid_momentum
-                            )
-
-                # Step 2: compute centroid loss over classes present in source batch
-                n_present = 0
-                for k in range(self.num_classes):
-                    mask_s = (y_src == k)
-                    if mask_s.any():
-                        c_src = z_src[mask_s].mean(0)
-                        semantic_loss = semantic_loss + (
-                            (c_src - self.tgt_centroids[k]) ** 2
-                        ).mean()
-                        n_present += 1
-                if n_present > 0:
-                    semantic_loss = semantic_loss / n_present
-
-                loss = loss + self.semantic_weight * semantic_loss
-            # ──────────────────────────────────────────────────────────────
+                        mask_s = (y_src == k)
+                        if mask_s.any():
+                            c_src = z_src[mask_s].mean(0)
+                            semantic_loss = semantic_loss + (
+                                (c_src - self.tgt_centroids[k]) ** 2
+                            ).mean()
+                            n_present += 1
+                    if n_present > 0:
+                        semantic_loss = semantic_loss / n_present
+                    loss = loss + self.semantic_weight * semantic_loss
+                # ──────────────────────────────────────────────────────────
 
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
 
             total_ce         += ce.item()
-            total_domain     += domain_loss.item()
+            total_domain     += domain_val
             total_semantic   += semantic_loss.item()
             total_loss_sum   += loss.item()
             src_correct      += (logits.argmax(1) == y_src).sum().item()
