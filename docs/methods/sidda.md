@@ -19,7 +19,7 @@ $$\mathcal{S}_\sigma(\mu,\nu) = \text{OT}_\sigma(\mu,\nu) - \tfrac{1}{2}\text{OT
 The log term regularises η, preventing collapse to zero or unbounded growth.
 
 ```
-encoder(x) ──► z_src ──► classify(z_src) ──► CE loss ──────┐
+encoder(x) ──► z_src ──► classify(z_src) ──► CE loss ──────--┐
 encoder(x) ──► z_tgt ──►                                     ├─► ℒ (weighted)
                Sinkhorn_σ(z_src, z_tgt) ──► DA loss ─────────┘
                ↑ σ recomputed each batch from feature distances
@@ -28,7 +28,7 @@ encoder(x) ──► z_tgt ──►                                     ├─�
 > **Reference:** Ciprijanovic, A., Lewis, A., Pedro, K., Downey, E., Nord, B.,
 > & Stark, A. (2025). SIDDA: SInkhorn Dynamic Domain Adaptation for Image
 > Classification with Equivariant Neural Networks. *arXiv:2501.14048*.
-> [[Paper]](https://arxiv.org/abs/2501.14048) · [[Code]](https://github.com/deepskies/SIDDA)
+> [[Paper]](https://arxiv.org/abs/2501.14048) 
 
 !!! note "Dependency"
     SIDDA requires **geomloss** for the Sinkhorn divergence computation:
