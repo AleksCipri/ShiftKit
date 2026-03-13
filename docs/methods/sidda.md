@@ -27,8 +27,8 @@ encoder(x) ──► z_tgt ──►                                     ├─�
 
 > **Reference:** Ciprijanovic, A., Lewis, A., Pedro, K., Downey, E., Nord, B.,
 > & Stark, A. (2025). SIDDA: SInkhorn Dynamic Domain Adaptation for Image
-> Classification with Equivariant Neural Networks. *arXiv:2501.14048*.
-> [[Paper]](https://arxiv.org/abs/2501.14048) 
+> Classification with Equivariant Neural Networks. *Mach. Learn.: Sci. Technol.*, 6, 035032.
+> [[Paper]](https://iopscience.iop.org/article/10.1088/2632-2153/adf701) 
 
 !!! note "Dependency"
     SIDDA requires **geomloss** for the Sinkhorn divergence computation:
