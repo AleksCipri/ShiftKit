@@ -1,5 +1,5 @@
 """
-Domain-Adversarial Neural Networks (DANN).
+Domain-Adversarial Neural Networks (DANN) with optional Semantic Centroid Alignment.
 
 Introduces a domain discriminator connected to the encoder via a
 Gradient Reversal Layer (GRL). The GRL negates gradients during backprop,
@@ -16,13 +16,21 @@ The gradient from the domain loss is reversed before it reaches the encoder,
 so the encoder is trained to *maximise* domain confusion (minimise the
 discriminator's ability to tell source from target).
 
-Reference
----------
-Ganin, Y., Ustinova, E., Ajakan, H., Germain, P., Larochelle, H.,
-Laviolette, F., Marchand, M., & Lempitsky, V. (2016).
-Domain-Adversarial Training of Neural Networks.
+Optionally, semantic centroid alignment (Xie et al., 2018) can be enabled via
+``semantic_weight > 0``. Source class centroids (from labels) are aligned with
+target class centroids maintained as an exponential moving average over
+pseudo-labeled target features.
+
+References
+----------
+Ganin, Y., et al. (2016). Domain-Adversarial Training of Neural Networks.
 Journal of Machine Learning Research, 17(59), 1–35.
 https://jmlr.org/papers/volume17/15-239/15-239.pdf
+
+Xie, S., Zheng, Z., Chen, L., & Chen, C. (2018).
+Learning Semantic Representations for Unsupervised Domain Adaptation.
+ICML 2018, PMLR 80:5423–5432.
+https://proceedings.mlr.press/v80/xie18c.html
 """
 
 import torch
@@ -101,12 +109,22 @@ def _auto_device() -> torch.device:
 
 class DANNTrainer:
     """
-    Domain-Adversarial Neural Network trainer (Ganin et al., 2016).
+    Domain-Adversarial Neural Network trainer (Ganin et al., 2016) with optional
+    semantic centroid alignment (Xie et al., 2018).
 
     A domain discriminator is attached to the encoder output via a Gradient
     Reversal Layer. The encoder is trained jointly to minimise task loss
     (cross-entropy on source labels) and maximise domain confusion (via the
     reversed domain loss), producing domain-invariant latent representations.
+
+    When ``semantic_weight > 0``, an additional centroid alignment loss is added:
+    per-class source centroids (computed from ground-truth labels) are aligned
+    with per-class target centroids maintained as an exponential moving average
+    over pseudo-labeled target features.
+
+    Total loss
+    ----------
+    L = CE(src) + λ_d · BCE(domain via GRL) + λ_s · (1/K) Σ_k ||c_k^src - c_k^tgt||²
 
     Parameters
     ----------
@@ -114,18 +132,24 @@ class DANNTrainer:
                           (must also expose .latent_dim)
     source_loader       : labelled source DataLoader
     target_loader       : target DataLoader (labels used for tracking only)
-    domain_weight       : λ — weight on the domain adversarial loss
+    domain_weight       : λ_d — weight on the domain adversarial loss
     lr                  : Adam learning rate (shared by model + discriminator)
     alpha               : GRL reversal strength at the end of training
     schedule_alpha      : if True, ramp alpha from 0 → alpha using the
                           schedule from the original paper:
                           α(p) = alpha · (2/(1+exp(−10p)) − 1),  p ∈ [0,1]
     discriminator_hidden: hidden dim of the domain discriminator MLP
+    semantic_weight     : λ_s — weight on the centroid alignment loss.
+                          Set to 0.0 (default) to disable.
+    centroid_momentum   : β — EMA momentum for updating target centroids.
+                          Larger β tracks the current batch more closely.
+    num_classes         : number of output classes (required when
+                          semantic_weight > 0)
     device              : 'cuda', 'mps', or 'cpu' (auto-detected if None)
 
     History keys
     ------------
-    epoch, ce_loss, domain_loss, mmd_loss (always 0, for compatibility),
+    epoch, ce_loss, domain_loss, semantic_loss, mmd_loss (always 0),
     total_loss, src_acc, tgt_acc
     """
 
@@ -139,6 +163,9 @@ class DANNTrainer:
         alpha: float = 1.0,
         schedule_alpha: bool = True,
         discriminator_hidden: int = 128,
+        semantic_weight: float = 0.0,
+        centroid_momentum: float = 0.1,
+        num_classes: int = 10,
         device: Optional[str] = None,
     ):
         self.device = torch.device(device) if device else _auto_device()
@@ -148,6 +175,9 @@ class DANNTrainer:
         self.domain_weight = domain_weight
         self.alpha = alpha
         self.schedule_alpha = schedule_alpha
+        self.semantic_weight = semantic_weight
+        self.centroid_momentum = centroid_momentum
+        self.num_classes = num_classes
 
         self.grl = GradientReversalLayer(alpha=alpha if not schedule_alpha else 0.0)
         self.discriminator = DomainDiscriminator(
@@ -163,6 +193,14 @@ class DANNTrainer:
             lr=lr,
         )
 
+        # Target centroid buffer — shape (num_classes, latent_dim), zero-initialised
+        if self.semantic_weight > 0.0:
+            self.tgt_centroids = torch.zeros(
+                num_classes, model.latent_dim, device=self.device
+            )
+        else:
+            self.tgt_centroids = None
+
         self.history: List[dict] = []
 
     # ------------------------------------------------------------------
@@ -176,10 +214,15 @@ class DANNTrainer:
                 )
             stats = self._train_epoch(epoch, epochs)
             self.history.append(stats)
+            sem_str = (
+                f"  Sem={stats['semantic_loss']:.4f}"
+                if self.semantic_weight > 0.0 else ""
+            )
             print(
                 f"[{epoch:>3}/{epochs}] "
                 f"CE={stats['ce_loss']:.4f}  "
-                f"Domain={stats['domain_loss']:.4f}  "
+                f"Domain={stats['domain_loss']:.4f}"
+                f"{sem_str}  "
                 f"Total={stats['total_loss']:.4f}  "
                 f"Src={stats['src_acc']*100:.1f}%  "
                 f"Tgt={stats['tgt_acc']*100:.1f}%"
@@ -191,7 +234,7 @@ class DANNTrainer:
         self.model.train()
         self.discriminator.train()
 
-        total_ce = total_domain = total_loss_sum = 0.0
+        total_ce = total_domain = total_semantic = total_loss_sum = 0.0
         src_correct = tgt_correct = n_src = n_tgt = 0
 
         n_batches = min(len(self.source_loader), len(self.target_loader))
@@ -213,10 +256,10 @@ class DANNTrainer:
             ce = self.ce_loss(logits, y_src)
 
             # domain adversarial loss — source=0, target=1
-            z_all     = torch.cat([z_src, z_tgt], dim=0)
-            z_rev     = self.grl(z_all)
-            d_logits  = self.discriminator(z_rev).squeeze(1)
-            d_labels  = torch.cat([
+            z_all    = torch.cat([z_src, z_tgt], dim=0)
+            z_rev    = self.grl(z_all)
+            d_logits = self.discriminator(z_rev).squeeze(1)
+            d_labels = torch.cat([
                 torch.zeros(z_src.size(0), device=self.device),
                 torch.ones( z_tgt.size(0), device=self.device),
             ])
@@ -224,28 +267,60 @@ class DANNTrainer:
 
             loss = ce + self.domain_weight * domain_loss
 
+            # ── semantic centroid alignment (Xie et al., 2018) ────────────
+            semantic_loss = torch.tensor(0.0, device=self.device)
+            if self.semantic_weight > 0.0:
+                # Step 1: update target centroids with EMA using pseudo-labels
+                with torch.no_grad():
+                    pseudo_y = self.model.classify(z_tgt).argmax(1)
+                    for k in range(self.num_classes):
+                        mask_t = (pseudo_y == k)
+                        if mask_t.any():
+                            batch_mean = z_tgt[mask_t].detach().mean(0)
+                            self.tgt_centroids[k].mul_(1.0 - self.centroid_momentum).add_(
+                                batch_mean * self.centroid_momentum
+                            )
+
+                # Step 2: compute centroid loss over classes present in source batch
+                n_present = 0
+                for k in range(self.num_classes):
+                    mask_s = (y_src == k)
+                    if mask_s.any():
+                        c_src = z_src[mask_s].mean(0)
+                        semantic_loss = semantic_loss + (
+                            (c_src - self.tgt_centroids[k]) ** 2
+                        ).mean()
+                        n_present += 1
+                if n_present > 0:
+                    semantic_loss = semantic_loss / n_present
+
+                loss = loss + self.semantic_weight * semantic_loss
+            # ──────────────────────────────────────────────────────────────
+
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
 
-            total_ce       += ce.item()
-            total_domain   += domain_loss.item()
-            total_loss_sum += loss.item()
-            src_correct    += (logits.argmax(1) == y_src).sum().item()
-            n_src          += y_src.size(0)
+            total_ce         += ce.item()
+            total_domain     += domain_loss.item()
+            total_semantic   += semantic_loss.item()
+            total_loss_sum   += loss.item()
+            src_correct      += (logits.argmax(1) == y_src).sum().item()
+            n_src            += y_src.size(0)
 
             with torch.no_grad():
                 tgt_correct += (self.model(x_tgt).argmax(1) == y_tgt).sum().item()
                 n_tgt       += y_tgt.size(0)
 
         return {
-            "epoch":       epoch,
-            "ce_loss":     total_ce       / n_batches,
-            "domain_loss": total_domain   / n_batches,
-            "mmd_loss":    0.0,            # compatibility with plot_training_history
-            "total_loss":  total_loss_sum  / n_batches,
-            "src_acc":     src_correct / n_src,
-            "tgt_acc":     tgt_correct / n_tgt,
+            "epoch":          epoch,
+            "ce_loss":        total_ce         / n_batches,
+            "domain_loss":    total_domain     / n_batches,
+            "semantic_loss":  total_semantic   / n_batches,
+            "mmd_loss":       0.0,              # compatibility with plot_training_history
+            "total_loss":     total_loss_sum   / n_batches,
+            "src_acc":        src_correct / n_src,
+            "tgt_acc":        tgt_correct / n_tgt,
         }
 
     # ------------------------------------------------------------------
