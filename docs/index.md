@@ -192,7 +192,13 @@ class MyModel(nn.Module):
 
 ## Domain Adaptation Methods
 
-`shiftkit.methods` provides training loops. Both trainers record identical per-epoch history dicts so their results can be compared directly.
+`shiftkit.methods` provides training loops. All trainers record identical per-epoch history dicts so their results can be compared directly.
+
+| Trainer | Mechanism | Key parameter |
+|---------|-----------|---------------|
+| `SourceOnlyTrainer` | No adaptation (baseline) | — |
+| `MMDTrainer` | Latent distribution matching via MMD | `mmd_weight` λ |
+| `DANNTrainer` | Adversarial discriminator + Gradient Reversal Layer | `domain_weight` λ |
 
 ### MMDTrainer
 
@@ -248,6 +254,39 @@ Both trainers return a `list[dict]` with one entry per epoch:
 | `total_loss` | Total loss |
 | `src_acc` | Source accuracy |
 | `tgt_acc` | Target accuracy (tracked but not directly optimised) |
+
+### DANNTrainer
+
+Adversarial training via a domain discriminator and a **Gradient Reversal Layer (GRL)**.
+The GRL negates the discriminator's gradients before they reach the encoder, forcing it
+to learn domain-invariant features.
+
+```
+encoder(x) ──► z ──► classify(z) ──► CE loss
+                └──► GRL ──► discriminator(z) ──► BCE loss
+```
+
+```python
+from shiftkit.methods import DANNTrainer
+
+trainer = DANNTrainer(
+    model=model,
+    source_loader=train_src,
+    target_loader=train_tgt,
+    domain_weight=1.0,   # λ
+    alpha=1.0,
+    schedule_alpha=True, # ramp GRL strength from 0→1 (recommended)
+    lr=1e-3,
+)
+history = trainer.fit(epochs=10)
+```
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `domain_weight` | `1.0` | λ — weight on the adversarial domain loss |
+| `alpha` | `1.0` | Final GRL reversal strength |
+| `schedule_alpha` | `True` | Ramp α using the paper's sigmoid schedule |
+| `discriminator_hidden` | `128` | Hidden dim of the domain discriminator MLP |
 
 ### MMDLoss
 

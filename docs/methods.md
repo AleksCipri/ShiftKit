@@ -1,6 +1,12 @@
 # Methods
 
-`shiftkit.methods` provides domain adaptation training loops. Both trainers record identical per-epoch history dicts so their results can be directly compared.
+`shiftkit.methods` provides domain adaptation training loops. All trainers record identical per-epoch history dicts so their results can be directly compared.
+
+| Trainer | DA mechanism | Key parameter |
+|---------|-------------|---------------|
+| `SourceOnlyTrainer` | None (baseline) | — |
+| `MMDTrainer` | Latent distribution matching | `mmd_weight` λ |
+| `DANNTrainer` | Adversarial domain discriminator | `domain_weight` λ |
 
 ---
 
@@ -128,6 +134,80 @@ loss = mmd(z_source, z_target)   # scalar tensor
 
 ---
 
+---
+
+## DANNTrainer
+
+Trains a model using adversarial domain adaptation. A domain discriminator
+is attached to the encoder output through a **Gradient Reversal Layer (GRL)**.
+During backpropagation the GRL negates the discriminator's gradients, forcing
+the encoder to produce representations that fool the discriminator — i.e.
+domain-invariant features.
+
+$$\mathcal{L} = \underbrace{\text{CrossEntropy}(\hat{y}_\text{src}, y_\text{src})}_{\text{task}} + \lambda \cdot \underbrace{\text{BCE}(\hat{d}, d_\text{label})}_{\text{domain (via GRL)}}$$
+
+```
+encoder(x) ──► z ──► classify(z) ──► CE loss
+                └──► GRL ──► discriminator(z) ──► BCE loss
+                        ↑ gradients negated here
+```
+
+> **Reference:** Ganin, Y., Ustinova, E., Ajakan, H., Germain, P., Larochelle, H., Laviolette, F., Marchand, M., & Lempitsky, V. (2016). Domain-Adversarial Training of Neural Networks. *Journal of Machine Learning Research*, 17(59), 1–35. [[PDF]](https://jmlr.org/papers/volume17/15-239/15-239.pdf)
+
+```python
+from shiftkit.methods import DANNTrainer
+
+trainer = DANNTrainer(
+    model=model,
+    source_loader=train_src,
+    target_loader=train_tgt,
+    domain_weight=1.0,
+    lr=1e-3,
+    alpha=1.0,
+    schedule_alpha=True,   # ramp α from 0→1 over training (recommended)
+)
+history = trainer.fit(epochs=10)
+```
+
+### Constructor
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `model` | `nn.Module` | — | Network with `.encode()`, `.classify()`, and `.latent_dim` |
+| `source_loader` | `DataLoader` | — | Labelled source DataLoader |
+| `target_loader` | `DataLoader` | — | Target DataLoader (labels used for tracking only) |
+| `domain_weight` | `float` | `1.0` | λ — weight on the domain adversarial loss |
+| `lr` | `float` | `1e-3` | Adam learning rate (shared by model + discriminator) |
+| `alpha` | `float` | `1.0` | GRL reversal strength at the end of training |
+| `schedule_alpha` | `bool` | `True` | Ramp α from 0→`alpha` using the original paper's schedule |
+| `discriminator_hidden` | `int` | `128` | Hidden dim of the domain discriminator MLP |
+| `device` | `str \| None` | `None` | `'cuda'`, `'mps'`, or `'cpu'`; auto-detected if `None` |
+
+### `fit(epochs=10)`
+
+**Returns:** `list[dict]` — one dict per epoch with keys:
+
+| Key | Description |
+|-----|-------------|
+| `epoch` | Epoch number (1-indexed) |
+| `ce_loss` | Mean cross-entropy loss |
+| `domain_loss` | Mean domain discriminator loss |
+| `total_loss` | Mean total loss (CE + λ·Domain) |
+| `src_acc` | Source domain training accuracy |
+| `tgt_acc` | Target domain accuracy (tracked, not directly optimised) |
+
+`evaluate()` has the same signature as `MMDTrainer`.
+
+!!! note "Alpha scheduling"
+    The original paper ramps the GRL strength using
+    $\alpha(p) = \alpha_\text{max} \cdot \left(\frac{2}{1 + e^{-10p}} - 1\right)$
+    where $p = \text{epoch}/\text{epochs}$.
+    This avoids large adversarial gradients early in training when the
+    encoder representations are still noisy. Set `schedule_alpha=False` to
+    use a fixed reversal strength instead.
+
+---
+
 ## Comparing methods
 
 ```python
@@ -136,10 +216,12 @@ from shiftkit.diagnostics import plot_training_history
 plot_training_history({
     "Source Only": history_baseline,
     "MMD":         history_mmd,
+    "DANN":        history_dann,
 })
 ```
 
 The right panel shows source accuracy (solid lines) and target accuracy (dashed lines) for each method — the gap between them quantifies the domain shift.
 
 !!! tip "Tuning λ"
-    Start with `mmd_weight=1.0`. If the model collapses (target acc drops sharply), reduce to `0.1`–`0.5`. If source and target distributions are very different, increasing to `2.0`–`5.0` may help alignment.
+    Both `MMDTrainer` and `DANNTrainer` accept a `domain_weight` / `mmd_weight` parameter λ.
+    Start at `1.0`. Reduce to `0.1`–`0.5` if source accuracy degrades; increase to `2.0`–`5.0` if source and target embeddings remain separated after training.

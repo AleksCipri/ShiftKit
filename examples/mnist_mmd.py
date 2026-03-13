@@ -1,6 +1,6 @@
 """
 Example: MNIST (source) -> Noisy MNIST (target)
-Compares Source-Only baseline vs MMD domain adaptation.
+Compares Source-Only baseline, MMD, and DANN domain adaptation.
 
 Run from the repo root:
     python examples/mnist_mmd.py
@@ -8,24 +8,25 @@ Run from the repo root:
 Edit the CONFIG block below to customise the run.
 """
 
-import sys, os, copy
+import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from shiftkit.data        import DataManager
 from shiftkit.models      import CNN, MLP
-from shiftkit.methods     import MMDTrainer, SourceOnlyTrainer
+from shiftkit.methods     import MMDTrainer, SourceOnlyTrainer, DANNTrainer
 from shiftkit.diagnostics import plot_training_history, compare_latent_spaces
 
 # ─── CONFIG ──────────────────────────────────────────────────────────────────
 
-MODEL_TYPE  = "cnn"       # "cnn" or "mlp"
-LATENT_DIM  = 128
-EPOCHS      = 10
-BATCH_SIZE  = 128
-LR          = 1e-3
-MMD_WEIGHT  = 1.0
-NOISE_STD   = 0.3
-SAVE_DIR    = os.path.join(os.path.dirname(__file__), "..", "outputs")
+MODEL_TYPE    = "cnn"   # "cnn" or "mlp"
+LATENT_DIM    = 128
+EPOCHS        = 10
+BATCH_SIZE    = 128
+LR            = 1e-3
+MMD_WEIGHT    = 1.0
+DOMAIN_WEIGHT = 1.0     # DANN domain loss weight
+NOISE_STD     = 0.3
+SAVE_DIR      = os.path.join(os.path.dirname(__file__), "..", "outputs")
 
 # ─── MAIN ────────────────────────────────────────────────────────────────────
 
@@ -43,7 +44,7 @@ if __name__ == "__main__":
     print(f"   Source train batches : {len(train_src)}")
     print(f"   Target train batches : {len(train_tgt)}")
 
-    # ── 2. Build two models (same architecture, different random seeds) ───────
+    # ── 2. Build three independent models ────────────────────────────────────
     print("\n" + "=" * 60)
     print("2. Building models")
     print("=" * 60)
@@ -56,6 +57,7 @@ if __name__ == "__main__":
 
     model_baseline = make_model()
     model_mmd      = make_model()
+    model_dann     = make_model()
     n_params = sum(p.numel() for p in model_baseline.parameters() if p.requires_grad)
     print(f"   Architecture : {MODEL_TYPE.upper()}  |  latent_dim={LATENT_DIM}  |  params={n_params:,}")
 
@@ -73,7 +75,7 @@ if __name__ == "__main__":
 
     # ── 4. Train MMD model ───────────────────────────────────────────────────
     print("\n" + "=" * 60)
-    print(f"4. Training with MMD domain adaptation  (λ={MMD_WEIGHT})")
+    print(f"4. Training with MMD domain adaptation  (lambda={MMD_WEIGHT})")
     print("=" * 60)
     mmd_trainer = MMDTrainer(
         model=model_mmd,
@@ -84,35 +86,61 @@ if __name__ == "__main__":
     )
     history_mmd = mmd_trainer.fit(epochs=EPOCHS)
 
-    # ── 5. Evaluation ────────────────────────────────────────────────────────
+    # ── 5. Train DANN model ──────────────────────────────────────────────────
     print("\n" + "=" * 60)
-    print("5. Evaluation")
+    print(f"5. Training with DANN domain adaptation  (lambda={DOMAIN_WEIGHT})")
     print("=" * 60)
-    print(f"\n  {'Domain':<18}  {'Source-Only':>12}  {'MMD':>10}")
-    print("  " + "-" * 44)
+    dann_trainer = DANNTrainer(
+        model=model_dann,
+        source_loader=train_src,
+        target_loader=train_tgt,
+        domain_weight=DOMAIN_WEIGHT,
+        lr=LR,
+        alpha=1.0,
+        schedule_alpha=True,
+    )
+    history_dann = dann_trainer.fit(epochs=EPOCHS)
+
+    # ── 6. Evaluation ────────────────────────────────────────────────────────
+    print("\n" + "=" * 60)
+    print("6. Evaluation")
+    print("=" * 60)
+    print(f"\n  {'Domain':<18}  {'Source-Only':>12}  {'MMD':>10}  {'DANN':>10}")
+    print("  " + "-" * 56)
     for loader, domain in [(train_src, "source-train"),
                            (test_src,  "source-test"),
                            (test_tgt,  "target-test")]:
         b = baseline_trainer.evaluate(loader, domain)
         m = mmd_trainer.evaluate(loader, domain)
-        print(f"  {domain:<18}  {b['accuracy']*100:>11.2f}%  {m['accuracy']*100:>9.2f}%")
+        d = dann_trainer.evaluate(loader, domain)
+        print(f"  {domain:<18}  {b['accuracy']*100:>11.2f}%"
+              f"  {m['accuracy']*100:>9.2f}%"
+              f"  {d['accuracy']*100:>9.2f}%")
 
-    # ── 6. Training history comparison ───────────────────────────────────────
+    # ── 7. Training history comparison ───────────────────────────────────────
     print("\n" + "=" * 60)
-    print("6. Saving training history plot")
+    print("7. Saving training history plot")
     print("=" * 60)
     plot_training_history(
-        histories={"Source Only": history_baseline, "MMD": history_mmd},
+        histories={
+            "Source Only": history_baseline,
+            "MMD":         history_mmd,
+            "DANN":        history_dann,
+        },
         save_path=os.path.join(SAVE_DIR, "training_history.png"),
         show=False,
     )
 
-    # ── 7. Latent space comparison ───────────────────────────────────────────
+    # ── 8. Latent space comparison ───────────────────────────────────────────
     print("\n" + "=" * 60)
-    print("7. Generating latent space comparison plot")
+    print("8. Generating latent space comparison plot")
     print("=" * 60)
     compare_latent_spaces(
-        models={"Source Only": model_baseline, "MMD": model_mmd},
+        models={
+            "Source Only": model_baseline,
+            "MMD":         model_mmd,
+            "DANN":        model_dann,
+        },
         source_loader=test_src,
         target_loader=test_tgt,
         max_samples=2000,
