@@ -676,6 +676,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#semantic-centroid-alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Semantic Centroid Alignment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#gradientreversallayer" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -885,6 +896,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#semantic-centroid-alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Semantic Centroid Alignment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#gradientreversallayer" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -928,7 +950,7 @@
 attached to the encoder output via a <strong>Gradient Reversal Layer (GRL)</strong>. During
 backpropagation the GRL negates the discriminator's gradients, forcing the encoder
 to learn domain-invariant representations that fool the discriminator.</p>
-<div class="arithmatex">\[\mathcal{L} = \underbrace{\text{CrossEntropy}(\hat{y}_\text{src}, y_\text{src})}_{\text{task}} + \lambda \cdot \underbrace{\text{BCE}(\hat{d},\, d_\text{label})}_{\text{domain (via GRL)}}\]</div>
+<div class="arithmatex">\[\mathcal{L} = \underbrace{\text{CrossEntropy}(\hat{y}_\text{src}, y_\text{src})}_{\text{task}} + \lambda_d \cdot \underbrace{\text{BCE}(\hat{d},\, d_\text{label})}_{\text{domain (via GRL)}}\]</div>
 <div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>encoder(x) ──► z ──► classify(z) ──► CE loss
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>                └──► GRL ──► discriminator(z) ──► BCE loss
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>                        ↑ gradients negated here
@@ -992,7 +1014,7 @@ Domain-Adversarial Training of Neural Networks.
 <td><code>domain_weight</code></td>
 <td><code>float</code></td>
 <td><code>1.0</code></td>
-<td>λ — weight on the adversarial domain loss</td>
+<td>λ_d — weight on the adversarial domain loss</td>
 </tr>
 <tr>
 <td><code>lr</code></td>
@@ -1017,6 +1039,24 @@ Domain-Adversarial Training of Neural Networks.
 <td><code>int</code></td>
 <td><code>128</code></td>
 <td>Hidden dim of the domain discriminator MLP</td>
+</tr>
+<tr>
+<td><code>semantic_weight</code></td>
+<td><code>float</code></td>
+<td><code>0.0</code></td>
+<td>λ_s — weight on the centroid alignment loss; <code>0.0</code> disables it</td>
+</tr>
+<tr>
+<td><code>centroid_momentum</code></td>
+<td><code>float</code></td>
+<td><code>0.1</code></td>
+<td>EMA momentum β for updating target centroids</td>
+</tr>
+<tr>
+<td><code>num_classes</code></td>
+<td><code>int</code></td>
+<td><code>10</code></td>
+<td>Number of classes (required when <code>semantic_weight &gt; 0</code>)</td>
 </tr>
 <tr>
 <td><code>device</code></td>
@@ -1051,12 +1091,16 @@ Domain-Adversarial Training of Neural Networks.
 <td>Mean domain discriminator loss</td>
 </tr>
 <tr>
+<td><code>semantic_loss</code></td>
+<td>Mean centroid alignment loss (<code>0.0</code> when disabled)</td>
+</tr>
+<tr>
 <td><code>mmd_loss</code></td>
 <td>Always <code>0.0</code> (for history-format compatibility)</td>
 </tr>
 <tr>
 <td><code>total_loss</code></td>
-<td>Mean total loss (CE + λ·Domain)</td>
+<td>Mean total loss</td>
 </tr>
 <tr>
 <td><code>src_acc</code></td>
@@ -1083,19 +1127,58 @@ representations are still noisy. Set <code>schedule_alpha=False</code> to use a 
 reversal strength instead.</p>
 </div>
 <hr />
+<h2 id="semantic-centroid-alignment">Semantic Centroid Alignment<a class="headerlink" href="#semantic-centroid-alignment" title="Permanent link">&para;</a></h2>
+<p>Enable by setting <code>semantic_weight &gt; 0</code>. This adds a class-level alignment term
+from <strong>MSTN</strong> (Xie et al., 2018) on top of the adversarial loss:</p>
+<div class="arithmatex">\[\mathcal{L} = \text{CE} + \lambda_d \cdot \text{BCE}_\text{GRL} + \lambda_s \cdot \frac{1}{K}\sum_{k=1}^{K} \left\| \mathbf{c}_k^\text{src} - \mathbf{c}_k^\text{tgt} \right\|^2\]</div>
+<p>where source centroids are computed per-batch from ground-truth labels and target
+centroids are maintained as an <strong>exponential moving average</strong> (EMA) of
+pseudo-labeled target features:</p>
+<div class="arithmatex">\[\mathbf{c}_k^\text{tgt} \leftarrow (1 - \beta)\,\mathbf{c}_k^\text{tgt} + \beta \cdot \overline{z}_k^\text{tgt}\]</div>
+<p>The EMA stabilises alignment when early pseudo-labels are noisy, since target
+centroids evolve smoothly rather than jumping each batch.</p>
+<div class="highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">DANNTrainer</span><span class="p">(</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">source_loader</span><span class="o">=</span><span class="n">train_src</span><span class="p">,</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">target_loader</span><span class="o">=</span><span class="n">train_tgt</span><span class="p">,</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">domain_weight</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">semantic_weight</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>     <span class="c1"># enable centroid alignment</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">centroid_momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>   <span class="c1"># β — how fast centroids track the current batch</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="p">)</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="n">history</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</span></code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">Tuning tips</p>
+<ul>
+<li>Start with <code>semantic_weight</code> in <code>[0.1, 1.0]</code> and <code>centroid_momentum</code> in <code>[0.05, 0.2]</code>.</li>
+<li>Lower <code>centroid_momentum</code> (e.g. <code>0.05</code>) gives smoother centroid updates, which
+  helps early in training when pseudo-labels are unreliable.</li>
+<li>Centroid alignment complements the adversarial loss: the GRL aligns global
+  distributions while centroid alignment enforces class-level correspondence.</li>
+</ul>
+</div>
+<blockquote>
+<p><strong>Reference:</strong> Xie, S., Zheng, Z., Chen, L., &amp; Chen, C. (2018).
+Learning Semantic Representations for Unsupervised Domain Adaptation.
+<em>ICML 2018</em>, PMLR 80:5423–5432.
+<a href="https://proceedings.mlr.press/v80/xie18c.html">[Paper]</a></p>
+</blockquote>
+<hr />
 <h2 id="gradientreversallayer">GradientReversalLayer<a class="headerlink" href="#gradientreversallayer" title="Permanent link">&para;</a></h2>
 <p>The GRL is also exposed as a standalone module for use in custom training loops:</p>
-<div class="highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">GradientReversalLayer</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">grl</span> <span class="o">=</span> <span class="n">GradientReversalLayer</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">z_reversed</span> <span class="o">=</span> <span class="n">grl</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>   <span class="c1"># identity forward, negated gradient backward</span>
+<div class="highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">GradientReversalLayer</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">grl</span> <span class="o">=</span> <span class="n">GradientReversalLayer</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">z_reversed</span> <span class="o">=</span> <span class="n">grl</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>   <span class="c1"># identity forward, negated gradient backward</span>
 </span></code></pre></div>
 <h2 id="domaindiscriminator">DomainDiscriminator<a class="headerlink" href="#domaindiscriminator" title="Permanent link">&para;</a></h2>
 <p>The domain discriminator is also available standalone:</p>
-<div class="highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">DomainDiscriminator</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">discriminator</span> <span class="o">=</span> <span class="n">DomainDiscriminator</span><span class="p">(</span><span class="n">latent_dim</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">logits</span> <span class="o">=</span> <span class="n">discriminator</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>   <span class="c1"># (B, 1) — source=0, target=1</span>
+<div class="highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">DomainDiscriminator</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">discriminator</span> <span class="o">=</span> <span class="n">DomainDiscriminator</span><span class="p">(</span><span class="n">latent_dim</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">logits</span> <span class="o">=</span> <span class="n">discriminator</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>   <span class="c1"># (B, 1) — source=0, target=1</span>
 </span></code></pre></div>
 
 
