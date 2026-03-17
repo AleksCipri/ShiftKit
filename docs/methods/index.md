@@ -12,6 +12,7 @@ identical per-epoch history dicts so their results can be directly compared.
 | [`SourceOnlyTrainer`](source_only.md) | No adaptation (baseline) | — | [→](source_only.md) |
 | [`MMDTrainer`](mmd.md) | Latent distribution matching via MMD | `mmd_weight` λ | [→](mmd.md) |
 | [`DANNTrainer`](dann.md) | Adversarial discriminator + GRL | `domain_weight` λ | [→](dann.md) |
+| [`LMMDTrainer`](lmmd.md) | Per-class subdomain alignment via local MMD | `num_classes` | [→](lmmd.md) |
 | [`SIDDATrainer`](sidda.md) | Sinkhorn optimal transport + learnable η weights | `warmup_epochs` | [→](sidda.md) |
 | Custom | Your own method | — | [→](custom.md) |
 

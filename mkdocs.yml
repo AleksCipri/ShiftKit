@@ -49,6 +49,7 @@ nav:
           - Source Only: methods/source_only.md
           - MMD: methods/mmd.md
           - DANN: methods/dann.md
+          - LMMD: methods/lmmd.md
           - SIDDA: methods/sidda.md
           - Custom Methods: methods/custom.md
       - Diagnostics: diagnostics.md
