@@ -1,4 +1,4 @@
-# Tutorial 1 — MNIST → Noisy MNIST with MMD
+# Tutorial 1 — MNIST → Noisy MNIST: Source-Only vs MMD vs DANN
 
 End-to-end walkthrough of the built-in benchmark: adapting a CNN from clean
 MNIST digits (source) to the same digits corrupted with Gaussian noise (target).

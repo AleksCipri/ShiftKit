@@ -42,7 +42,7 @@ nav:
   - Home: index.md
   - Tutorials & Examples:
       - Overview: tutorials/index.md
-      - MNIST + MMD walkthrough: tutorials/mnist_mmd.md
+      - Source-Only vs MMD vs DANN: tutorials/mnist_mmd.md
       - MMD vs LMMD comparison: tutorials/mmd_vs_lmmd.md
       - Swapping the model: tutorials/swap_model.md
       - Custom dataset: tutorials/custom_dataset.md
