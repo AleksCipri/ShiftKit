@@ -1083,6 +1083,73 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#plot_confusion_matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plot_confusion_matrix
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="plot_confusion_matrix">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plot_roc_curve" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plot_roc_curve
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="plot_roc_curve">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-roc-and-auc-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How ROC and AUC work
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1324,6 +1391,73 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#plot_confusion_matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plot_confusion_matrix
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="plot_confusion_matrix">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plot_roc_curve" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plot_roc_curve
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="plot_roc_curve">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-roc-and-auc-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How ROC and AUC work
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1342,7 +1476,7 @@
 
 
 <h1 id="diagnostics">Diagnostics<a class="headerlink" href="#diagnostics" title="Permanent link">&para;</a></h1>
-<p><code>shiftkit.diagnostics</code> provides visualisation tools for inspecting latent spaces and training dynamics.</p>
+<p><code>shiftkit.diagnostics</code> provides visualisation tools for inspecting latent spaces, classification performance, and training dynamics.</p>
 <hr />
 <h2 id="plot_latent_space">plot_latent_space<a class="headerlink" href="#plot_latent_space" title="Permanent link">&para;</a></h2>
 <p>Encode samples from source and target loaders, project to 2-D, and plot two panels:</p>
@@ -1732,6 +1866,207 @@ UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction.
 </tr>
 </tbody>
 </table>
+<hr />
+<h2 id="plot_confusion_matrix">plot_confusion_matrix<a class="headerlink" href="#plot_confusion_matrix" title="Permanent link">&para;</a></h2>
+<p>Compute and display a <strong>normalised confusion matrix</strong> (row = true class, column = predicted class) for one or more models on a single DataLoader. Each cell shows the proportion of true-class samples predicted as each class — perfect classification gives an identity matrix.</p>
+<p>Accepts a single model or a <code>{label: model}</code> dict to compare multiple models side-by-side in one figure.</p>
+<div class="highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.diagnostics</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_confusion_matrix</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="c1"># Single model on target test set</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">fig</span> <span class="o">=</span> <span class="n">plot_confusion_matrix</span><span class="p">(</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">models</span><span class="o">=</span><span class="n">model_mmd</span><span class="p">,</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="n">loader</span><span class="o">=</span><span class="n">test_tgt</span><span class="p">,</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="n">domain</span><span class="o">=</span><span class="s2">&quot;target-test&quot;</span><span class="p">,</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;outputs/confusion_matrix.png&quot;</span><span class="p">,</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="p">)</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="c1"># Compare multiple models side-by-side</span>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="n">fig</span> <span class="o">=</span> <span class="n">plot_confusion_matrix</span><span class="p">(</span>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>    <span class="n">models</span><span class="o">=</span><span class="p">{</span>
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>        <span class="s2">&quot;Source Only&quot;</span><span class="p">:</span> <span class="n">model_baseline</span><span class="p">,</span>
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>        <span class="s2">&quot;MMD&quot;</span><span class="p">:</span>         <span class="n">model_mmd</span><span class="p">,</span>
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>        <span class="s2">&quot;LMMD&quot;</span><span class="p">:</span>        <span class="n">model_lmmd</span><span class="p">,</span>
+</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>    <span class="p">},</span>
+</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>    <span class="n">loader</span><span class="o">=</span><span class="n">test_tgt</span><span class="p">,</span>
+</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>    <span class="n">class_names</span><span class="o">=</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)],</span>
+</span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>    <span class="n">domain</span><span class="o">=</span><span class="s2">&quot;target-test&quot;</span><span class="p">,</span>
+</span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>    <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;outputs/confusion_matrix_comparison.png&quot;</span><span class="p">,</span>
+</span><span id="__span-4-23"><a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a>    <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+</span><span id="__span-4-24"><a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="parameters_3">Parameters<a class="headerlink" href="#parameters_3" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>models</code></td>
+<td><code>nn.Module \| dict[str, nn.Module]</code></td>
+<td>—</td>
+<td>Single model or <code>{label: model}</code> dict</td>
+</tr>
+<tr>
+<td><code>loader</code></td>
+<td><code>DataLoader</code></td>
+<td>—</td>
+<td>Labelled DataLoader to evaluate on</td>
+</tr>
+<tr>
+<td><code>class_names</code></td>
+<td><code>list[str] \| None</code></td>
+<td><code>None</code></td>
+<td>Class label strings; uses integers if <code>None</code></td>
+</tr>
+<tr>
+<td><code>max_samples</code></td>
+<td><code>int</code></td>
+<td><code>5000</code></td>
+<td>Maximum number of samples to evaluate</td>
+</tr>
+<tr>
+<td><code>normalize</code></td>
+<td><code>bool</code></td>
+<td><code>True</code></td>
+<td>Row-normalise to proportions; if <code>False</code> show raw counts</td>
+</tr>
+<tr>
+<td><code>domain</code></td>
+<td><code>str</code></td>
+<td><code>"target"</code></td>
+<td>Label shown in the figure title</td>
+</tr>
+<tr>
+<td><code>save_path</code></td>
+<td><code>str \| None</code></td>
+<td><code>None</code></td>
+<td>If set, save figure to this path</td>
+</tr>
+<tr>
+<td><code>show</code></td>
+<td><code>bool</code></td>
+<td><code>True</code></td>
+<td>Whether to call <code>plt.show()</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Returns:</strong> <code>matplotlib.figure.Figure</code></p>
+<div class="admonition tip">
+<p class="admonition-title">Interpreting the confusion matrix</p>
+<ul>
+<li><strong>Diagonal cells</strong> (top-left to bottom-right) show correct predictions for each class.</li>
+<li><strong>Off-diagonal cells</strong> reveal which classes are confused with each other.</li>
+<li>After DA, a well-adapted model should show a near-diagonal matrix on the target domain that closely matches its source-domain matrix.</li>
+</ul>
+</div>
+<hr />
+<h2 id="plot_roc_curve">plot_roc_curve<a class="headerlink" href="#plot_roc_curve" title="Permanent link">&para;</a></h2>
+<p>Plot <strong>per-class ROC curves with AUC scores</strong> using a one-vs-rest (OvR) strategy.</p>
+<ul>
+<li>For <strong>binary</strong> tasks: a single ROC curve is drawn.</li>
+<li>For <strong>multi-class</strong> tasks: one curve per class, all on the same axes per model.</li>
+</ul>
+<p>Accepts a single model or a <code>{label: model}</code> dict to compare models side-by-side.</p>
+<div class="highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.diagnostics</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_roc_curve</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="c1"># Single model</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">fig</span> <span class="o">=</span> <span class="n">plot_roc_curve</span><span class="p">(</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">models</span><span class="o">=</span><span class="n">model_mmd</span><span class="p">,</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="n">loader</span><span class="o">=</span><span class="n">test_tgt</span><span class="p">,</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="n">domain</span><span class="o">=</span><span class="s2">&quot;target-test&quot;</span><span class="p">,</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;outputs/roc_curves.png&quot;</span><span class="p">,</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="p">)</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="c1"># Compare multiple models</span>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="n">fig</span> <span class="o">=</span> <span class="n">plot_roc_curve</span><span class="p">(</span>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>    <span class="n">models</span><span class="o">=</span><span class="p">{</span>
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>        <span class="s2">&quot;Source Only&quot;</span><span class="p">:</span> <span class="n">model_baseline</span><span class="p">,</span>
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>        <span class="s2">&quot;MMD&quot;</span><span class="p">:</span>         <span class="n">model_mmd</span><span class="p">,</span>
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>        <span class="s2">&quot;LMMD&quot;</span><span class="p">:</span>        <span class="n">model_lmmd</span><span class="p">,</span>
+</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>    <span class="p">},</span>
+</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>    <span class="n">loader</span><span class="o">=</span><span class="n">test_tgt</span><span class="p">,</span>
+</span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>    <span class="n">class_names</span><span class="o">=</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)],</span>
+</span><span id="__span-5-21"><a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a>    <span class="n">domain</span><span class="o">=</span><span class="s2">&quot;target-test&quot;</span><span class="p">,</span>
+</span><span id="__span-5-22"><a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a>    <span class="n">save_path</span><span class="o">=</span><span class="s2">&quot;outputs/roc_comparison.png&quot;</span><span class="p">,</span>
+</span><span id="__span-5-23"><a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a>    <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+</span><span id="__span-5-24"><a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="parameters_4">Parameters<a class="headerlink" href="#parameters_4" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>models</code></td>
+<td><code>nn.Module \| dict[str, nn.Module]</code></td>
+<td>—</td>
+<td>Single model or <code>{label: model}</code> dict</td>
+</tr>
+<tr>
+<td><code>loader</code></td>
+<td><code>DataLoader</code></td>
+<td>—</td>
+<td>Labelled DataLoader to evaluate on</td>
+</tr>
+<tr>
+<td><code>class_names</code></td>
+<td><code>list[str] \| None</code></td>
+<td><code>None</code></td>
+<td>Class label strings; uses integers if <code>None</code></td>
+</tr>
+<tr>
+<td><code>max_samples</code></td>
+<td><code>int</code></td>
+<td><code>5000</code></td>
+<td>Maximum number of samples to evaluate</td>
+</tr>
+<tr>
+<td><code>domain</code></td>
+<td><code>str</code></td>
+<td><code>"target"</code></td>
+<td>Label shown in the figure title</td>
+</tr>
+<tr>
+<td><code>save_path</code></td>
+<td><code>str \| None</code></td>
+<td><code>None</code></td>
+<td>If set, save figure to this path</td>
+</tr>
+<tr>
+<td><code>show</code></td>
+<td><code>bool</code></td>
+<td><code>True</code></td>
+<td>Whether to call <code>plt.show()</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Returns:</strong> <code>matplotlib.figure.Figure</code></p>
+<h3 id="how-roc-and-auc-work">How ROC and AUC work<a class="headerlink" href="#how-roc-and-auc-work" title="Permanent link">&para;</a></h3>
+<p>The <strong>ROC curve</strong> plots the True Positive Rate (recall) against the False Positive Rate as the classification threshold varies. For multi-class problems each class c is treated as the positive class and all others as negative (one-vs-rest).</p>
+<div class="arithmatex">\[\text{TPR} = \frac{TP}{TP + FN}, \qquad \text{FPR} = \frac{FP}{FP + TN}\]</div>
+<p>The <strong>Area Under the Curve (AUC)</strong> summarises the entire ROC curve as a single number:</p>
+<ul>
+<li><strong>AUC = 1.0</strong> — perfect classifier</li>
+<li><strong>AUC = 0.5</strong> — random chance (diagonal dashed line)</li>
+<li><strong>AUC &lt; 0.5</strong> — worse than random (predictions are systematically inverted)</li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">AUC as a DA quality metric</p>
+<p>Compare AUC on the <strong>target test set</strong> across methods. An improvement over the Source-Only baseline directly quantifies the benefit of domain adaptation for each class, independent of the classification threshold.</p>
+</div>
 
 
 
