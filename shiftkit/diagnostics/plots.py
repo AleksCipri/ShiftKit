@@ -17,6 +17,18 @@ Left panel: CE loss per model. Right panel: source & target accuracy per model.
 compare_latent_spaces
 ---------------------
 Side-by-side grid comparing multiple models' latent spaces (one row per model).
+
+plot_confusion_matrix
+---------------------
+Compute and display a normalised confusion matrix for one or more models on a
+given DataLoader.  Accepts a single model or a dict {label: model} to compare
+multiple models side-by-side.
+
+plot_roc_curve
+--------------
+Plot per-class ROC curves with AUC scores.  For binary tasks the curve is a
+single line; for multi-class tasks one curve per class (OvR) is drawn.
+Accepts a single model or a dict {label: model} for comparison.
 """
 
 import torch
@@ -24,7 +36,7 @@ import torch.nn as nn
 import numpy as np
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
-from typing import Optional, Union
+from typing import Dict, List, Optional, Union
 
 
 # ─── helpers ─────────────────────────────────────────────────────────────────
@@ -271,6 +283,33 @@ def compare_latent_spaces(
     return fig
 
 
+@torch.no_grad()
+def _collect_predictions(
+    model: nn.Module,
+    loader: DataLoader,
+    device: torch.device,
+    max_samples: int,
+):
+    """Return (true_labels, predicted_labels, softmax_probs) numpy arrays."""
+    model.eval()
+    ys, y_preds, probs = [], [], []
+    n = 0
+    for x, y in loader:
+        x = x.to(device)
+        logits = model(x)
+        p = torch.softmax(logits, dim=1).cpu().numpy()
+        probs.append(p)
+        y_preds.append(logits.argmax(1).cpu().numpy())
+        ys.append(y.numpy())
+        n += len(y)
+        if n >= max_samples:
+            break
+    ys      = np.concatenate(ys)[:max_samples]
+    y_preds = np.concatenate(y_preds)[:max_samples]
+    probs   = np.concatenate(probs)[:max_samples]
+    return ys, y_preds, probs
+
+
 def plot_training_history(
     histories: Union[list, dict],
     save_path: Optional[str] = None,
@@ -317,6 +356,174 @@ def plot_training_history(
     ax2.set_title("Source & Target Accuracy")
     ax2.set_ylim(0, 100)
     ax2.legend(fontsize=8); ax2.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    if save_path:
+        fig.savefig(save_path, dpi=150, bbox_inches="tight")
+        print(f"Figure saved to {save_path}")
+    if show:
+        plt.show()
+    return fig
+
+
+def plot_confusion_matrix(
+    models: Union[nn.Module, Dict[str, nn.Module]],
+    loader: DataLoader,
+    class_names: Optional[List[str]] = None,
+    max_samples: int = 5000,
+    normalize: bool = True,
+    domain: str = "target",
+    save_path: Optional[str] = None,
+    show: bool = True,
+) -> plt.Figure:
+    """
+    Plot a normalised confusion matrix for one or more models.
+
+    Parameters
+    ----------
+    models      : a single model, or a dict {label: model} to compare side-by-side
+    loader      : labelled DataLoader (source or target test split)
+    class_names : list of class label strings; uses integers if None
+    max_samples : maximum number of samples to evaluate
+    normalize   : if True (default) show row-normalised proportions; else raw counts
+    domain      : label shown in the figure title (e.g. "target", "source")
+    save_path   : if set, save figure to this path
+    show        : whether to call plt.show()
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+    """
+    from sklearn.metrics import confusion_matrix
+
+    if isinstance(models, nn.Module):
+        models = {"Model": models}
+
+    n_models = len(models)
+    fig, axes = plt.subplots(
+        1, n_models,
+        figsize=(5 * n_models, 4.5),
+        squeeze=False,
+    )
+    fig.suptitle(f"Confusion Matrix — {domain}", fontsize=13, fontweight="bold")
+
+    for col, (name, model) in enumerate(models.items()):
+        device = _device_of(model)
+        y_true, y_pred, _ = _collect_predictions(model, loader, device, max_samples)
+
+        cm = confusion_matrix(y_true, y_pred)
+        if normalize:
+            row_sums = cm.sum(axis=1, keepdims=True)
+            cm = np.where(row_sums == 0, 0.0, cm / row_sums.astype(float))
+
+        ax = axes[0, col]
+        im = ax.imshow(cm, interpolation="nearest", cmap="Blues",
+                       vmin=0.0, vmax=(1.0 if normalize else None))
+        fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+
+        n_classes = cm.shape[0]
+        ticks = np.arange(n_classes)
+        labels = class_names if class_names else [str(i) for i in ticks]
+        ax.set_xticks(ticks); ax.set_xticklabels(labels, rotation=45, ha="right", fontsize=8)
+        ax.set_yticks(ticks); ax.set_yticklabels(labels, fontsize=8)
+
+        # annotate cells
+        thresh = cm.max() / 2.0
+        fmt = ".2f" if normalize else "d"
+        for i in range(n_classes):
+            for j in range(n_classes):
+                val = cm[i, j]
+                ax.text(j, i, format(val, fmt),
+                        ha="center", va="center", fontsize=7,
+                        color="white" if val > thresh else "black")
+
+        acc = np.diag(cm).sum() / (cm.sum() if not normalize else n_classes)
+        ax.set_title(f"{name}\nacc={y_true[y_pred == y_true].size / y_true.size * 100:.1f}%",
+                     fontsize=10)
+        ax.set_xlabel("Predicted label")
+        ax.set_ylabel("True label")
+
+    plt.tight_layout()
+    if save_path:
+        fig.savefig(save_path, dpi=150, bbox_inches="tight")
+        print(f"Figure saved to {save_path}")
+    if show:
+        plt.show()
+    return fig
+
+
+def plot_roc_curve(
+    models: Union[nn.Module, Dict[str, nn.Module]],
+    loader: DataLoader,
+    class_names: Optional[List[str]] = None,
+    max_samples: int = 5000,
+    domain: str = "target",
+    save_path: Optional[str] = None,
+    show: bool = True,
+) -> plt.Figure:
+    """
+    Plot per-class ROC curves with AUC scores (one-vs-rest for multi-class).
+
+    For binary tasks a single ROC curve is drawn.
+    For multi-class tasks one curve per class is drawn on the same axes per model.
+
+    Parameters
+    ----------
+    models      : a single model, or a dict {label: model} to compare side-by-side
+    loader      : labelled DataLoader (source or target test split)
+    class_names : list of class label strings; uses integers if None
+    max_samples : maximum number of samples to evaluate
+    domain      : label shown in the figure title
+    save_path   : if set, save figure to this path
+    show        : whether to call plt.show()
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+    """
+    from sklearn.metrics import roc_curve, auc
+    from sklearn.preprocessing import label_binarize
+
+    if isinstance(models, nn.Module):
+        models = {"Model": models}
+
+    n_models = len(models)
+    fig, axes = plt.subplots(
+        1, n_models,
+        figsize=(5 * n_models, 4.5),
+        squeeze=False,
+    )
+    fig.suptitle(f"ROC Curves — {domain}", fontsize=13, fontweight="bold")
+
+    for col, (name, model) in enumerate(models.items()):
+        device = _device_of(model)
+        y_true, _, probs = _collect_predictions(model, loader, device, max_samples)
+
+        n_classes = probs.shape[1]
+        labels = class_names if class_names else [str(i) for i in range(n_classes)]
+        ax = axes[0, col]
+
+        if n_classes == 2:
+            fpr, tpr, _ = roc_curve(y_true, probs[:, 1])
+            roc_auc = auc(fpr, tpr)
+            ax.plot(fpr, tpr, lw=2,
+                    label=f"{labels[1]}  (AUC={roc_auc:.3f})")
+        else:
+            y_bin = label_binarize(y_true, classes=np.arange(n_classes))
+            colors = plt.cm.tab10(np.linspace(0, 1, n_classes))
+            for c in range(n_classes):
+                fpr, tpr, _ = roc_curve(y_bin[:, c], probs[:, c])
+                roc_auc = auc(fpr, tpr)
+                ax.plot(fpr, tpr, color=colors[c], lw=1.5,
+                        label=f"{labels[c]}  (AUC={roc_auc:.3f})")
+
+        ax.plot([0, 1], [0, 1], "k--", lw=1, alpha=0.5)
+        ax.set_xlim([-0.02, 1.02]); ax.set_ylim([-0.02, 1.05])
+        ax.set_xlabel("False Positive Rate")
+        ax.set_ylabel("True Positive Rate")
+        ax.set_title(name, fontsize=10)
+        ax.legend(fontsize=7, loc="lower right")
+        ax.grid(True, alpha=0.3)
 
     plt.tight_layout()
     if save_path:

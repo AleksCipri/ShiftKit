@@ -1,6 +1,6 @@
 # Diagnostics
 
-`shiftkit.diagnostics` provides visualisation tools for inspecting latent spaces and training dynamics.
+`shiftkit.diagnostics` provides visualisation tools for inspecting latent spaces, classification performance, and training dynamics.
 
 ---
 
@@ -225,3 +225,125 @@ Each history is a `list[dict]` returned by `trainer.fit()`. Required keys:
 | `total_loss` | `float` | Total loss |
 | `src_acc` | `float` | Source accuracy in `[0, 1]` |
 | `tgt_acc` | `float` | Target accuracy in `[0, 1]` |
+
+---
+
+## plot_confusion_matrix
+
+Compute and display a **normalised confusion matrix** (row = true class, column = predicted class) for one or more models on a single DataLoader. Each cell shows the proportion of true-class samples predicted as each class — perfect classification gives an identity matrix.
+
+Accepts a single model or a `{label: model}` dict to compare multiple models side-by-side in one figure.
+
+```python
+from shiftkit.diagnostics import plot_confusion_matrix
+
+# Single model on target test set
+fig = plot_confusion_matrix(
+    models=model_mmd,
+    loader=test_tgt,
+    domain="target-test",
+    save_path="outputs/confusion_matrix.png",
+    show=False,
+)
+
+# Compare multiple models side-by-side
+fig = plot_confusion_matrix(
+    models={
+        "Source Only": model_baseline,
+        "MMD":         model_mmd,
+        "LMMD":        model_lmmd,
+    },
+    loader=test_tgt,
+    class_names=[str(i) for i in range(10)],
+    domain="target-test",
+    save_path="outputs/confusion_matrix_comparison.png",
+    show=False,
+)
+```
+
+### Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `models` | `nn.Module \| dict[str, nn.Module]` | — | Single model or `{label: model}` dict |
+| `loader` | `DataLoader` | — | Labelled DataLoader to evaluate on |
+| `class_names` | `list[str] \| None` | `None` | Class label strings; uses integers if `None` |
+| `max_samples` | `int` | `5000` | Maximum number of samples to evaluate |
+| `normalize` | `bool` | `True` | Row-normalise to proportions; if `False` show raw counts |
+| `domain` | `str` | `"target"` | Label shown in the figure title |
+| `save_path` | `str \| None` | `None` | If set, save figure to this path |
+| `show` | `bool` | `True` | Whether to call `plt.show()` |
+
+**Returns:** `matplotlib.figure.Figure`
+
+!!! tip "Interpreting the confusion matrix"
+    - **Diagonal cells** (top-left to bottom-right) show correct predictions for each class.
+    - **Off-diagonal cells** reveal which classes are confused with each other.
+    - After DA, a well-adapted model should show a near-diagonal matrix on the target domain that closely matches its source-domain matrix.
+
+---
+
+## plot_roc_curve
+
+Plot **per-class ROC curves with AUC scores** using a one-vs-rest (OvR) strategy.
+
+- For **binary** tasks: a single ROC curve is drawn.
+- For **multi-class** tasks: one curve per class, all on the same axes per model.
+
+Accepts a single model or a `{label: model}` dict to compare models side-by-side.
+
+```python
+from shiftkit.diagnostics import plot_roc_curve
+
+# Single model
+fig = plot_roc_curve(
+    models=model_mmd,
+    loader=test_tgt,
+    domain="target-test",
+    save_path="outputs/roc_curves.png",
+    show=False,
+)
+
+# Compare multiple models
+fig = plot_roc_curve(
+    models={
+        "Source Only": model_baseline,
+        "MMD":         model_mmd,
+        "LMMD":        model_lmmd,
+    },
+    loader=test_tgt,
+    class_names=[str(i) for i in range(10)],
+    domain="target-test",
+    save_path="outputs/roc_comparison.png",
+    show=False,
+)
+```
+
+### Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `models` | `nn.Module \| dict[str, nn.Module]` | — | Single model or `{label: model}` dict |
+| `loader` | `DataLoader` | — | Labelled DataLoader to evaluate on |
+| `class_names` | `list[str] \| None` | `None` | Class label strings; uses integers if `None` |
+| `max_samples` | `int` | `5000` | Maximum number of samples to evaluate |
+| `domain` | `str` | `"target"` | Label shown in the figure title |
+| `save_path` | `str \| None` | `None` | If set, save figure to this path |
+| `show` | `bool` | `True` | Whether to call `plt.show()` |
+
+**Returns:** `matplotlib.figure.Figure`
+
+### How ROC and AUC work
+
+The **ROC curve** plots the True Positive Rate (recall) against the False Positive Rate as the classification threshold varies. For multi-class problems each class c is treated as the positive class and all others as negative (one-vs-rest).
+
+$$\text{TPR} = \frac{TP}{TP + FN}, \qquad \text{FPR} = \frac{FP}{FP + TN}$$
+
+The **Area Under the Curve (AUC)** summarises the entire ROC curve as a single number:
+
+- **AUC = 1.0** — perfect classifier
+- **AUC = 0.5** — random chance (diagonal dashed line)
+- **AUC < 0.5** — worse than random (predictions are systematically inverted)
+
+!!! tip "AUC as a DA quality metric"
+    Compare AUC on the **target test set** across methods. An improvement over the Source-Only baseline directly quantifies the benefit of domain adaptation for each class, independent of the classification threshold.
