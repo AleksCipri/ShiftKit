@@ -1957,6 +1957,12 @@ UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction.
 </tbody>
 </table>
 <p><strong>Returns:</strong> <code>matplotlib.figure.Figure</code></p>
+<p><strong>Target domain output (Source-Only vs MMD):</strong></p>
+<p><img alt="Confusion Matrix — Target" src="../assets/confusion_matrix_target.png" />
+<em>Row-normalised confusion matrices on the Noisy MNIST target test set. Source-Only (left) shows visible off-diagonal errors due to domain shift; MMD (right) recovers a near-diagonal structure.</em></p>
+<p><strong>Source domain output (reference):</strong></p>
+<p><img alt="Confusion Matrix — Source" src="../assets/confusion_matrix_source.png" />
+<em>Same models evaluated on the clean MNIST source test set — both models perform similarly here, confirming the performance gap is domain-induced.</em></p>
 <div class="admonition tip">
 <p class="admonition-title">Interpreting the confusion matrix</p>
 <ul>
@@ -2063,6 +2069,12 @@ UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction.
 <li><strong>AUC = 0.5</strong> — random chance (diagonal dashed line)</li>
 <li><strong>AUC &lt; 0.5</strong> — worse than random (predictions are systematically inverted)</li>
 </ul>
+<p><strong>Target domain output (Source-Only vs MMD):</strong></p>
+<p><img alt="ROC Curves — Target" src="../assets/roc_curves_target.png" />
+<em>Per-class ROC curves on the Noisy MNIST target test set. Source-Only (left) shows lower AUC for several classes due to domain shift; MMD (right) restores near-perfect AUC across all 10 digits.</em></p>
+<p><strong>Source domain output (reference):</strong></p>
+<p><img alt="ROC Curves — Source" src="../assets/roc_curves_source.png" />
+<em>Same models on the clean MNIST source test set — both models show high AUC on source, confirming the drop on target is domain-induced rather than a training failure.</em></p>
 <div class="admonition tip">
 <p class="admonition-title">AUC as a DA quality metric</p>
 <p>Compare AUC on the <strong>target test set</strong> across methods. An improvement over the Source-Only baseline directly quantifies the benefit of domain adaptation for each class, independent of the classification threshold.</p>
