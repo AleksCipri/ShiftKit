@@ -569,6 +569,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#adding-a-custom-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding a custom method
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -677,6 +688,34 @@
     
   
     SIDDA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="custom/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom Methods
   
 
     
@@ -846,6 +885,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#adding-a-custom-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding a custom method
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -901,6 +951,12 @@ identical per-epoch history dicts so their results can be directly compared.</p>
 <td>Sinkhorn optimal transport + learnable η weights</td>
 <td><code>warmup_epochs</code></td>
 <td><a href="sidda/">→</a></td>
+</tr>
+<tr>
+<td>Custom</td>
+<td>Your own method</td>
+<td>—</td>
+<td><a href="custom/">→</a></td>
 </tr>
 </tbody>
 </table>
@@ -998,6 +1054,9 @@ the gap between them quantifies the remaining domain shift.</p>
 increase to <code>2.0</code>–<code>5.0</code> if source and target embeddings remain separated
 after training.</p>
 </div>
+<hr />
+<h2 id="adding-a-custom-method">Adding a custom method<a class="headerlink" href="#adding-a-custom-method" title="Permanent link">&para;</a></h2>
+<p>Subclass <code>BaseTrainer</code> and register it with <code>TrainerRegistry</code> to make it available by name alongside the built-ins. See the <a href="custom/">Custom Methods</a> page for a full guide and example.</p>
 
 
 
