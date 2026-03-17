@@ -276,6 +276,16 @@ fig = plot_confusion_matrix(
 
 **Returns:** `matplotlib.figure.Figure`
 
+**Target domain output (Source-Only vs MMD):**
+
+![Confusion Matrix — Target](assets/confusion_matrix_target.png)
+*Row-normalised confusion matrices on the Noisy MNIST target test set. Source-Only (left) shows visible off-diagonal errors due to domain shift; MMD (right) recovers a near-diagonal structure.*
+
+**Source domain output (reference):**
+
+![Confusion Matrix — Source](assets/confusion_matrix_source.png)
+*Same models evaluated on the clean MNIST source test set — both models perform similarly here, confirming the performance gap is domain-induced.*
+
 !!! tip "Interpreting the confusion matrix"
     - **Diagonal cells** (top-left to bottom-right) show correct predictions for each class.
     - **Off-diagonal cells** reveal which classes are confused with each other.
@@ -344,6 +354,16 @@ The **Area Under the Curve (AUC)** summarises the entire ROC curve as a single n
 - **AUC = 1.0** — perfect classifier
 - **AUC = 0.5** — random chance (diagonal dashed line)
 - **AUC < 0.5** — worse than random (predictions are systematically inverted)
+
+**Target domain output (Source-Only vs MMD):**
+
+![ROC Curves — Target](assets/roc_curves_target.png)
+*Per-class ROC curves on the Noisy MNIST target test set. Source-Only (left) shows lower AUC for several classes due to domain shift; MMD (right) restores near-perfect AUC across all 10 digits.*
+
+**Source domain output (reference):**
+
+![ROC Curves — Source](assets/roc_curves_source.png)
+*Same models on the clean MNIST source test set — both models show high AUC on source, confirming the drop on target is domain-induced rather than a training failure.*
 
 !!! tip "AUC as a DA quality metric"
     Compare AUC on the **target test set** across methods. An improvement over the Source-Only baseline directly quantifies the benefit of domain adaptation for each class, independent of the classification threshold.
