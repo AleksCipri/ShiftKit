@@ -50,6 +50,7 @@ nav:
           - MMD: methods/mmd.md
           - DANN: methods/dann.md
           - SIDDA: methods/sidda.md
+          - Custom Methods: methods/custom.md
       - Diagnostics: diagnostics.md
   - Citation: citation.md
   - Credits: credits.md

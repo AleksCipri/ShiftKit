@@ -13,6 +13,7 @@ identical per-epoch history dicts so their results can be directly compared.
 | [`MMDTrainer`](mmd.md) | Latent distribution matching via MMD | `mmd_weight` λ | [→](mmd.md) |
 | [`DANNTrainer`](dann.md) | Adversarial discriminator + GRL | `domain_weight` λ | [→](dann.md) |
 | [`SIDDATrainer`](sidda.md) | Sinkhorn optimal transport + learnable η weights | `warmup_epochs` | [→](sidda.md) |
+| Custom | Your own method | — | [→](custom.md) |
 
 All trainers share the same interface:
 
@@ -66,3 +67,9 @@ the gap between them quantifies the remaining domain shift.
     Start at `1.0`. Reduce to `0.1`–`0.5` if source accuracy degrades sharply;
     increase to `2.0`–`5.0` if source and target embeddings remain separated
     after training.
+
+---
+
+## Adding a custom method
+
+Subclass `BaseTrainer` and register it with `TrainerRegistry` to make it available by name alongside the built-ins. See the [Custom Methods](custom.md) page for a full guide and example.
