@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://AleksCipri.github.io/ShiftKit/methods/source_only/">
+        <link rel="canonical" href="https://AleksCipri.github.io/ShiftKit/tutorials/swap_model/">
       
       
-        <link rel="prev" href="../">
+        <link rel="prev" href="../mmd_vs_lmmd/">
       
       
-        <link rel="next" href="../mmd/">
+        <link rel="next" href="../custom_dataset/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>Source Only - ShiftKit</title>
+        <title>Swapping the model - ShiftKit</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#sourceonlytrainer" class="md-skip">
+        <a href="#tutorial-3-swapping-the-model" class="md-skip">
           Skip to content
         </a>
       
@@ -115,7 +115,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Source Only
+              Swapping the model
             
           </span>
         </div>
@@ -286,8 +286,10 @@
       
   
   
+    
   
   
+  
     
     
     
@@ -298,11 +300,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
@@ -323,7 +325,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -341,7 +343,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorials/" class="md-nav__link">
+      <a href="../" class="md-nav__link">
         
   
   
@@ -369,7 +371,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorials/mnist_mmd/" class="md-nav__link">
+      <a href="../mnist_mmd/" class="md-nav__link">
         
   
   
@@ -397,7 +399,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorials/mmd_vs_lmmd/" class="md-nav__link">
+      <a href="../mmd_vs_lmmd/" class="md-nav__link">
         
   
   
@@ -422,10 +424,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../tutorials/swap_model/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Swapping the model
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -441,6 +470,59 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#cnn-mlp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CNN → MLP
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#graph-data-with-simplegcn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Graph data with SimpleGCN
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#custom-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -453,7 +535,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorials/custom_dataset/" class="md-nav__link">
+      <a href="../custom_dataset/" class="md-nav__link">
         
   
   
@@ -481,7 +563,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorials/tuning/" class="md-nav__link">
+      <a href="../tuning/" class="md-nav__link">
         
   
   
@@ -513,8 +595,6 @@
       
   
   
-    
-  
   
   
     
@@ -527,11 +607,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
@@ -552,7 +632,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -623,8 +703,6 @@
                 
   
   
-    
-  
   
   
     
@@ -634,11 +712,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" >
         
           
           <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
@@ -659,7 +737,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -677,7 +755,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../" class="md-nav__link">
+      <a href="../../methods/" class="md-nav__link">
         
   
   
@@ -702,37 +780,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Source Only
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../methods/source_only/" class="md-nav__link">
         
   
   
@@ -748,70 +799,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Usage
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#constructor" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Constructor
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#fitepochs10" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        fit(epochs=10)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#evaluateloader-domainsource" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        evaluate(loader, domain="source")
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -824,7 +811,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../mmd/" class="md-nav__link">
+      <a href="../../methods/mmd/" class="md-nav__link">
         
   
   
@@ -852,7 +839,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../dann/" class="md-nav__link">
+      <a href="../../methods/dann/" class="md-nav__link">
         
   
   
@@ -880,7 +867,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../lmmd/" class="md-nav__link">
+      <a href="../../methods/lmmd/" class="md-nav__link">
         
   
   
@@ -908,7 +895,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../sidda/" class="md-nav__link">
+      <a href="../../methods/sidda/" class="md-nav__link">
         
   
   
@@ -936,7 +923,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../custom/" class="md-nav__link">
+      <a href="../../methods/custom/" class="md-nav__link">
         
   
   
@@ -1081,10 +1068,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
+  <a href="#cnn-mlp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Usage
+        CNN → MLP
       
     </span>
   </a>
@@ -1092,10 +1079,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#constructor" class="md-nav__link">
+  <a href="#graph-data-with-simplegcn" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Constructor
+        Graph data with SimpleGCN
       
     </span>
   </a>
@@ -1103,21 +1090,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#fitepochs10" class="md-nav__link">
+  <a href="#custom-architecture" class="md-nav__link">
     <span class="md-ellipsis">
       
-        fit(epochs=10)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#evaluateloader-domainsource" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        evaluate(loader, domain="source")
+        Custom architecture
       
     </span>
   </a>
@@ -1141,112 +1117,83 @@
 
 
 
-<h1 id="sourceonlytrainer">SourceOnlyTrainer<a class="headerlink" href="#sourceonlytrainer" title="Permanent link">&para;</a></h1>
-<p>A <strong>no-adaptation baseline</strong> that trains exclusively on labelled source data
-using cross-entropy loss. No domain alignment is applied.</p>
-<p>Use this alongside an adaptation method (MMD, DANN, …) to quantify how much
-benefit domain adaptation provides on your task.</p>
+<h1 id="tutorial-3-swapping-the-model">Tutorial 3 — Swapping the model<a class="headerlink" href="#tutorial-3-swapping-the-model" title="Permanent link">&para;</a></h1>
+<p>All ShiftKit trainers work with any model that exposes <code>.encode(x)</code> and
+<code>.classify(z)</code>. This tutorial covers three scenarios: switching from CNN to MLP,
+using the built-in graph model <code>SimpleGCN</code>, and writing a completely custom
+architecture.</p>
 <hr />
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">SourceOnlyTrainer</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">SourceOnlyTrainer</span><span class="p">(</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">source_loader</span><span class="o">=</span><span class="n">train_src</span><span class="p">,</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">target_loader</span><span class="o">=</span><span class="n">train_tgt</span><span class="p">,</span>   <span class="c1"># used for tgt_acc tracking only</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="p">)</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="n">history</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="n">result</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">test_tgt</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="s2">&quot;target-test&quot;</span><span class="p">)</span>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Target accuracy: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
+<h2 id="cnn-mlp">CNN → MLP<a class="headerlink" href="#cnn-mlp" title="Permanent link">&para;</a></h2>
+<p>Set <code>MODEL_TYPE = "mlp"</code> in the <code>examples/mnist_mmd.py</code> config, or directly:</p>
+<div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.models</span><span class="w">  </span><span class="kn">import</span> <span class="n">MLP</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">MMDTrainer</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">model</span> <span class="o">=</span> <span class="n">MLP</span><span class="p">(</span><span class="n">latent_dim</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">hidden_dims</span><span class="o">=</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span> <span class="n">dropout</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">MMDTrainer</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">train_src</span><span class="p">,</span> <span class="n">train_tgt</span><span class="p">,</span> <span class="n">mmd_weight</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </span></code></pre></div>
+<p><code>MLP</code> flattens the input automatically, so it works on the same MNIST loaders
+without any data changes.</p>
 <hr />
-<h2 id="constructor">Constructor<a class="headerlink" href="#constructor" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>model</code></td>
-<td><code>nn.Module</code></td>
-<td>—</td>
-<td>Any model with a standard <code>forward()</code> method</td>
-</tr>
-<tr>
-<td><code>source_loader</code></td>
-<td><code>DataLoader</code></td>
-<td>—</td>
-<td>Labelled source DataLoader</td>
-</tr>
-<tr>
-<td><code>target_loader</code></td>
-<td><code>DataLoader</code></td>
-<td>—</td>
-<td>Target DataLoader (labels used for <code>tgt_acc</code> tracking only)</td>
-</tr>
-<tr>
-<td><code>lr</code></td>
-<td><code>float</code></td>
-<td><code>1e-3</code></td>
-<td>Adam learning rate</td>
-</tr>
-<tr>
-<td><code>device</code></td>
-<td><code>str \| None</code></td>
-<td><code>None</code></td>
-<td><code>'cuda'</code>, <code>'mps'</code>, or <code>'cpu'</code>; auto-detected if <code>None</code></td>
-</tr>
-</tbody>
-</table>
+<h2 id="graph-data-with-simplegcn">Graph data with SimpleGCN<a class="headerlink" href="#graph-data-with-simplegcn" title="Permanent link">&para;</a></h2>
+<p>For the built-in graph benchmark (<code>"synthetic_graphs"</code>):</p>
+<div class="highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.data</span><span class="w">    </span><span class="kn">import</span> <span class="n">DataManager</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.models</span><span class="w">  </span><span class="kn">import</span> <span class="n">SimpleGCN</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">LMMDTrainer</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">dm</span> <span class="o">=</span> <span class="n">DataManager</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="n">train_src</span><span class="p">,</span> <span class="n">train_tgt</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;synthetic_graphs&quot;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">test_src</span><span class="p">,</span>  <span class="n">test_tgt</span>  <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;synthetic_graphs&quot;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="n">model</span> <span class="o">=</span> <span class="n">SimpleGCN</span><span class="p">(</span><span class="n">n_nodes</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">feat_dim</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">latent_dim</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">LMMDTrainer</span><span class="p">(</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="n">source_loader</span><span class="o">=</span><span class="n">train_src</span><span class="p">,</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="n">target_loader</span><span class="o">=</span><span class="n">train_tgt</span><span class="p">,</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span class="n">num_classes</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    <span class="n">lmmd_weight</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="n">warmup_epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="p">)</span>
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="n">history</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">epochs</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Each graph sample is a packed tensor <code>(N, N+feat_dim)</code> — no PyTorch Geometric
+required.  See <a href="../../models/#simplegcn">SimpleGCN</a> for architecture details.</p>
 <hr />
-<h2 id="fitepochs10"><code>fit(epochs=10)</code><a class="headerlink" href="#fitepochs10" title="Permanent link">&para;</a></h2>
-<p>Train for <code>epochs</code> epochs using cross-entropy on source data only.</p>
-<p><strong>Returns:</strong> <code>list[dict]</code> — one dict per epoch:</p>
-<table>
-<thead>
-<tr>
-<th>Key</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>epoch</code></td>
-<td>Epoch number (1-indexed)</td>
-</tr>
-<tr>
-<td><code>ce_loss</code></td>
-<td>Mean cross-entropy loss</td>
-</tr>
-<tr>
-<td><code>mmd_loss</code></td>
-<td>Always <code>0.0</code> (for history-format compatibility)</td>
-</tr>
-<tr>
-<td><code>total_loss</code></td>
-<td>Same as <code>ce_loss</code></td>
-</tr>
-<tr>
-<td><code>src_acc</code></td>
-<td>Source domain training accuracy</td>
-</tr>
-<tr>
-<td><code>tgt_acc</code></td>
-<td>Target domain accuracy (no gradient signal — purely diagnostic)</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="evaluateloader-domainsource"><code>evaluate(loader, domain="source")</code><a class="headerlink" href="#evaluateloader-domainsource" title="Permanent link">&para;</a></h2>
-<p>Compute classification accuracy on any labelled DataLoader.</p>
-<p><strong>Returns:</strong> <code>dict</code> with keys <code>domain</code> (str), <code>accuracy</code> (float), <code>n_samples</code> (int).</p>
+<h2 id="custom-architecture">Custom architecture<a class="headerlink" href="#custom-architecture" title="Permanent link">&para;</a></h2>
+<p>Any <code>nn.Module</code> with <code>.encode()</code>, <code>.classify()</code>, and <code>.forward()</code> works:</p>
+<div class="highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">MMDTrainer</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="k">class</span><span class="w"> </span><span class="nc">ResidualEncoder</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">):</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">fc1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">input_dim</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">fc2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">bottleneck</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">)</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">head</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">latent_dim</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">act</span>  <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">()</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">encode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>        <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">act</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fc1</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>        <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">act</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fc2</span><span class="p">(</span><span class="n">h</span><span class="p">)</span> <span class="o">+</span> <span class="n">h</span><span class="p">)</span>   <span class="c1"># residual connection</span>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">act</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bottleneck</span><span class="p">(</span><span class="n">h</span><span class="p">))</span>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">classify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>
+</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">classify</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>
+</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="n">model</span> <span class="o">=</span> <span class="n">ResidualEncoder</span><span class="p">(</span><span class="n">input_dim</span><span class="o">=</span><span class="mi">784</span><span class="p">,</span> <span class="n">latent_dim</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">MMDTrainer</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">train_src</span><span class="p">,</span> <span class="n">train_tgt</span><span class="p">,</span> <span class="n">mmd_weight</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+</span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</span></code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For <code>SIDDATrainer</code>, the model must also expose a <code>latent_dim</code> attribute
+(used to set up the learnable η parameters).</p>
+</div>
 
 
 

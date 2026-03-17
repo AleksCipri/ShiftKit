@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://AleksCipri.github.io/ShiftKit/methods/source_only/">
+        <link rel="canonical" href="https://AleksCipri.github.io/ShiftKit/tutorials/mmd_vs_lmmd/">
       
       
-        <link rel="prev" href="../">
+        <link rel="prev" href="../mnist_mmd/">
       
       
-        <link rel="next" href="../mmd/">
+        <link rel="next" href="../swap_model/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>Source Only - ShiftKit</title>
+        <title>MMD vs LMMD comparison - ShiftKit</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#sourceonlytrainer" class="md-skip">
+        <a href="#tutorial-2-mmd-vs-lmmd-comparison" class="md-skip">
           Skip to content
         </a>
       
@@ -115,7 +115,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Source Only
+              MMD vs LMMD comparison
             
           </span>
         </div>
@@ -286,8 +286,10 @@
       
   
   
+    
   
   
+  
     
     
     
@@ -298,11 +300,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
@@ -323,7 +325,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -341,7 +343,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorials/" class="md-nav__link">
+      <a href="../" class="md-nav__link">
         
   
   
@@ -369,7 +371,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorials/mnist_mmd/" class="md-nav__link">
+      <a href="../mnist_mmd/" class="md-nav__link">
         
   
   
@@ -394,10 +396,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../tutorials/mmd_vs_lmmd/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MMD vs LMMD comparison
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -413,6 +442,81 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#run-the-script" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run the script
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-difference-global-vs-local-alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key difference: global vs local alignment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#code-walkthrough" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Code walkthrough
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#outputs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Outputs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-prefer-lmmd-over-mmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to prefer LMMD over MMD
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -425,7 +529,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorials/swap_model/" class="md-nav__link">
+      <a href="../swap_model/" class="md-nav__link">
         
   
   
@@ -453,7 +557,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorials/custom_dataset/" class="md-nav__link">
+      <a href="../custom_dataset/" class="md-nav__link">
         
   
   
@@ -481,7 +585,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorials/tuning/" class="md-nav__link">
+      <a href="../tuning/" class="md-nav__link">
         
   
   
@@ -513,8 +617,6 @@
       
   
   
-    
-  
   
   
     
@@ -527,11 +629,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
@@ -552,7 +654,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -623,8 +725,6 @@
                 
   
   
-    
-  
   
   
     
@@ -634,11 +734,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" >
         
           
           <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
@@ -659,7 +759,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -677,7 +777,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../" class="md-nav__link">
+      <a href="../../methods/" class="md-nav__link">
         
   
   
@@ -702,37 +802,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Source Only
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../methods/source_only/" class="md-nav__link">
         
   
   
@@ -748,70 +821,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Usage
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#constructor" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Constructor
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#fitepochs10" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        fit(epochs=10)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#evaluateloader-domainsource" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        evaluate(loader, domain="source")
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -824,7 +833,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../mmd/" class="md-nav__link">
+      <a href="../../methods/mmd/" class="md-nav__link">
         
   
   
@@ -852,7 +861,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../dann/" class="md-nav__link">
+      <a href="../../methods/dann/" class="md-nav__link">
         
   
   
@@ -880,7 +889,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../lmmd/" class="md-nav__link">
+      <a href="../../methods/lmmd/" class="md-nav__link">
         
   
   
@@ -908,7 +917,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../sidda/" class="md-nav__link">
+      <a href="../../methods/sidda/" class="md-nav__link">
         
   
   
@@ -936,7 +945,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../custom/" class="md-nav__link">
+      <a href="../../methods/custom/" class="md-nav__link">
         
   
   
@@ -1081,10 +1090,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
+  <a href="#run-the-script" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Usage
+        Run the script
       
     </span>
   </a>
@@ -1092,10 +1101,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#constructor" class="md-nav__link">
+  <a href="#key-difference-global-vs-local-alignment" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Constructor
+        Key difference: global vs local alignment
       
     </span>
   </a>
@@ -1103,10 +1112,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#fitepochs10" class="md-nav__link">
+  <a href="#code-walkthrough" class="md-nav__link">
     <span class="md-ellipsis">
       
-        fit(epochs=10)
+        Code walkthrough
       
     </span>
   </a>
@@ -1114,10 +1123,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#evaluateloader-domainsource" class="md-nav__link">
+  <a href="#outputs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        evaluate(loader, domain="source")
+        Outputs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-prefer-lmmd-over-mmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to prefer LMMD over MMD
       
     </span>
   </a>
@@ -1141,112 +1161,93 @@
 
 
 
-<h1 id="sourceonlytrainer">SourceOnlyTrainer<a class="headerlink" href="#sourceonlytrainer" title="Permanent link">&para;</a></h1>
-<p>A <strong>no-adaptation baseline</strong> that trains exclusively on labelled source data
-using cross-entropy loss. No domain alignment is applied.</p>
-<p>Use this alongside an adaptation method (MMD, DANN, …) to quantify how much
-benefit domain adaptation provides on your task.</p>
+<h1 id="tutorial-2-mmd-vs-lmmd-comparison">Tutorial 2 — MMD vs LMMD comparison<a class="headerlink" href="#tutorial-2-mmd-vs-lmmd-comparison" title="Permanent link">&para;</a></h1>
+<p>Compares <strong>global MMD</strong> (aligns marginal distributions) against <strong>local LMMD</strong>
+(aligns per-class subdomains) on the MNIST → Noisy MNIST benchmark.</p>
+<p>The complete runnable script lives at <code>examples/mnist_mmd_lmmd.py</code>.</p>
 <hr />
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">SourceOnlyTrainer</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">SourceOnlyTrainer</span><span class="p">(</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">source_loader</span><span class="o">=</span><span class="n">train_src</span><span class="p">,</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">target_loader</span><span class="o">=</span><span class="n">train_tgt</span><span class="p">,</span>   <span class="c1"># used for tgt_acc tracking only</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="p">)</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="n">history</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="n">result</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">test_tgt</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="s2">&quot;target-test&quot;</span><span class="p">)</span>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Target accuracy: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
+<h2 id="run-the-script">Run the script<a class="headerlink" href="#run-the-script" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>python<span class="w"> </span>examples/mnist_mmd_lmmd.py
+</span></code></pre></div>
+<p>Config block:</p>
+<div class="highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">LATENT_DIM</span>   <span class="o">=</span> <span class="mi">128</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">EPOCHS</span>       <span class="o">=</span> <span class="mi">15</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">BATCH_SIZE</span>   <span class="o">=</span> <span class="mi">128</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">LR</span>           <span class="o">=</span> <span class="mf">1e-3</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">MMD_WEIGHT</span>   <span class="o">=</span> <span class="mf">1.0</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="n">LMMD_WEIGHT</span>  <span class="o">=</span> <span class="mf">1.0</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">NUM_CLASSES</span>  <span class="o">=</span> <span class="mi">10</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">NOISE_STD</span>    <span class="o">=</span> <span class="mf">0.3</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="n">WARMUP</span>       <span class="o">=</span> <span class="mi">3</span>      <span class="c1"># source-only epochs before DA loss activates</span>
 </span></code></pre></div>
 <hr />
-<h2 id="constructor">Constructor<a class="headerlink" href="#constructor" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>model</code></td>
-<td><code>nn.Module</code></td>
-<td>—</td>
-<td>Any model with a standard <code>forward()</code> method</td>
-</tr>
-<tr>
-<td><code>source_loader</code></td>
-<td><code>DataLoader</code></td>
-<td>—</td>
-<td>Labelled source DataLoader</td>
-</tr>
-<tr>
-<td><code>target_loader</code></td>
-<td><code>DataLoader</code></td>
-<td>—</td>
-<td>Target DataLoader (labels used for <code>tgt_acc</code> tracking only)</td>
-</tr>
-<tr>
-<td><code>lr</code></td>
-<td><code>float</code></td>
-<td><code>1e-3</code></td>
-<td>Adam learning rate</td>
-</tr>
-<tr>
-<td><code>device</code></td>
-<td><code>str \| None</code></td>
-<td><code>None</code></td>
-<td><code>'cuda'</code>, <code>'mps'</code>, or <code>'cpu'</code>; auto-detected if <code>None</code></td>
-</tr>
-</tbody>
-</table>
+<h2 id="key-difference-global-vs-local-alignment">Key difference: global vs local alignment<a class="headerlink" href="#key-difference-global-vs-local-alignment" title="Permanent link">&para;</a></h2>
+<p><strong>Global MMD</strong> computes one kernel statistic over all source and target samples:</p>
+<div class="arithmatex">\[\widehat{\text{MMD}}^2(p, q) = \mathbb{E}[k(z^s, z^s)] - 2\,\mathbb{E}[k(z^s, z^t)] + \mathbb{E}[k(z^t, z^t)]\]</div>
+<p><strong>Local LMMD</strong> computes one kernel statistic <em>per class</em> and averages:</p>
+<div class="arithmatex">\[\hat{d}(p, q) = \frac{1}{C}\sum_{c=1}^{C}\left[\ldots k(z_i^s, z_j^s)\ldots - 2\ldots k(z_i^s, z_j^t)\ldots\right]\]</div>
+<p>where source weights come from ground-truth labels and target weights from the
+model's current softmax predictions.</p>
+<p>The benefit is that global MMD can accidentally push <em>class 3 source</em> features
+toward <em>class 8 target</em> features (negative transfer), whereas LMMD only aligns
+class 3 to class 3.</p>
 <hr />
-<h2 id="fitepochs10"><code>fit(epochs=10)</code><a class="headerlink" href="#fitepochs10" title="Permanent link">&para;</a></h2>
-<p>Train for <code>epochs</code> epochs using cross-entropy on source data only.</p>
-<p><strong>Returns:</strong> <code>list[dict]</code> — one dict per epoch:</p>
-<table>
-<thead>
-<tr>
-<th>Key</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>epoch</code></td>
-<td>Epoch number (1-indexed)</td>
-</tr>
-<tr>
-<td><code>ce_loss</code></td>
-<td>Mean cross-entropy loss</td>
-</tr>
-<tr>
-<td><code>mmd_loss</code></td>
-<td>Always <code>0.0</code> (for history-format compatibility)</td>
-</tr>
-<tr>
-<td><code>total_loss</code></td>
-<td>Same as <code>ce_loss</code></td>
-</tr>
-<tr>
-<td><code>src_acc</code></td>
-<td>Source domain training accuracy</td>
-</tr>
-<tr>
-<td><code>tgt_acc</code></td>
-<td>Target domain accuracy (no gradient signal — purely diagnostic)</td>
-</tr>
-</tbody>
-</table>
+<h2 id="code-walkthrough">Code walkthrough<a class="headerlink" href="#code-walkthrough" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.data</span><span class="w">    </span><span class="kn">import</span> <span class="n">DataManager</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.models</span><span class="w">  </span><span class="kn">import</span> <span class="n">CNN</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">SourceOnlyTrainer</span><span class="p">,</span> <span class="n">MMDTrainer</span><span class="p">,</span> <span class="n">LMMDTrainer</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">dm</span> <span class="o">=</span> <span class="n">DataManager</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="s2">&quot;./data&quot;</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="n">train_src</span><span class="p">,</span> <span class="n">train_tgt</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;mnist_noisy_mnist&quot;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="n">noise_std</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">test_src</span><span class="p">,</span>  <span class="n">test_tgt</span>  <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;mnist_noisy_mnist&quot;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">noise_std</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="n">model_baseline</span> <span class="o">=</span> <span class="n">CNN</span><span class="p">(</span><span class="n">latent_dim</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="n">model_mmd</span>      <span class="o">=</span> <span class="n">CNN</span><span class="p">(</span><span class="n">latent_dim</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="n">model_lmmd</span>     <span class="o">=</span> <span class="n">CNN</span><span class="p">(</span><span class="n">latent_dim</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="n">baseline</span> <span class="o">=</span> <span class="n">SourceOnlyTrainer</span><span class="p">(</span><span class="n">model_baseline</span><span class="p">,</span> <span class="n">train_src</span><span class="p">,</span> <span class="n">train_tgt</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="n">mmd</span>      <span class="o">=</span> <span class="n">MMDTrainer</span><span class="p">(</span><span class="n">model_mmd</span><span class="p">,</span>  <span class="n">train_src</span><span class="p">,</span> <span class="n">train_tgt</span><span class="p">,</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>                      <span class="n">mmd_weight</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">warmup_epochs</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="n">lmmd</span>     <span class="o">=</span> <span class="n">LMMDTrainer</span><span class="p">(</span><span class="n">model_lmmd</span><span class="p">,</span> <span class="n">train_src</span><span class="p">,</span> <span class="n">train_tgt</span><span class="p">,</span>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>                       <span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">lmmd_weight</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">warmup_epochs</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="n">history_baseline</span> <span class="o">=</span> <span class="n">baseline</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">epochs</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="n">history_mmd</span>      <span class="o">=</span> <span class="n">mmd</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">epochs</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="n">history_lmmd</span>     <span class="o">=</span> <span class="n">lmmd</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">epochs</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+</span></code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">num_classes is required</p>
+<p><code>LMMDTrainer</code> requires <code>num_classes</code> so it can build the per-class weight
+matrices. It must match the number of output logits in your model.</p>
+</div>
 <hr />
-<h2 id="evaluateloader-domainsource"><code>evaluate(loader, domain="source")</code><a class="headerlink" href="#evaluateloader-domainsource" title="Permanent link">&para;</a></h2>
-<p>Compute classification accuracy on any labelled DataLoader.</p>
-<p><strong>Returns:</strong> <code>dict</code> with keys <code>domain</code> (str), <code>accuracy</code> (float), <code>n_samples</code> (int).</p>
+<h2 id="outputs">Outputs<a class="headerlink" href="#outputs" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>  Domain               Source-Only         MMD        LMMD
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>  ---------------------------------------------------------
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>  source-train              99.x%       99.x%       99.x%
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>  source-test               98.x%       99.x%       99.x%
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>  target-test               95.x%       96.x%       97.x%
+</span></code></pre></div>
+<p><em>(Exact numbers vary by run; LMMD typically matches or beats MMD on target.)</em></p>
+<p>The script saves two figures to <code>outputs/</code>:</p>
+<ul>
+<li><code>mmd_lmmd_history.png</code> — training curves for all three methods</li>
+<li><code>mmd_lmmd_latent.png</code> — t-SNE latent space side-by-side</li>
+</ul>
+<hr />
+<h2 id="when-to-prefer-lmmd-over-mmd">When to prefer LMMD over MMD<a class="headerlink" href="#when-to-prefer-lmmd-over-mmd" title="Permanent link">&para;</a></h2>
+<ul>
+<li>When your task has <strong>many classes</strong> and class-level features differ substantially.</li>
+<li>When global MMD training shows good source accuracy but poor target accuracy
+  (sign of negative transfer between classes).</li>
+<li>When you have reliable pseudo-labels — LMMD degrades if early predictions are
+  very noisy; use <code>warmup_epochs</code> to train the encoder on source first.</li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Warmup recommendation</p>
+<p>Set <code>warmup_epochs</code> to 5–10% of total epochs so the model can produce
+reasonable pseudo-labels before LMMD alignment begins.</p>
+</div>
 
 
 

@@ -10,25 +10,31 @@
       
       
       
+        <link rel="canonical" href="https://AleksCipri.github.io/ShiftKit/tutorials/custom_dataset/">
       
+      
+        <link rel="prev" href="../swap_model/">
+      
+      
+        <link rel="next" href="../tuning/">
       
       
         
       
       
-      <link rel="icon" href="/ShiftKit/logo.png">
+      <link rel="icon" href="../../logo.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
     
     
       
-        <title>ShiftKit</title>
+        <title>Custom dataset - ShiftKit</title>
       
     
     
-      <link rel="stylesheet" href="/ShiftKit/assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="/ShiftKit/assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -47,9 +53,9 @@
       
     
     
-      <link rel="stylesheet" href="/ShiftKit/stylesheets/extra.css">
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
     
-    <script>__md_scope=new URL("/ShiftKit/",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -73,6 +79,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#tutorial-4-registering-a-custom-dataset" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -85,9 +96,9 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="/ShiftKit/." title="ShiftKit" class="md-header__button md-logo" aria-label="ShiftKit" data-md-component="logo">
+    <a href="../.." title="ShiftKit" class="md-header__button md-logo" aria-label="ShiftKit" data-md-component="logo">
       
-  <img src="/ShiftKit/logo.png" alt="logo">
+  <img src="../../logo.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -104,7 +115,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              
+              Custom dataset
             
           </span>
         </div>
@@ -222,9 +233,9 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="/ShiftKit/." title="ShiftKit" class="md-nav__button md-logo" aria-label="ShiftKit" data-md-component="logo">
+    <a href="../.." title="ShiftKit" class="md-nav__button md-logo" aria-label="ShiftKit" data-md-component="logo">
       
-  <img src="/ShiftKit/logo.png" alt="logo">
+  <img src="../../logo.png" alt="logo">
 
     </a>
     ShiftKit
@@ -251,7 +262,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/ShiftKit/." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -275,8 +286,10 @@
       
   
   
+    
   
   
+  
     
     
     
@@ -287,11 +300,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
@@ -312,7 +325,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -330,7 +343,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/ShiftKit/tutorials/" class="md-nav__link">
+      <a href="../" class="md-nav__link">
         
   
   
@@ -358,7 +371,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/ShiftKit/tutorials/mnist_mmd/" class="md-nav__link">
+      <a href="../mnist_mmd/" class="md-nav__link">
         
   
   
@@ -386,7 +399,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/ShiftKit/tutorials/mmd_vs_lmmd/" class="md-nav__link">
+      <a href="../mmd_vs_lmmd/" class="md-nav__link">
         
   
   
@@ -414,7 +427,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/ShiftKit/tutorials/swap_model/" class="md-nav__link">
+      <a href="../swap_model/" class="md-nav__link">
         
   
   
@@ -439,10 +452,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="/ShiftKit/tutorials/custom_dataset/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom dataset
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -458,6 +498,70 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#factory-signature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Factory signature
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-tensor-dataset-pair" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example — tensor dataset pair
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#passing-extra-kwargs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Passing extra kwargs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#listing-available-datasets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Listing available datasets
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -470,7 +574,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/ShiftKit/tutorials/tuning/" class="md-nav__link">
+      <a href="../tuning/" class="md-nav__link">
         
   
   
@@ -557,7 +661,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/ShiftKit/data/" class="md-nav__link">
+      <a href="../../data/" class="md-nav__link">
         
   
   
@@ -585,7 +689,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/ShiftKit/models/" class="md-nav__link">
+      <a href="../../models/" class="md-nav__link">
         
   
   
@@ -662,7 +766,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/ShiftKit/methods/" class="md-nav__link">
+      <a href="../../methods/" class="md-nav__link">
         
   
   
@@ -690,7 +794,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/ShiftKit/methods/source_only/" class="md-nav__link">
+      <a href="../../methods/source_only/" class="md-nav__link">
         
   
   
@@ -718,7 +822,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/ShiftKit/methods/mmd/" class="md-nav__link">
+      <a href="../../methods/mmd/" class="md-nav__link">
         
   
   
@@ -746,7 +850,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/ShiftKit/methods/dann/" class="md-nav__link">
+      <a href="../../methods/dann/" class="md-nav__link">
         
   
   
@@ -774,7 +878,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/ShiftKit/methods/lmmd/" class="md-nav__link">
+      <a href="../../methods/lmmd/" class="md-nav__link">
         
   
   
@@ -802,7 +906,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/ShiftKit/methods/sidda/" class="md-nav__link">
+      <a href="../../methods/sidda/" class="md-nav__link">
         
   
   
@@ -830,7 +934,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/ShiftKit/methods/custom/" class="md-nav__link">
+      <a href="../../methods/custom/" class="md-nav__link">
         
   
   
@@ -866,7 +970,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/ShiftKit/diagnostics/" class="md-nav__link">
+      <a href="../../diagnostics/" class="md-nav__link">
         
   
   
@@ -901,7 +1005,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/ShiftKit/citation/" class="md-nav__link">
+      <a href="../../citation/" class="md-nav__link">
         
   
   
@@ -928,7 +1032,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/ShiftKit/credits/" class="md-nav__link">
+      <a href="../../credits/" class="md-nav__link">
         
   
   
@@ -965,6 +1069,60 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#factory-signature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Factory signature
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-tensor-dataset-pair" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example — tensor dataset pair
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#passing-extra-kwargs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Passing extra kwargs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#listing-available-datasets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Listing available datasets
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -977,8 +1135,115 @@
               
               <article class="md-content__inner md-typeset">
                 
-  <h1>404 - Not found</h1>
+                  
 
+
+
+<h1 id="tutorial-4-registering-a-custom-dataset">Tutorial 4 — Registering a custom dataset<a class="headerlink" href="#tutorial-4-registering-a-custom-dataset" title="Permanent link">&para;</a></h1>
+<p>You can plug in any pair of PyTorch datasets without modifying the library.
+<code>DataManager.register()</code> accepts a factory function that returns a
+<code>(source_loader, target_loader)</code> tuple.</p>
+<hr />
+<h2 id="factory-signature">Factory signature<a class="headerlink" href="#factory-signature" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">my_factory</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">train</span><span class="p">,</span> <span class="n">num_workers</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="o">...</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="k">return</span> <span class="n">source_loader</span><span class="p">,</span> <span class="n">target_loader</span>
+</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Provided by</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>root</code></td>
+<td><code>DataManager</code></td>
+<td>Root directory from <code>DataManager(root=...)</code></td>
+</tr>
+<tr>
+<td><code>batch_size</code></td>
+<td><code>DataManager</code></td>
+<td>Batch size from <code>DataManager(batch_size=...)</code></td>
+</tr>
+<tr>
+<td><code>train</code></td>
+<td><code>dm.load(train=...)</code></td>
+<td><code>True</code> for train split, <code>False</code> for test</td>
+</tr>
+<tr>
+<td><code>num_workers</code></td>
+<td><code>DataManager</code></td>
+<td>Number of DataLoader workers</td>
+</tr>
+<tr>
+<td><code>**kwargs</code></td>
+<td><code>dm.load(...)</code></td>
+<td>Any extra keyword arguments from the <code>load()</code> call</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="example-tensor-dataset-pair">Example — tensor dataset pair<a class="headerlink" href="#example-tensor-dataset-pair" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataLoader</span><span class="p">,</span> <span class="n">TensorDataset</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataManager</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">tabular_factory</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">train</span><span class="p">,</span> <span class="n">num_workers</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">n</span> <span class="o">=</span> <span class="mi">1000</span> <span class="k">if</span> <span class="n">train</span> <span class="k">else</span> <span class="mi">200</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">X_src</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">y_src</span> <span class="o">=</span> <span class="p">(</span><span class="n">X_src</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>            <span class="c1"># binary label</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="n">X_tgt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span>            <span class="c1"># shifted mean</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">y_tgt</span> <span class="o">=</span> <span class="p">(</span><span class="n">X_tgt</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="n">src_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>        <span class="n">TensorDataset</span><span class="p">(</span><span class="n">X_src</span><span class="p">,</span> <span class="n">y_src</span><span class="p">),</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>        <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="n">train</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span><span class="p">,</span>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    <span class="p">)</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="n">tgt_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>        <span class="n">TensorDataset</span><span class="p">(</span><span class="n">X_tgt</span><span class="p">,</span> <span class="n">y_tgt</span><span class="p">),</span>
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>        <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="n">train</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span><span class="p">,</span>
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>    <span class="p">)</span>
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>    <span class="k">return</span> <span class="n">src_loader</span><span class="p">,</span> <span class="n">tgt_loader</span>
+</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>
+</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="n">DataManager</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s2">&quot;tabular_shift&quot;</span><span class="p">,</span> <span class="n">tabular_factory</span><span class="p">)</span>
+</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>
+</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span class="n">dm</span> <span class="o">=</span> <span class="n">DataManager</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
+</span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a><span class="n">train_src</span><span class="p">,</span> <span class="n">train_tgt</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;tabular_shift&quot;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a><span class="n">test_src</span><span class="p">,</span>  <span class="n">test_tgt</span>  <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;tabular_shift&quot;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<h2 id="passing-extra-kwargs">Passing extra kwargs<a class="headerlink" href="#passing-extra-kwargs" title="Permanent link">&para;</a></h2>
+<p>Any keyword argument passed to <code>dm.load()</code> is forwarded to your factory:</p>
+<div class="highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">noisy_factory</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">train</span><span class="p">,</span> <span class="n">num_workers</span><span class="p">,</span> <span class="n">noise_std</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="o">...</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">DataManager</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s2">&quot;my_noisy&quot;</span><span class="p">,</span> <span class="n">noisy_factory</span><span class="p">)</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="c1"># Override noise level at load time:</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">train_src</span><span class="p">,</span> <span class="n">train_tgt</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;my_noisy&quot;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">noise_std</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<h2 id="listing-available-datasets">Listing available datasets<a class="headerlink" href="#listing-available-datasets" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nb">print</span><span class="p">(</span><span class="n">DataManager</span><span class="o">.</span><span class="n">available</span><span class="p">())</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="c1"># [&#39;mnist_noisy_mnist&#39;, &#39;synthetic_graphs&#39;, &#39;tabular_shift&#39;, ...]</span>
+</span></code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
               </article>
             </div>
           
@@ -1021,10 +1286,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "/ShiftKit/", "features": ["navigation.sections", "navigation.top", "navigation.instant", "toc.follow", "content.code.copy", "search.highlight", "search.suggest"], "search": "/ShiftKit/assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "navigation.instant", "toc.follow", "content.code.copy", "search.highlight", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="/ShiftKit/assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       

@@ -25,10 +25,6 @@
          <lastmod>2026-03-17</lastmod>
     </url>
     <url>
-         <loc>https://AleksCipri.github.io/ShiftKit/tutorials/</loc>
-         <lastmod>2026-03-17</lastmod>
-    </url>
-    <url>
          <loc>https://AleksCipri.github.io/ShiftKit/methods/</loc>
          <lastmod>2026-03-17</lastmod>
     </url>
@@ -54,6 +50,30 @@
     </url>
     <url>
          <loc>https://AleksCipri.github.io/ShiftKit/methods/source_only/</loc>
+         <lastmod>2026-03-17</lastmod>
+    </url>
+    <url>
+         <loc>https://AleksCipri.github.io/ShiftKit/tutorials/</loc>
+         <lastmod>2026-03-17</lastmod>
+    </url>
+    <url>
+         <loc>https://AleksCipri.github.io/ShiftKit/tutorials/custom_dataset/</loc>
+         <lastmod>2026-03-17</lastmod>
+    </url>
+    <url>
+         <loc>https://AleksCipri.github.io/ShiftKit/tutorials/mmd_vs_lmmd/</loc>
+         <lastmod>2026-03-17</lastmod>
+    </url>
+    <url>
+         <loc>https://AleksCipri.github.io/ShiftKit/tutorials/mnist_mmd/</loc>
+         <lastmod>2026-03-17</lastmod>
+    </url>
+    <url>
+         <loc>https://AleksCipri.github.io/ShiftKit/tutorials/swap_model/</loc>
+         <lastmod>2026-03-17</lastmod>
+    </url>
+    <url>
+         <loc>https://AleksCipri.github.io/ShiftKit/tutorials/tuning/</loc>
          <lastmod>2026-03-17</lastmod>
     </url>
 </urlset>
