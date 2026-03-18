@@ -27,6 +27,30 @@ result  = trainer.evaluate(test_loader, domain="target-test")
 
 ---
 
+## Method comparison
+
+| | Source Only | MMD | LMMD | CORAL | DANN | SIDDA |
+|--|:-----------:|:---:|:----:|:-----:|:----:|:-----:|
+| **Alignment target** | None | Full distribution | Per-class subdomains | Covariance matrix | Domain labels | Optimal transport plan |
+| **What is matched** | — | All moments (via kernel) | Class-conditional moments | 2nd-order statistics | Domain membership | Entire marginal distribution |
+| **Kernel required** | No | Yes — RBF, bandwidth σ | Yes — RBF, bandwidth σ | No | No | No (Sinkhorn entropic OT) |
+| **Needs source labels** | Yes | Yes | Yes | Yes | Yes | Yes |
+| **Needs target labels** | No | No | Pseudo-labels (soft) | No | No | No |
+| **Adversarial training** | No | No | No | No | Yes (GRL) | No |
+| **Learnable loss weights** | No | No | No | No | No | Yes (η₁, η₂) |
+| **Computation per batch** | O(n·d) | O(n²) kernel matrices | O(n²) per class | O(n·d²) covariance | O(n·d) + discriminator | O(n²) Sinkhorn iterations |
+| **Key hyperparameter** | — | `mmd_weight` λ | `lmmd_weight` λ | `coral_weight` λ | `domain_weight` λ | `warmup_epochs`, blur schedule |
+| **Warmup supported** | — | Yes | Yes | Yes | Yes | Mandatory |
+| **Best suited for** | Reference baseline | General distribution shift | Class-level shift with label imbalance | Shift in feature scale / correlation | Strong covariate shift with large batches | Unknown shift type; automatically reweights objectives |
+
+> **Choosing a method:** Start with the Source-Only baseline to measure the domain gap.
+> For most tasks, MMD or CORAL is a fast, strong first attempt.
+> Use LMMD when class distributions differ across domains.
+> Use DANN when the shift is severe and batch sizes are large enough to train the discriminator.
+> Use SIDDA when you want automatic loss balancing without manual λ tuning.
+
+---
+
 ## Shared history format
 
 Every `fit()` call returns a `list[dict]` with one entry per epoch:
@@ -47,31 +71,7 @@ Every `fit()` call returns a `list[dict]` with one entry per epoch:
 
 ---
 
-## Comparing methods
 
-Pass a `{label: history}` dict to overlay multiple runs on the same plot:
 
-```python
-from shiftkit.diagnostics import plot_training_history
 
-plot_training_history({
-    "Source Only": history_baseline,
-    "MMD":         history_mmd,
-    "DANN":        history_dann,
-    "SIDDA":       history_sidda,
-})
-```
 
-The right panel shows source accuracy (solid) and target accuracy (dashed) —
-the gap between them quantifies the remaining domain shift.
-
-!!! tip "Tuning λ"
-    Start at `1.0`. Reduce to `0.1`–`0.5` if source accuracy degrades sharply;
-    increase to `2.0`–`5.0` if source and target embeddings remain separated
-    after training.
-
----
-
-## Adding a custom method
-
-Subclass `BaseTrainer` and register it with `TrainerRegistry` to make it available by name alongside the built-ins. See the [Custom Methods](custom.md) page for a full guide and example.

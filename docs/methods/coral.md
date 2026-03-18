@@ -15,7 +15,7 @@ The $4d^2$ normalisation ensures the loss is scale-invariant with respect to the
 > **Reference:** Sun, B., & Saenko, K. (2016).
 > Deep CORAL: Correlation Alignment for Deep Domain Adaptation.
 > *ECCV Workshops 2016*, LNCS 9915, 443–450.
-> [[arXiv]](https://arxiv.org/abs/1607.01719)
+> [[Paper]](https://arxiv.org/abs/1607.01719)
 
 ---
 

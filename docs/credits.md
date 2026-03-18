@@ -28,4 +28,4 @@ Documentation built with [MkDocs](https://www.mkdocs.org) and the [Material for 
 
 ## Licence
 
-ShiftKit is released under the [MIT Licence](https://github.com/AleksCipri/ShiftKit/blob/main/LICENSE).
+ShiftKit is released under the [Apache License 2.0](https://github.com/AleksCipri/ShiftKit/blob/main/LICENSE).

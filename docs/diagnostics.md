@@ -367,3 +367,20 @@ The **Area Under the Curve (AUC)** summarises the entire ROC curve as a single n
 
 !!! tip "AUC as a DA quality metric"
     Compare AUC on the **target test set** across methods. An improvement over the Source-Only baseline directly quantifies the benefit of domain adaptation for each class, independent of the classification threshold.
+
+---
+
+## Comparing methods
+
+Pass a `{label: history}` dict to overlay multiple runs on the same plot:
+
+```python
+from shiftkit.diagnostics import plot_training_history
+
+plot_training_history({
+    "Source Only": history_baseline,
+    "MMD":         history_mmd,
+    "DANN":        history_dann,
+    "SIDDA":       history_sidda,
+})
+```
