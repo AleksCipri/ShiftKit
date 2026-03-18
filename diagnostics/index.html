@@ -1178,6 +1178,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#comparing-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparing methods
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1483,6 +1494,17 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comparing-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparing methods
+      
+    </span>
+  </a>
   
 </li>
       
@@ -2107,6 +2129,18 @@ UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction.
 <p class="admonition-title">AUC as a DA quality metric</p>
 <p>Compare AUC on the <strong>target test set</strong> across methods. An improvement over the Source-Only baseline directly quantifies the benefit of domain adaptation for each class, independent of the classification threshold.</p>
 </div>
+<hr />
+<h2 id="comparing-methods">Comparing methods<a class="headerlink" href="#comparing-methods" title="Permanent link">&para;</a></h2>
+<p>Pass a <code>{label: history}</code> dict to overlay multiple runs on the same plot:</p>
+<div class="highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.diagnostics</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_training_history</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">plot_training_history</span><span class="p">({</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="s2">&quot;Source Only&quot;</span><span class="p">:</span> <span class="n">history_baseline</span><span class="p">,</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="s2">&quot;MMD&quot;</span><span class="p">:</span>         <span class="n">history_mmd</span><span class="p">,</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="s2">&quot;DANN&quot;</span><span class="p">:</span>        <span class="n">history_dann</span><span class="p">,</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="s2">&quot;SIDDA&quot;</span><span class="p">:</span>       <span class="n">history_sidda</span><span class="p">,</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="p">})</span>
+</span></code></pre></div>
 
 
 
