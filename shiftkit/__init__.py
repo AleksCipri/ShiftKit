@@ -15,6 +15,7 @@ from .models.gnn         import SimpleGCN
 from .methods.base       import BaseTrainer, TrainerRegistry
 from .methods.mmd        import MMDLoss, MMDTrainer, SourceOnlyTrainer
 from .methods.lmmd       import LMMDLoss, LMMDTrainer
+from .methods.coral      import CORALLoss, CORALTrainer
 from .methods.dann       import DANNTrainer, GradientReversalLayer, DomainDiscriminator
 from .methods.sidda      import SIDDATrainer
 from .diagnostics.plots  import (
@@ -29,6 +30,7 @@ __all__ = [
     "BaseTrainer", "TrainerRegistry",
     "MMDLoss", "MMDTrainer", "SourceOnlyTrainer",
     "LMMDLoss", "LMMDTrainer",
+    "CORALLoss", "CORALTrainer",
     "DANNTrainer", "GradientReversalLayer", "DomainDiscriminator",
     "SIDDATrainer",
     "plot_latent_space", "plot_training_history", "compare_latent_spaces",
