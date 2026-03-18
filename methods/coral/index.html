@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://AleksCipri.github.io/ShiftKit/methods/lmmd/">
+        <link rel="canonical" href="https://AleksCipri.github.io/ShiftKit/methods/coral/">
       
       
-        <link rel="prev" href="../dann/">
+        <link rel="prev" href="../lmmd/">
       
       
-        <link rel="next" href="../coral/">
+        <link rel="next" href="../sidda/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>LMMD - ShiftKit</title>
+        <title>CORAL - ShiftKit</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#lmmdtrainer" class="md-skip">
+        <a href="#coraltrainer" class="md-skip">
           Skip to content
         </a>
       
@@ -115,7 +115,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              LMMD
+              CORAL
             
           </span>
         </div>
@@ -786,6 +786,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../lmmd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LMMD
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -805,7 +833,7 @@
   <span class="md-ellipsis">
     
   
-    LMMD
+    CORAL
   
 
     
@@ -823,7 +851,7 @@
   <span class="md-ellipsis">
     
   
-    LMMD
+    CORAL
   
 
     
@@ -893,10 +921,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#mmd-vs-lmmd" class="md-nav__link">
+  <a href="#coral-vs-mmd" class="md-nav__link">
     <span class="md-ellipsis">
       
-        MMD vs LMMD
+        CORAL vs MMD
       
     </span>
   </a>
@@ -904,33 +932,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#lmmdloss" class="md-nav__link">
+  <a href="#coralloss" class="md-nav__link">
     <span class="md-ellipsis">
       
-        LMMDLoss
+        CORALLoss
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="LMMDLoss">
+    <nav class="md-nav" aria-label="CORALLoss">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#constructor_1" class="md-nav__link">
+  <a href="#forwardsource-target" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Constructor
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#forwardz_src-z_tgt-y_src-y_tgt_prob" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        forward(z_src, z_tgt, y_src, y_tgt_prob)
+        forward(source, target)
       
     </span>
   </a>
@@ -946,34 +963,6 @@
   
 </nav>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../coral/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    CORAL
-  
-
-    
-  </span>
-  
-  
-
-      </a>
     </li>
   
 
@@ -1203,10 +1192,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#mmd-vs-lmmd" class="md-nav__link">
+  <a href="#coral-vs-mmd" class="md-nav__link">
     <span class="md-ellipsis">
       
-        MMD vs LMMD
+        CORAL vs MMD
       
     </span>
   </a>
@@ -1214,33 +1203,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#lmmdloss" class="md-nav__link">
+  <a href="#coralloss" class="md-nav__link">
     <span class="md-ellipsis">
       
-        LMMDLoss
+        CORALLoss
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="LMMDLoss">
+    <nav class="md-nav" aria-label="CORALLoss">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#constructor_1" class="md-nav__link">
+  <a href="#forwardsource-target" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Constructor
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#forwardz_src-z_tgt-y_src-y_tgt_prob" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        forward(z_src, z_tgt, y_src, y_tgt_prob)
+        forward(source, target)
       
     </span>
   </a>
@@ -1269,42 +1247,34 @@
 
 
 
-<h1 id="lmmdtrainer">LMMDTrainer<a class="headerlink" href="#lmmdtrainer" title="Permanent link">&para;</a></h1>
-<p><strong>LMMD</strong> (Local Maximum Mean Discrepancy) extends global MMD by aligning
-<strong>per-class subdomains</strong> instead of the overall marginal distributions.
-Whereas standard MMD matches <code>p(z_src)</code> to <code>p(z_tgt)</code> globally, LMMD matches
-<code>p(z_src | y=c)</code> to <code>p(z_tgt | y=c)</code> for every class <code>c</code> — preventing
-semantically different classes from being forced together during alignment.</p>
-<div class="arithmatex">\[\mathcal{L} = \underbrace{\text{CrossEntropy}(\hat{y}_\text{src}, y_\text{src})}_{\text{supervised}} + \lambda \cdot \underbrace{\hat{d}(p, q)}_{\text{LMMD}}\]</div>
-<div class="arithmatex">\[\hat{d}(p, q) = \frac{1}{C}\sum_{c=1}^{C}\left[\sum_{i,j} w_i^{(s,c)} w_j^{(s,c)} k(z_i^s, z_j^s) + \sum_{i,j} w_i^{(t,c)} w_j^{(t,c)} k(z_i^t, z_j^t) - 2\sum_{i,j} w_i^{(s,c)} w_j^{(t,c)} k(z_i^s, z_j^t)\right]\]</div>
-<p><strong>Class-conditional weights:</strong></p>
-<div class="arithmatex">\[w_i^{(s,c)} = \frac{y_{ic}}{\sum_j y_{jc}}, \qquad w_i^{(t,c)} = \frac{\hat{p}_{ic}}{\sum_j \hat{p}_{jc}}\]</div>
-<ul>
-<li><strong>Source</strong> weights are derived from one-hot ground-truth labels <code>y_src</code>.</li>
-<li><strong>Target</strong> weights are derived from the model's current softmax predictions (treated as soft pseudo-labels; stop-gradient).</li>
-</ul>
+<h1 id="coraltrainer">CORALTrainer<a class="headerlink" href="#coraltrainer" title="Permanent link">&para;</a></h1>
+<p><strong>CORAL</strong> (CORrelation ALignment) aligns the <strong>second-order statistics</strong> (covariance matrices) of source and target feature distributions. Rather than matching distribution means or using a kernel, it minimises the squared Frobenius norm between source and target covariances in the latent space — making it computationally lightweight and kernel-free.</p>
+<div class="arithmatex">\[\mathcal{L} = \underbrace{\text{CrossEntropy}(\hat{y}_\text{src}, y_\text{src})}_{\text{supervised}} + \lambda \cdot \underbrace{\frac{1}{4d^2}\|C_S - C_T\|^2_F}_{\text{CORAL}}\]</div>
+<p>where the covariance matrices are:</p>
+<div class="arithmatex">\[C_S = \frac{1}{n_S - 1}\left(Z_S^\top Z_S - \frac{1}{n_S}(\mathbf{1}^\top Z_S)^\top(\mathbf{1}^\top Z_S)\right)\]</div>
+<p>and <span class="arithmatex">\(C_T\)</span> is defined analogously, <span class="arithmatex">\(d\)</span> is the latent dimensionality, and <span class="arithmatex">\(\|\cdot\|_F^2\)</span> is the squared Frobenius norm.</p>
+<p>The <span class="arithmatex">\(4d^2\)</span> normalisation ensures the loss is scale-invariant with respect to the number of features.</p>
 <blockquote>
-<p><strong>Reference:</strong> Zhu, Y., Zhuang, F., &amp; Wang, D. (2020).
-Deep Subdomain Adaptation Network for Image Classification.
-<em>IEEE Transactions on Neural Networks and Learning Systems</em>, 32(4), 1713–1722.
-<a href="https://arxiv.org/abs/2106.09388">[Paper]</a></p>
+<p><strong>Reference:</strong> Sun, B., &amp; Saenko, K. (2016).
+Deep CORAL: Correlation Alignment for Deep Domain Adaptation.
+<em>ECCV Workshops 2016</em>, LNCS 9915, 443–450.
+<a href="https://arxiv.org/abs/1607.01719">[arXiv]</a></p>
 </blockquote>
 <hr />
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">LMMDTrainer</span>
+<div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">CORALTrainer</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">LMMDTrainer</span><span class="p">(</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">CORALTrainer</span><span class="p">(</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">source_loader</span><span class="o">=</span><span class="n">train_src</span><span class="p">,</span>
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">target_loader</span><span class="o">=</span><span class="n">train_tgt</span><span class="p">,</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">lmmd_weight</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="p">)</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="n">history</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="n">result</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">test_tgt</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="s2">&quot;target-test&quot;</span><span class="p">)</span>
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Target accuracy: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">coral_weight</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="p">)</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="n">history</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="n">result</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">test_tgt</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="s2">&quot;target-test&quot;</span><span class="p">)</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Target accuracy: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
 </span></code></pre></div>
 <hr />
 <h2 id="constructor">Constructor<a class="headerlink" href="#constructor" title="Permanent link">&para;</a></h2>
@@ -1337,16 +1307,10 @@ Deep Subdomain Adaptation Network for Image Classification.
 <td>Target DataLoader (labels used for <code>tgt_acc</code> tracking only)</td>
 </tr>
 <tr>
-<td><code>num_classes</code></td>
-<td><code>int</code></td>
-<td>—</td>
-<td>Number of output classes C</td>
-</tr>
-<tr>
-<td><code>lmmd_weight</code></td>
+<td><code>coral_weight</code></td>
 <td><code>float</code></td>
 <td><code>1.0</code></td>
-<td>λ — weight on the LMMD regularisation term</td>
+<td>λ — weight on the CORAL regularisation term</td>
 </tr>
 <tr>
 <td><code>lr</code></td>
@@ -1358,19 +1322,13 @@ Deep Subdomain Adaptation Network for Image Classification.
 <td><code>warmup_epochs</code></td>
 <td><code>int</code></td>
 <td><code>0</code></td>
-<td>Epochs of source-only CE pre-training before LMMD begins</td>
+<td>Epochs of source-only CE pre-training before CORAL begins</td>
 </tr>
 <tr>
 <td><code>device</code></td>
 <td><code>str \| None</code></td>
 <td><code>None</code></td>
 <td><code>'cuda'</code>, <code>'mps'</code>, or <code>'cpu'</code>; auto-detected if <code>None</code></td>
-</tr>
-<tr>
-<td><code>lmmd_sigmas</code></td>
-<td><code>list[float] \| None</code></td>
-<td><code>None</code></td>
-<td>RBF kernel bandwidths; defaults to <code>[0.1, 1, 5, 10, 50]</code></td>
 </tr>
 </tbody>
 </table>
@@ -1395,8 +1353,8 @@ Deep Subdomain Adaptation Network for Image Classification.
 <td>Mean cross-entropy loss</td>
 </tr>
 <tr>
-<td><code>lmmd_loss</code></td>
-<td>Mean LMMD loss (<code>0.0</code> during warmup)</td>
+<td><code>coral_loss</code></td>
+<td>Mean CORAL loss (<code>0.0</code> during warmup)</td>
 </tr>
 <tr>
 <td><code>mmd_loss</code></td>
@@ -1404,7 +1362,7 @@ Deep Subdomain Adaptation Network for Image Classification.
 </tr>
 <tr>
 <td><code>total_loss</code></td>
-<td>Mean total loss (CE + λ·LMMD; CE only during warmup)</td>
+<td>Mean total loss (CE + λ·CORAL; CE only during warmup)</td>
 </tr>
 <tr>
 <td><code>src_acc</code></td>
@@ -1421,83 +1379,54 @@ Deep Subdomain Adaptation Network for Image Classification.
 <p>Compute classification accuracy on any labelled DataLoader.</p>
 <p><strong>Returns:</strong> <code>dict</code> with keys <code>domain</code> (str), <code>accuracy</code> (float), <code>n_samples</code> (int).</p>
 <hr />
-<h2 id="mmd-vs-lmmd">MMD vs LMMD<a class="headerlink" href="#mmd-vs-lmmd" title="Permanent link">&para;</a></h2>
+<h2 id="coral-vs-mmd">CORAL vs MMD<a class="headerlink" href="#coral-vs-mmd" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
 <th></th>
 <th>MMD</th>
-<th>LMMD</th>
+<th>CORAL</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>What is aligned</td>
-<td>Global marginals <code>p(z)</code></td>
-<td>Per-class conditionals <code>p(z \| y=c)</code></td>
+<td>What is matched</td>
+<td>Full distribution (via kernel)</td>
+<td>Covariance (second-order statistics)</td>
 </tr>
 <tr>
-<td>Source supervision</td>
-<td>Not used in DA loss</td>
-<td>One-hot labels weight the kernel</td>
+<td>Kernel required</td>
+<td>Yes — RBF, bandwidth σ to choose</td>
+<td>No — purely algebraic</td>
 </tr>
 <tr>
-<td>Target labels</td>
-<td>Not needed</td>
-<td>Soft pseudo-labels from model predictions</td>
+<td>Computation per batch</td>
+<td>O(n²) kernel matrices</td>
+<td>O(n·d²) covariance matrices</td>
 </tr>
 <tr>
-<td>Risk</td>
-<td>Negative transfer if class structure differs</td>
-<td>Requires reasonable pseudo-labels</td>
+<td>Captures</td>
+<td>Arbitrary distributional differences</td>
+<td>Mean (implicitly via centring) + variance/correlation</td>
 </tr>
 <tr>
-<td><code>num_classes</code> parameter</td>
-<td>Not required</td>
-<td>Required</td>
+<td>Best suited for</td>
+<td>General distribution shift</td>
+<td>Shift in feature scale/correlation structure</td>
 </tr>
 </tbody>
 </table>
-<p>LMMD typically outperforms global MMD when the source and target class structures are well-separated, because it avoids matching source class A features to target class B features.</p>
+<p>CORAL is a strong, fast baseline when the domain shift is primarily in the spread or correlation of features rather than in higher-order structure.</p>
 <hr />
-<h2 id="lmmdloss">LMMDLoss<a class="headerlink" href="#lmmdloss" title="Permanent link">&para;</a></h2>
-<p>The raw LMMD module, exposed for use in custom training loops.</p>
-<div class="highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">LMMDLoss</span>
+<h2 id="coralloss">CORALLoss<a class="headerlink" href="#coralloss" title="Permanent link">&para;</a></h2>
+<p>The raw CORAL loss module, exposed for use in custom training loops.</p>
+<div class="highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">CORALLoss</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">lmmd</span> <span class="o">=</span> <span class="n">LMMDLoss</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">sigmas</span><span class="o">=</span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">50.0</span><span class="p">])</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># y_tgt_prob: softmax predictions for target batch, shape (n_t, C)</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">y_tgt_prob</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">classify</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">x_tgt</span><span class="p">)),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="n">loss</span> <span class="o">=</span> <span class="n">lmmd</span><span class="p">(</span><span class="n">z_src</span><span class="p">,</span> <span class="n">z_tgt</span><span class="p">,</span> <span class="n">y_src</span><span class="p">,</span> <span class="n">y_tgt_prob</span><span class="p">)</span>   <span class="c1"># scalar tensor</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">coral</span> <span class="o">=</span> <span class="n">CORALLoss</span><span class="p">()</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">loss</span> <span class="o">=</span> <span class="n">coral</span><span class="p">(</span><span class="n">z_source</span><span class="p">,</span> <span class="n">z_target</span><span class="p">)</span>   <span class="c1"># scalar tensor</span>
 </span></code></pre></div>
-<h3 id="constructor_1">Constructor<a class="headerlink" href="#constructor_1" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>num_classes</code></td>
-<td><code>int</code></td>
-<td>—</td>
-<td>Number of classes C</td>
-</tr>
-<tr>
-<td><code>sigmas</code></td>
-<td><code>list[float] \| None</code></td>
-<td><code>None</code></td>
-<td>Kernel bandwidths; defaults to <code>[0.1, 1.0, 5.0, 10.0, 50.0]</code></td>
-</tr>
-</tbody>
-</table>
-<h3 id="forwardz_src-z_tgt-y_src-y_tgt_prob"><code>forward(z_src, z_tgt, y_src, y_tgt_prob)</code><a class="headerlink" href="#forwardz_src-z_tgt-y_src-y_tgt_prob" title="Permanent link">&para;</a></h3>
+<p>The loss is parameter-free — no constructor arguments needed.</p>
+<h3 id="forwardsource-target"><code>forward(source, target)</code><a class="headerlink" href="#forwardsource-target" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -1508,28 +1437,18 @@ Deep Subdomain Adaptation Network for Image Classification.
 </thead>
 <tbody>
 <tr>
-<td><code>z_src</code></td>
+<td><code>source</code></td>
 <td><code>Tensor (n_s, d)</code></td>
 <td>Source latent vectors</td>
 </tr>
 <tr>
-<td><code>z_tgt</code></td>
+<td><code>target</code></td>
 <td><code>Tensor (n_t, d)</code></td>
 <td>Target latent vectors</td>
 </tr>
-<tr>
-<td><code>y_src</code></td>
-<td><code>Tensor (n_s,)</code></td>
-<td>Source ground-truth labels (long)</td>
-</tr>
-<tr>
-<td><code>y_tgt_prob</code></td>
-<td><code>Tensor (n_t, C)</code></td>
-<td>Target softmax probabilities</td>
-</tr>
 </tbody>
 </table>
-<p><strong>Returns:</strong> Scalar LMMD loss averaged over C classes.</p>
+<p><strong>Returns:</strong> Scalar CORAL loss <code>(1/4d²) ‖C_S − C_T‖²_F</code>.</p>
 
 
 
