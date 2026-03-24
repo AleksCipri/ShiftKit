@@ -119,3 +119,57 @@ class CNN(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.classify(self.encode(x))
+
+
+class MLPRegressor(nn.Module):
+    """
+    Fully-connected encoder + linear regression head.
+
+    Drop-in replacement for MLP/CNN when the task is regression rather than
+    classification.  Exposes the same ``encode`` / ``regress`` / ``forward``
+    interface expected by ``SourceOnlyRegressionTrainer`` and
+    ``MMDRegressionTrainer``.
+
+    Architecture
+    ------------
+    input (input_dim) → hidden layers → latent_dim → output_dim
+
+    Parameters
+    ----------
+    input_dim   : number of input features
+    latent_dim  : size of the bottleneck embedding (used by DA methods)
+    output_dim  : regression output dimensionality (1 for scalar regression)
+    hidden_dims : sizes of hidden layers before the bottleneck
+    dropout     : dropout probability applied after each hidden layer
+    """
+
+    def __init__(
+        self,
+        input_dim: int,
+        latent_dim: int = 64,
+        output_dim: int = 1,
+        hidden_dims: Tuple[int, ...] = (128, 64),
+        dropout: float = 0.1,
+    ):
+        super().__init__()
+
+        layers = []
+        in_dim = input_dim
+        for h in hidden_dims:
+            layers += [nn.Linear(in_dim, h), nn.ReLU(inplace=True),
+                       nn.Dropout(dropout)]
+            in_dim = h
+        layers += [nn.Linear(in_dim, latent_dim), nn.ReLU(inplace=True)]
+
+        self.encoder = nn.Sequential(*layers)
+        self.head = nn.Linear(latent_dim, output_dim)
+        self.latent_dim = latent_dim
+
+    def encode(self, x: torch.Tensor) -> torch.Tensor:
+        return self.encoder(x)
+
+    def regress(self, z: torch.Tensor) -> torch.Tensor:
+        return self.head(z)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.regress(self.encode(x))

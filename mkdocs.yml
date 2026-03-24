@@ -47,6 +47,7 @@ nav:
       - Swapping the model: tutorials/swap_model.md
       - Custom dataset: tutorials/custom_dataset.md
       - Tuning λ: tutorials/tuning.md
+      - Regression DA: tutorials/regression.md
   - API Reference:
       - Data: data.md
       - Models: models.md

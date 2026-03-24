@@ -164,6 +164,135 @@ class SyntheticGraphDataset(Dataset):
         return self.x[idx], self.y[idx]
 
 
+# ─── Sine Wave Regression Dataset ────────────────────────────────────────────
+
+class SineWaveDataset(Dataset):
+    """
+    Synthetic regression dataset for domain adaptation demonstrations.
+
+    Source domain: y = sin(x) + noise
+    Target domain: y = sin(x + phase_shift) + noise  (default: π/3 shift)
+
+    The phase shift creates a smooth but measurable domain gap — perfect for
+    visualising how MMD alignment helps a regressor generalise across domains.
+
+    Parameters
+    ----------
+    n_samples    : number of (x, y) pairs
+    phase        : phase offset applied to the sine function
+    amplitude    : vertical scaling factor
+    noise_std    : standard deviation of additive Gaussian noise
+    x_range      : input range, default (−π, π)
+    train        : True → training split, False → held-out test split
+    seed         : base random seed
+    """
+
+    def __init__(
+        self,
+        n_samples: int = 2000,
+        phase: float = 0.0,
+        amplitude: float = 1.0,
+        noise_std: float = 0.05,
+        x_range: tuple = (-np.pi, np.pi),
+        train: bool = True,
+        seed: int = 42,
+    ):
+        rng = np.random.RandomState(seed if train else seed + 100)
+        x = rng.uniform(*x_range, n_samples).astype(np.float32)
+        y = (amplitude * np.sin(x + phase)
+             + rng.randn(n_samples).astype(np.float32) * noise_std)
+        self.x = torch.from_numpy(x).unsqueeze(1)   # (N, 1)
+        self.y = torch.from_numpy(y).unsqueeze(1)   # (N, 1)
+
+    def __len__(self):
+        return len(self.y)
+
+    def __getitem__(self, idx):
+        return self.x[idx], self.y[idx]
+
+
+# ─── California Housing Regression Dataset ────────────────────────────────────
+
+class CaliforniaHousingDataset(Dataset):
+    """
+    Geographic domain split of the California Housing dataset (sklearn builtin).
+
+    Source domain: Northern California — latitude >= 36°
+    Target domain: Southern California — latitude <  36°
+
+    The two regions have meaningfully different price distributions, housing
+    density, and feature correlations, making this a realistic tabular DA task.
+
+    Both domains are normalised using statistics computed from the *full* dataset
+    (passed in as ``x_mean`` / ``x_std``) so that the scale is consistent across
+    domains. Use the ``"california_housing"`` DataManager key, which handles this
+    automatically.
+
+    Parameters
+    ----------
+    domain   : ``"north"`` (source) or ``"south"`` (target)
+    train    : True → 80 % training split, False → 20 % test split
+    seed     : random seed for the train/test shuffle
+    x_mean   : per-feature mean for normalisation (numpy array, shape (8,))
+    x_std    : per-feature std  for normalisation (numpy array, shape (8,))
+               If None, computed from this domain's own data (not recommended
+               when comparing source/target — use the DataManager factory).
+    """
+
+    FEATURE_NAMES = [
+        "MedInc", "HouseAge", "AveRooms", "AveBedrms",
+        "Population", "AveOccup", "Latitude", "Longitude",
+    ]
+
+    def __init__(
+        self,
+        domain: str = "north",
+        train: bool = True,
+        seed: int = 42,
+        x_mean=None,
+        x_std=None,
+    ):
+        try:
+            from sklearn.datasets import fetch_california_housing
+        except ImportError as e:
+            raise ImportError(
+                "CaliforniaHousingDataset requires scikit-learn. "
+                "Install it with: pip install scikit-learn"
+            ) from e
+
+        data = fetch_california_housing()
+        X_all = data.data.astype(np.float32)
+        y_all = data.target.astype(np.float32)
+
+        # Normalise with provided global stats (or fallback to local)
+        if x_mean is None:
+            x_mean = X_all.mean(0)
+            x_std  = X_all.std(0) + 1e-8
+        X_norm = (X_all - x_mean) / x_std
+
+        # Geographic split on raw latitude (feature index 6 in original data)
+        lat = data.data[:, 6]
+        mask = (lat >= 36.0) if domain == "north" else (lat < 36.0)
+        X, y = X_norm[mask], y_all[mask]
+
+        # Reproducible 80/20 train-test split within the region
+        rng = np.random.RandomState(seed)
+        idx = rng.permutation(len(y))
+        split = int(0.8 * len(y))
+        idx = idx[:split] if train else idx[split:]
+
+        self.x = torch.from_numpy(X[idx])
+        self.y = torch.from_numpy(y[idx]).unsqueeze(1)   # (N, 1)
+        self.x_mean = x_mean
+        self.x_std  = x_std
+
+    def __len__(self):
+        return len(self.y)
+
+    def __getitem__(self, idx):
+        return self.x[idx], self.y[idx]
+
+
 # ─── DataManager ─────────────────────────────────────────────────────────────
 
 _REGISTRY: dict = {}
@@ -232,6 +361,72 @@ def _register_defaults():
         )
 
     _REGISTRY["synthetic_graphs"] = _synthetic_graphs
+
+    def _sine_wave(root, batch_size, train, num_workers, **kw):
+        """
+        Source: sin(x),          phase = 0.
+        Target: sin(x + π/3),   phase = π/3 (60° shift).
+
+        Keyword overrides (all optional):
+          n_samples, phase_src, phase_tgt, noise_std
+        """
+        n_samples = kw.get("n_samples", 2000)
+        phase_src = kw.get("phase_src", 0.0)
+        phase_tgt = kw.get("phase_tgt", float(np.pi / 3))
+        noise_std = kw.get("noise_std", 0.05)
+
+        src_ds = SineWaveDataset(
+            n_samples=n_samples, phase=phase_src, noise_std=noise_std, train=train, seed=42
+        )
+        tgt_ds = SineWaveDataset(
+            n_samples=n_samples, phase=phase_tgt, noise_std=noise_std, train=train, seed=99
+        )
+        pin = torch.cuda.is_available()
+        return (
+            DataLoader(src_ds, batch_size=batch_size, shuffle=train,
+                       num_workers=num_workers, pin_memory=pin),
+            DataLoader(tgt_ds, batch_size=batch_size, shuffle=train,
+                       num_workers=num_workers, pin_memory=pin),
+        )
+
+    _REGISTRY["sine_wave"] = _sine_wave
+
+    def _california_housing(root, batch_size, train, num_workers, **kw):
+        """
+        Source: Northern California (latitude >= 36).
+        Target: Southern California (latitude <  36).
+
+        Global normalisation stats are computed once from the full dataset and
+        shared between both domains so feature scales are consistent.
+        """
+        try:
+            from sklearn.datasets import fetch_california_housing
+        except ImportError as e:
+            raise ImportError(
+                "The 'california_housing' dataset requires scikit-learn. "
+                "Install it with: pip install scikit-learn"
+            ) from e
+
+        data = fetch_california_housing()
+        X_all = data.data.astype(np.float32)
+        x_mean = X_all.mean(0)
+        x_std  = X_all.std(0) + 1e-8
+
+        src_ds = CaliforniaHousingDataset(
+            domain="north", train=train, x_mean=x_mean, x_std=x_std
+        )
+        tgt_ds = CaliforniaHousingDataset(
+            domain="south", train=train, x_mean=x_mean, x_std=x_std
+        )
+        pin = torch.cuda.is_available()
+        return (
+            DataLoader(src_ds, batch_size=batch_size, shuffle=train,
+                       num_workers=num_workers, pin_memory=pin),
+            DataLoader(tgt_ds, batch_size=batch_size, shuffle=train,
+                       num_workers=num_workers, pin_memory=pin),
+        )
+
+    _REGISTRY["california_housing"] = _california_housing
 
 
 _register_defaults()

@@ -11,3 +11,4 @@ Step-by-step guides covering common ShiftKit workflows.
 | 3 | [Swapping the model](swap_model.md) | Using MLP instead of CNN; bring-your-own architecture |
 | 4 | [Registering a custom dataset](custom_dataset.md) | Plug in any PyTorch dataset pair without modifying the library |
 | 5 | [Tuning the DA weight λ](tuning.md) | Systematic λ sweep and how to read the results |
+| 6 | [Regression with Domain Adaptation](regression.md) | Sine wave phase shift and California Housing geographic split using `MMDRegressionTrainer` |

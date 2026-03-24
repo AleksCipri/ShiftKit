@@ -1,3 +1,3 @@
-from .datasets import DataManager
+from .datasets import DataManager, SineWaveDataset, CaliforniaHousingDataset
 
-__all__ = ["DataManager"]
+__all__ = ["DataManager", "SineWaveDataset", "CaliforniaHousingDataset"]

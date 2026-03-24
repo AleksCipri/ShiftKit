@@ -1,9 +1,10 @@
-from .base   import BaseTrainer, TrainerRegistry
-from .mmd    import MMDLoss, MMDTrainer, SourceOnlyTrainer
-from .dann   import DANNTrainer, GradientReversalLayer, DomainDiscriminator
-from .sidda  import SIDDATrainer
-from .lmmd   import LMMDLoss, LMMDTrainer
-from .coral  import CORALLoss, CORALTrainer
+from .base       import BaseTrainer, TrainerRegistry
+from .mmd        import MMDLoss, MMDTrainer, SourceOnlyTrainer
+from .dann       import DANNTrainer, GradientReversalLayer, DomainDiscriminator
+from .sidda      import SIDDATrainer
+from .lmmd       import LMMDLoss, LMMDTrainer
+from .coral      import CORALLoss, CORALTrainer
+from .regression import SourceOnlyRegressionTrainer, MMDRegressionTrainer
 
 # ─── register built-in trainers ───────────────────────────────────────────────
 TrainerRegistry.register("source_only",  SourceOnlyTrainer)
@@ -20,4 +21,5 @@ __all__ = [
     "CORALLoss", "CORALTrainer",
     "DANNTrainer", "GradientReversalLayer", "DomainDiscriminator",
     "SIDDATrainer",
+    "SourceOnlyRegressionTrainer", "MMDRegressionTrainer",
 ]
