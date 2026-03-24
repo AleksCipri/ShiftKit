@@ -981,6 +981,34 @@
   
   
     <li class="md-nav__item">
+      <a href="kliep/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    KLIEP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="custom/" class="md-nav__link">
         
   
@@ -1227,6 +1255,12 @@ identical per-epoch history dicts so their results can be directly compared.</p>
 <td><a href="sidda/">→</a></td>
 </tr>
 <tr>
+<td><a href="kliep/"><code>KLIEPTrainer</code></a></td>
+<td>Instance-based importance weighting via density ratio estimation</td>
+<td><code>n_centers</code>, <code>weight_clip</code></td>
+<td><a href="kliep/">→</a></td>
+</tr>
+<tr>
 <td>Custom</td>
 <td>Your own method</td>
 <td>—</td>
@@ -1251,9 +1285,20 @@ identical per-epoch history dicts so their results can be directly compared.</p>
 <th style="text-align: center;">CORAL</th>
 <th style="text-align: center;">DANN</th>
 <th style="text-align: center;">SIDDA</th>
+<th style="text-align: center;">KLIEP</th>
 </tr>
 </thead>
 <tbody>
+<tr>
+<td><strong>DA family</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">Feature-based</td>
+<td style="text-align: center;">Feature-based</td>
+<td style="text-align: center;">Feature-based</td>
+<td style="text-align: center;">Feature-based</td>
+<td style="text-align: center;">Feature-based</td>
+<td style="text-align: center;">Instance-based</td>
+</tr>
 <tr>
 <td><strong>Alignment target</strong></td>
 <td style="text-align: center;">None</td>
@@ -1262,6 +1307,7 @@ identical per-epoch history dicts so their results can be directly compared.</p>
 <td style="text-align: center;">Covariance matrix</td>
 <td style="text-align: center;">Domain labels</td>
 <td style="text-align: center;">Optimal transport plan</td>
+<td style="text-align: center;">Sample weights (density ratio)</td>
 </tr>
 <tr>
 <td><strong>What is matched</strong></td>
@@ -1271,6 +1317,7 @@ identical per-epoch history dicts so their results can be directly compared.</p>
 <td style="text-align: center;">2nd-order statistics</td>
 <td style="text-align: center;">Domain membership</td>
 <td style="text-align: center;">Entire marginal distribution</td>
+<td style="text-align: center;">p_tgt(x) / p_src(x)</td>
 </tr>
 <tr>
 <td><strong>Kernel required</strong></td>
@@ -1280,9 +1327,11 @@ identical per-epoch history dicts so their results can be directly compared.</p>
 <td style="text-align: center;">No</td>
 <td style="text-align: center;">No</td>
 <td style="text-align: center;">No (Sinkhorn entropic OT)</td>
+<td style="text-align: center;">Yes — RBF in input space</td>
 </tr>
 <tr>
 <td><strong>Needs source labels</strong></td>
+<td style="text-align: center;">Yes</td>
 <td style="text-align: center;">Yes</td>
 <td style="text-align: center;">Yes</td>
 <td style="text-align: center;">Yes</td>
@@ -1298,6 +1347,7 @@ identical per-epoch history dicts so their results can be directly compared.</p>
 <td style="text-align: center;">No</td>
 <td style="text-align: center;">No</td>
 <td style="text-align: center;">No</td>
+<td style="text-align: center;">No</td>
 </tr>
 <tr>
 <td><strong>Adversarial training</strong></td>
@@ -1306,6 +1356,7 @@ identical per-epoch history dicts so their results can be directly compared.</p>
 <td style="text-align: center;">No</td>
 <td style="text-align: center;">No</td>
 <td style="text-align: center;">Yes (GRL)</td>
+<td style="text-align: center;">No</td>
 <td style="text-align: center;">No</td>
 </tr>
 <tr>
@@ -1316,6 +1367,27 @@ identical per-epoch history dicts so their results can be directly compared.</p>
 <td style="text-align: center;">No</td>
 <td style="text-align: center;">No</td>
 <td style="text-align: center;">Yes (η₁, η₂)</td>
+<td style="text-align: center;">No</td>
+</tr>
+<tr>
+<td><strong>Alignment cost</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">Every batch</td>
+<td style="text-align: center;">Every batch</td>
+<td style="text-align: center;">Every batch</td>
+<td style="text-align: center;">Every batch</td>
+<td style="text-align: center;">Every batch</td>
+<td style="text-align: center;">Once at init</td>
+</tr>
+<tr>
+<td><strong>Model interface</strong></td>
+<td style="text-align: center;"><code>forward()</code></td>
+<td style="text-align: center;"><code>encode()</code> + <code>classify()</code></td>
+<td style="text-align: center;"><code>encode()</code> + <code>classify()</code></td>
+<td style="text-align: center;"><code>encode()</code> + <code>classify()</code></td>
+<td style="text-align: center;"><code>encode()</code> + <code>classify()</code></td>
+<td style="text-align: center;">full SIDDA interface</td>
+<td style="text-align: center;"><code>forward()</code> only</td>
 </tr>
 <tr>
 <td><strong>Computation per batch</strong></td>
@@ -1325,6 +1397,7 @@ identical per-epoch history dicts so their results can be directly compared.</p>
 <td style="text-align: center;">O(n·d²) covariance</td>
 <td style="text-align: center;">O(n·d) + discriminator</td>
 <td style="text-align: center;">O(n²) Sinkhorn iterations</td>
+<td style="text-align: center;">O(n·m) weight lookup</td>
 </tr>
 <tr>
 <td><strong>Key hyperparameter</strong></td>
@@ -1334,6 +1407,7 @@ identical per-epoch history dicts so their results can be directly compared.</p>
 <td style="text-align: center;"><code>coral_weight</code> λ</td>
 <td style="text-align: center;"><code>domain_weight</code> λ</td>
 <td style="text-align: center;"><code>warmup_epochs</code>, blur schedule</td>
+<td style="text-align: center;"><code>n_centers</code>, <code>weight_clip</code></td>
 </tr>
 <tr>
 <td><strong>Warmup supported</strong></td>
@@ -1343,6 +1417,17 @@ identical per-epoch history dicts so their results can be directly compared.</p>
 <td style="text-align: center;">Yes</td>
 <td style="text-align: center;">Yes</td>
 <td style="text-align: center;">Mandatory</td>
+<td style="text-align: center;">No</td>
+</tr>
+<tr>
+<td><strong>Covariate shift assumption</strong></td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">No</td>
+<td style="text-align: center;">Yes</td>
 </tr>
 <tr>
 <td><strong>Best suited for</strong></td>
@@ -1352,6 +1437,7 @@ identical per-epoch history dicts so their results can be directly compared.</p>
 <td style="text-align: center;">Shift in feature scale / correlation</td>
 <td style="text-align: center;">Strong covariate shift with large batches</td>
 <td style="text-align: center;">Unknown shift type; automatically reweights objectives</td>
+<td style="text-align: center;">Covariate shift on tabular / low-dim data</td>
 </tr>
 </tbody>
 </table>
@@ -1360,7 +1446,8 @@ identical per-epoch history dicts so their results can be directly compared.</p>
 For most tasks, MMD or CORAL is a fast, strong first attempt.
 Use LMMD when class distributions differ across domains.
 Use DANN when the shift is severe and batch sizes are large enough to train the discriminator.
-Use SIDDA when you want automatic loss balancing without manual λ tuning.</p>
+Use SIDDA when you want automatic loss balancing without manual λ tuning.
+Use KLIEP when the covariate shift assumption holds and you prefer instance reweighting over feature alignment — especially effective on tabular data.</p>
 </blockquote>
 <hr />
 <h2 id="shared-history-format">Shared history format<a class="headerlink" href="#shared-history-format" title="Permanent link">&para;</a></h2>
