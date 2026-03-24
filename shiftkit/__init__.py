@@ -19,6 +19,7 @@ from .methods.coral      import CORALLoss, CORALTrainer
 from .methods.dann       import DANNTrainer, GradientReversalLayer, DomainDiscriminator
 from .methods.sidda      import SIDDATrainer
 from .methods.regression import SourceOnlyRegressionTrainer, MMDRegressionTrainer
+from .methods.kliep      import KLIEPWeightEstimator, KLIEPTrainer
 from .data.datasets      import SineWaveDataset, CaliforniaHousingDataset
 from .diagnostics.plots  import (
     plot_latent_space, plot_training_history, compare_latent_spaces,
@@ -37,6 +38,7 @@ __all__ = [
     "DANNTrainer", "GradientReversalLayer", "DomainDiscriminator",
     "SIDDATrainer",
     "SourceOnlyRegressionTrainer", "MMDRegressionTrainer",
+    "KLIEPWeightEstimator", "KLIEPTrainer",
     "plot_latent_space", "plot_training_history", "compare_latent_spaces",
     "plot_confusion_matrix", "plot_roc_curve",
 ]

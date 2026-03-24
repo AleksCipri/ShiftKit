@@ -59,6 +59,7 @@ nav:
           - LMMD: methods/lmmd.md
           - CORAL: methods/coral.md
           - SIDDA: methods/sidda.md
+          - KLIEP: methods/kliep.md
           - Custom Methods: methods/custom.md
       - Diagnostics: diagnostics.md
   - Citation: citation.md
