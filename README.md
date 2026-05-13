@@ -6,7 +6,7 @@ Test repo for scientific domain adaptation solutions - Check out more details in
 
 ## Overview
 
-![ShiftKit Framework](outputs/framework_overview.png)
+![ShiftKit Framework](outputs/framework.png)
 
 ## Framework structure
 

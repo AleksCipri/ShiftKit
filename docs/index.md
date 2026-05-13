@@ -4,7 +4,7 @@
 
 A lightweight, modular **domain adaptation** framework for PyTorch. Transfer knowledge from a labelled *source* domain to an unlabelled *target* domain using deep latent-space alignment.
 
-![Framework Overview](assets/framework_overview.png)
+![Framework Overview](assets/framework.png)
 
 ---
 
