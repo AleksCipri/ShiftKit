@@ -30,8 +30,8 @@ theme:
     - content.code.copy
     - search.highlight
     - search.suggest
-  logo: logo.png
-  favicon: logo.png
+  logo: logo_fox.png
+  favicon: logo_fox.png
   icon:
     repo: fontawesome/brands/github
 
