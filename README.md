@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/logo.png" alt="ShiftKit" width="340"/>
+  <img src="docs/logo_fox.png" alt="ShiftKit" width="340"/>
 </p>
 
 Test repo for scientific domain adaptation solutions - Check out more details in the [Documentation](https://alekscipri.github.io/ShiftKit/)
