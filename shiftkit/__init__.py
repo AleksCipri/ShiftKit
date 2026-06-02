@@ -26,8 +26,8 @@ from .methods.regression import SourceOnlyRegressionTrainer, MMDRegressionTraine
 from .methods.kliep      import KLIEPWeightEstimator, KLIEPTrainer
 from .data.datasets      import SineWaveDataset, CaliforniaHousingDataset
 from .diagnostics.plots  import (
-    plot_latent_space, plot_training_history, compare_latent_spaces,
-    plot_confusion_matrix, plot_roc_curve,
+    plot_latent_space, plot_latent_space_domains, plot_training_history,
+    compare_latent_spaces, plot_confusion_matrix, plot_roc_curve,
 )
 
 __version__ = "0.1.0"
@@ -43,7 +43,8 @@ __all__ = [
     "SIDDATrainer",
     "SourceOnlyRegressionTrainer", "MMDRegressionTrainer",
     "KLIEPWeightEstimator", "KLIEPTrainer",
-    "plot_latent_space", "plot_training_history", "compare_latent_spaces",
+    "plot_latent_space", "plot_latent_space_domains", "plot_training_history",
+    "compare_latent_spaces",
     "plot_confusion_matrix", "plot_roc_curve",
 ]
 if GNN is not None:

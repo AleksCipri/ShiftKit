@@ -106,10 +106,14 @@ def _run_projection(
 
     if method == "tsne":
         from sklearn.manifold import TSNE
-        reducer = TSNE(
-            n_components=2, perplexity=perplexity, n_iter=n_iter,
+        tsne_kw = dict(
+            n_components=2, perplexity=perplexity,
             random_state=42, init="pca", learning_rate="auto",
         )
+        try:
+            reducer = TSNE(**tsne_kw, n_iter=n_iter)
+        except TypeError:
+            reducer = TSNE(**tsne_kw, max_iter=n_iter)
     elif method == "isomap":
         from sklearn.manifold import Isomap
         reducer = Isomap(n_components=2, n_neighbors=n_neighbors)
@@ -129,15 +133,47 @@ def _run_projection(
     return reducer.fit_transform(z_all), domain_labels
 
 
-def _draw_domain_panel(ax, z2d, domain_labels, title):
+def _draw_domain_panel(
+    ax, z2d, domain_labels, title,
+    domain_names: Optional[tuple] = None,
+):
     palette = ["#4C72B0", "#DD8452"]
-    for d, (label, color) in enumerate(zip(["Source", "Target"], palette)):
+    names = domain_names if domain_names is not None else ("Source", "Target")
+    for d, (label, color) in enumerate(zip(names, palette)):
         mask = domain_labels == d
         ax.scatter(z2d[mask, 0], z2d[mask, 1],
                    c=color, label=label, s=8, alpha=0.6, linewidths=0)
     ax.set_title(title, fontsize=11)
     ax.legend(markerscale=3, framealpha=0.8, fontsize=8)
     ax.set_xticks([]); ax.set_yticks([])
+
+
+@torch.no_grad()
+def _collect_node_embeddings(
+    model: nn.Module,
+    data,
+    mask_attr: str,
+    device: torch.device,
+    max_samples: int,
+) -> np.ndarray:
+    """
+    Encode a single PyG graph and return latent vectors for masked nodes.
+
+    For node-level models (``pool='none'``), ``encode`` returns shape ``(N, D)``.
+    """
+    mask = getattr(data, mask_attr, None)
+    if mask is None:
+        raise AttributeError(f"Graph has no mask attribute '{mask_attr}'")
+    idx = mask.nonzero(as_tuple=False).view(-1)
+    if idx.numel() == 0:
+        raise ValueError(f"No nodes selected by {mask_attr}")
+
+    model.eval()
+    z = model.encode(data.to(device))
+    if idx.numel() > max_samples:
+        perm = torch.randperm(idx.numel(), device=idx.device)[:max_samples]
+        idx = idx[perm]
+    return z[idx].cpu().numpy()
 
 
 def _draw_class_panel(ax, z2d, y_src, y_tgt, title, class_names):
@@ -205,6 +241,68 @@ def plot_latent_space(
 
     plt.tight_layout()
     if save_path:
+        fig.savefig(save_path, dpi=150, bbox_inches="tight")
+        print(f"Figure saved to {save_path}")
+    if show:
+        plt.show()
+    return fig
+
+
+def plot_latent_space_domains(
+    model: nn.Module,
+    source_graph,
+    target_graph,
+    max_samples_per_domain: int = 2000,
+    node_mask: str = "test_mask",
+    projection: str = "tsne",
+    perplexity: float = 30.0,
+    n_iter: int = 1000,
+    n_neighbors: int = 15,
+    min_dist: float = 0.1,
+    domain_names: tuple = ("Source", "Target"),
+    title: str = "Latent space by domain",
+    save_path: Optional[str] = None,
+    show: bool = True,
+) -> plt.Figure:
+    """
+    Plot a single 2-D latent projection coloured by domain only.
+
+    Intended for node-level PyG graphs (one graph per domain), e.g. FIREbox vs
+    TNG300.  Pass ``domain_names`` to label the legend (default Source / Target).
+
+    Parameters
+    ----------
+    source_graph, target_graph : PyG ``Data`` objects (one graph per domain)
+    max_samples_per_domain     : cap on nodes sampled per graph
+    node_mask                  : mask attribute on ``Data`` (e.g. ``test_mask``)
+    projection                 : ``tsne``, ``isomap``, or ``umap``
+    domain_names               : legend labels for domain 0 and 1
+    """
+    device = _device_of(model)
+    print(f"Collecting {domain_names[0]} node embeddings …")
+    z_src = _collect_node_embeddings(
+        model, source_graph, node_mask, device, max_samples_per_domain
+    )
+    print(f"Collecting {domain_names[1]} node embeddings …")
+    z_tgt = _collect_node_embeddings(
+        model, target_graph, node_mask, device, max_samples_per_domain
+    )
+
+    z2d, domain_labels = _run_projection(
+        z_src, z_tgt, projection, perplexity, n_iter, n_neighbors, min_dist
+    )
+    xlabel, ylabel = _PROJ_AXIS_LABELS[projection.lower()]
+
+    fig, ax = plt.subplots(1, 1, figsize=(7, 6))
+    fig.suptitle(title, fontsize=13, fontweight="bold")
+    _draw_domain_panel(ax, z2d, domain_labels, "By domain", domain_names=domain_names)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+
+    plt.tight_layout()
+    if save_path:
+        from pathlib import Path
+        Path(save_path).parent.mkdir(parents=True, exist_ok=True)
         fig.savefig(save_path, dpi=150, bbox_inches="tight")
         print(f"Figure saved to {save_path}")
     if show:
