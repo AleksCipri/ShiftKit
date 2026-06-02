@@ -428,6 +428,49 @@ def _register_defaults():
 
     _REGISTRY["california_housing"] = _california_housing
 
+    def _pyg_domains(root, batch_size, train, num_workers, **kw):
+        """
+        PyG source/target domain pair (graph-level or node-level).
+
+        Required kwargs
+        ---------------
+        source, target : PyG ``Data`` (node-level) or list/dataset of ``Data`` (graph-level)
+        task_level     : ``"node"`` or ``"graph"`` (default ``"node"``)
+
+        Optional kwargs
+        -----------------
+        train_ratio, val_ratio, split_seed, split_mode (``"stratified"`` | ``"random"``)
+        """
+        from .pyg_utils import build_pyg_domain_loaders
+
+        source = kw.get("source")
+        target = kw.get("target")
+        if source is None or target is None:
+            raise ValueError(
+                "pyg_domains requires 'source' and 'target' PyG Data object(s). "
+                "Example: dm.load('pyg_domains', source=src_data, target=tgt_data, ...)"
+            )
+        task_level = kw.get("task_level", "node")
+        train_ratio = float(kw.get("train_ratio", 0.6))
+        val_ratio = float(kw.get("val_ratio", 0.2))
+        split_seed = int(kw.get("split_seed", 42))
+        split_mode = kw.get("split_mode", "stratified")
+
+        return build_pyg_domain_loaders(
+            task_level=task_level,
+            source=source,
+            target=target,
+            train=train,
+            batch_size=batch_size,
+            num_workers=num_workers,
+            train_ratio=train_ratio,
+            val_ratio=val_ratio,
+            split_seed=split_seed,
+            split_mode=split_mode,
+        )
+
+    _REGISTRY["pyg_domains"] = _pyg_domains
+
 
 _register_defaults()
 

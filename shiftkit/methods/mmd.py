@@ -27,6 +27,16 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from typing import Optional, List
 
+from .node_batch import (
+    is_node_graph_batch,
+    move_node_graph_batch,
+    unpack_batch,
+    batch_accuracy,
+    node_classify_logits,
+    node_latent_vectors,
+    node_classification_correct,
+)
+
 
 # ─── MMD Loss ────────────────────────────────────────────────────────────────
 
@@ -70,12 +80,6 @@ def _auto_device() -> torch.device:
     if torch.backends.mps.is_available():
         return torch.device("mps")
     return torch.device("cpu")
-
-
-@torch.no_grad()
-def _batch_accuracy(model: nn.Module, x: torch.Tensor, y: torch.Tensor) -> int:
-    """Return number of correct predictions for a single batch (no grad)."""
-    return (model(x).argmax(1) == y).sum().item()
 
 
 # ─── MMD Trainer ─────────────────────────────────────────────────────────────
@@ -153,22 +157,33 @@ class MMDTrainer:
             loader, total=n_batches,
             desc=f"Epoch {epoch}/{total_epochs}", leave=False
         ):
-            x_src, y_src = x_src.to(self.device), y_src.to(self.device)
-            x_tgt, y_tgt = x_tgt.to(self.device), y_tgt.to(self.device)
+            x_src, y_src, node_batch = unpack_batch(x_src, y_src, self.device)
+            x_tgt, y_tgt, _ = unpack_batch(x_tgt, y_tgt, self.device)
 
-            z_src = self.model.encode(x_src)
-
-            logits = self.model.classify(z_src)
-            ce = self.ce_loss(logits, y_src)
-
-            if warmup:
-                loss = ce
-                mmd_val = 0.0
+            if node_batch:
+                z_src = node_latent_vectors(self.model, x_src)
+                logits = self.model.classify(z_src)
+                ce = self.ce_loss(logits, y_src)
+                if warmup:
+                    loss = ce
+                    mmd_val = 0.0
+                else:
+                    z_tgt = node_latent_vectors(self.model, x_tgt)
+                    mmd = self.mmd_loss(z_src, z_tgt)
+                    loss = ce + self.mmd_weight * mmd
+                    mmd_val = mmd.item()
             else:
-                z_tgt = self.model.encode(x_tgt)
-                mmd = self.mmd_loss(z_src, z_tgt)
-                loss = ce + self.mmd_weight * mmd
-                mmd_val = mmd.item()
+                z_src = self.model.encode(x_src)
+                logits = self.model.classify(z_src)
+                ce = self.ce_loss(logits, y_src)
+                if warmup:
+                    loss = ce
+                    mmd_val = 0.0
+                else:
+                    z_tgt = self.model.encode(x_tgt)
+                    mmd = self.mmd_loss(z_src, z_tgt)
+                    loss = ce + self.mmd_weight * mmd
+                    mmd_val = mmd.item()
 
             self.optimizer.zero_grad()
             loss.backward()
@@ -180,8 +195,7 @@ class MMDTrainer:
             src_correct    += (logits.argmax(1) == y_src).sum().item()
             n_src          += y_src.size(0)
 
-            # target accuracy (no grad, reuses current weights)
-            tgt_correct += _batch_accuracy(self.model, x_tgt, y_tgt)
+            tgt_correct += batch_accuracy(self.model, x_tgt, y_tgt)
             n_tgt       += y_tgt.size(0)
 
         return {
@@ -199,9 +213,13 @@ class MMDTrainer:
         self.model.eval()
         correct = total = 0
         for x, y in loader:
-            x, y = x.to(self.device), y.to(self.device)
-            correct += (self.model(x).argmax(1) == y).sum().item()
-            total   += y.size(0)
+            if is_node_graph_batch(x):
+                x = move_node_graph_batch(x, self.device)
+                correct += node_classification_correct(self.model, x)
+            else:
+                x, y = x.to(self.device), y.to(self.device)
+                correct += (self.model(x).argmax(1) == y).sum().item()
+            total += y.size(0)
         return {"domain": domain, "accuracy": correct / total, "n_samples": total}
 
 
@@ -270,11 +288,14 @@ class SourceOnlyTrainer:
             loader, total=n_batches,
             desc=f"Epoch {epoch}/{total_epochs}", leave=False
         ):
-            x_src, y_src = x_src.to(self.device), y_src.to(self.device)
-            x_tgt, y_tgt = x_tgt.to(self.device), y_tgt.to(self.device)
+            x_src, y_src, node_batch = unpack_batch(x_src, y_src, self.device)
+            x_tgt, y_tgt, _ = unpack_batch(x_tgt, y_tgt, self.device)
 
-            logits = self.model(x_src)
-            loss   = self.ce_loss(logits, y_src)
+            if node_batch:
+                logits = node_classify_logits(self.model, x_src)
+            else:
+                logits = self.model(x_src)
+            loss = self.ce_loss(logits, y_src)
 
             self.optimizer.zero_grad()
             loss.backward()
@@ -284,7 +305,7 @@ class SourceOnlyTrainer:
             src_correct += (logits.argmax(1) == y_src).sum().item()
             n_src       += y_src.size(0)
 
-            tgt_correct += _batch_accuracy(self.model, x_tgt, y_tgt)
+            tgt_correct += batch_accuracy(self.model, x_tgt, y_tgt)
             n_tgt       += y_tgt.size(0)
 
         return {
@@ -302,7 +323,11 @@ class SourceOnlyTrainer:
         self.model.eval()
         correct = total = 0
         for x, y in loader:
-            x, y = x.to(self.device), y.to(self.device)
-            correct += (self.model(x).argmax(1) == y).sum().item()
-            total   += y.size(0)
+            if is_node_graph_batch(x):
+                x = move_node_graph_batch(x, self.device)
+                correct += node_classification_correct(self.model, x)
+            else:
+                x, y = x.to(self.device), y.to(self.device)
+                correct += (self.model(x).argmax(1) == y).sum().item()
+            total += y.size(0)
         return {"domain": domain, "accuracy": correct / total, "n_samples": total}

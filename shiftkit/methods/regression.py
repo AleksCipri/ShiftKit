@@ -25,6 +25,13 @@ from tqdm import tqdm
 from typing import Optional, List
 
 from .mmd import MMDLoss, _auto_device
+from .node_batch import (
+    is_node_graph_batch,
+    move_node_graph_batch,
+    unpack_batch,
+    node_latent_vectors,
+    node_regress_preds,
+)
 
 
 # ─── Source-Only Regression Baseline ─────────────────────────────────────────
@@ -85,10 +92,13 @@ class SourceOnlyRegressionTrainer:
             zip(self.source_loader, self.target_loader),
             total=n_batches, desc=f"Epoch {epoch}/{total_epochs}", leave=False
         ):
-            x_src, y_src = x_src.to(self.device), y_src.to(self.device)
-            x_tgt, y_tgt = x_tgt.to(self.device), y_tgt.to(self.device)
+            x_src, y_src, node_batch = unpack_batch(x_src, y_src, self.device)
+            x_tgt, y_tgt, _ = unpack_batch(x_tgt, y_tgt, self.device)
 
-            pred_src = self.model(x_src)
+            if node_batch:
+                pred_src = node_regress_preds(self.model, x_src)
+            else:
+                pred_src = self.model(x_src).view_as(y_src)
             loss = self.mse_loss(pred_src, y_src)
 
             self.optimizer.zero_grad()
@@ -100,7 +110,10 @@ class SourceOnlyRegressionTrainer:
             n_src     += y_src.size(0)
 
             with torch.no_grad():
-                pred_tgt = self.model(x_tgt)
+                if is_node_graph_batch(x_tgt):
+                    pred_tgt = node_regress_preds(self.model, x_tgt)
+                else:
+                    pred_tgt = self.model(x_tgt).view_as(y_tgt)
                 tgt_se  += ((pred_tgt - y_tgt) ** 2).sum().item()
                 n_tgt   += y_tgt.size(0)
 
@@ -119,9 +132,14 @@ class SourceOnlyRegressionTrainer:
         self.model.eval()
         ys, preds = [], []
         for x, y in loader:
-            x, y = x.to(self.device), y.to(self.device)
-            preds.append(self.model(x))
-            ys.append(y)
+            if is_node_graph_batch(x):
+                x = move_node_graph_batch(x, self.device)
+                preds.append(node_regress_preds(self.model, x))
+                ys.append(x.y)
+            else:
+                x, y = x.to(self.device), y.to(self.device)
+                preds.append(self.model(x).view_as(y))
+                ys.append(y)
         ys    = torch.cat(ys)
         preds = torch.cat(preds)
         mse    = ((preds - ys) ** 2).mean().item()
@@ -211,18 +229,25 @@ class MMDRegressionTrainer:
             zip(self.source_loader, self.target_loader),
             total=n_batches, desc=f"Epoch {epoch}/{total_epochs}", leave=False
         ):
-            x_src, y_src = x_src.to(self.device), y_src.to(self.device)
-            x_tgt, y_tgt = x_tgt.to(self.device), y_tgt.to(self.device)
+            x_src, y_src, node_batch = unpack_batch(x_src, y_src, self.device)
+            x_tgt, y_tgt, _ = unpack_batch(x_tgt, y_tgt, self.device)
 
-            z_src    = self.model.encode(x_src)
-            pred_src = self.model.regress(z_src)
-            mse      = self.mse_loss(pred_src, y_src)
+            if node_batch:
+                z_src = node_latent_vectors(self.model, x_src)
+                pred_src = self.model.regress(z_src).view_as(y_src)
+            else:
+                z_src = self.model.encode(x_src)
+                pred_src = self.model.regress(z_src).view_as(y_src)
+            mse = self.mse_loss(pred_src, y_src)
 
             if warmup:
                 loss    = mse
                 mmd_val = 0.0
             else:
-                z_tgt   = self.model.encode(x_tgt)
+                if node_batch:
+                    z_tgt = node_latent_vectors(self.model, x_tgt)
+                else:
+                    z_tgt = self.model.encode(x_tgt)
                 mmd     = self.mmd_loss(z_src, z_tgt)
                 loss    = mse + self.mmd_weight * mmd
                 mmd_val = mmd.item()
@@ -238,7 +263,10 @@ class MMDRegressionTrainer:
             n_src  += y_src.size(0)
 
             with torch.no_grad():
-                pred_tgt = self.model.regress(self.model.encode(x_tgt))
+                if is_node_graph_batch(x_tgt):
+                    pred_tgt = node_regress_preds(self.model, x_tgt)
+                else:
+                    pred_tgt = self.model.regress(self.model.encode(x_tgt)).view_as(y_tgt)
                 tgt_se  += ((pred_tgt - y_tgt) ** 2).sum().item()
                 n_tgt   += y_tgt.size(0)
 
@@ -257,9 +285,14 @@ class MMDRegressionTrainer:
         self.model.eval()
         ys, preds = [], []
         for x, y in loader:
-            x, y = x.to(self.device), y.to(self.device)
-            preds.append(self.model(x))
-            ys.append(y)
+            if is_node_graph_batch(x):
+                x = move_node_graph_batch(x, self.device)
+                preds.append(node_regress_preds(self.model, x))
+                ys.append(x.y)
+            else:
+                x, y = x.to(self.device), y.to(self.device)
+                preds.append(self.model(x).view_as(y))
+                ys.append(y)
         ys    = torch.cat(ys)
         preds = torch.cat(preds)
         mse    = ((preds - ys) ** 2).mean().item()
