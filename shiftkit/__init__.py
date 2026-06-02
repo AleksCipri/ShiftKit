@@ -12,6 +12,10 @@ from shiftkit.diagnostics import plot_latent_space, plot_training_history
 from .data.datasets      import DataManager
 from .models.networks    import MLP, CNN, MLPRegressor
 from .models.gnn         import SimpleGCN
+try:
+    from .models.gnn_pyg import GNN
+except ImportError:
+    GNN = None  # torch-geometric not installed
 from .methods.base       import BaseTrainer, TrainerRegistry
 from .methods.mmd        import MMDLoss, MMDTrainer, SourceOnlyTrainer
 from .methods.lmmd       import LMMDLoss, LMMDTrainer
@@ -42,3 +46,5 @@ __all__ = [
     "plot_latent_space", "plot_training_history", "compare_latent_spaces",
     "plot_confusion_matrix", "plot_roc_curve",
 ]
+if GNN is not None:
+    __all__.append("GNN")
