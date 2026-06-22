@@ -163,3 +163,62 @@ test_src,  test_tgt  = dm.load("synthetic_graphs", train=False)
 |-----|--------|--------|-------------|
 | `"mnist_noisy_mnist"` | `torchvision.MNIST` | `NoisyMNIST` | `noise_std` (default `0.3`) |
 | `"synthetic_graphs"` | `SyntheticGraphDataset` (noise=0.1) | `SyntheticGraphDataset` (noise=0.5, flip=0.05) | `n_graphs`, `n_nodes`, `feat_dim`, `feature_noise_src`, `feature_noise_tgt`, `edge_flip_prob` |
+| `"pyg_domains"` | User-supplied PyG `Data` | User-supplied PyG `Data` | `source`, `target`, `task_level`, `train_ratio`, `val_ratio`, `split_seed`, `split_mode` |
+
+---
+
+## PyG domains (`pyg_domains`)
+
+Requires `torch-geometric`. Loads external PyG graphs for domain adaptation with automatic **stratified** train/val/test splits when masks are not already on the `Data` objects.
+
+### Node-level (one graph per domain)
+
+Use when labels live on **nodes** (transductive node classification). Each domain is a single `torch_geometric.data.Data` object. Training runs message passing on the full graph; loss and MMD use **train** nodes only; evaluation uses **test** nodes.
+
+```python
+from shiftkit.data import DataManager
+from shiftkit.models import GNN
+from shiftkit.methods import MMDTrainer
+
+dm = DataManager(batch_size=1, num_workers=0)
+train_src, train_tgt = dm.load(
+    "pyg_domains",
+    train=True,
+    task_level="node",
+    source=source_graph,
+    target=target_graph,
+    train_ratio=0.6,
+    val_ratio=0.2,
+    split_seed=42,
+    split_mode="stratified",
+)
+test_src, test_tgt = dm.load("pyg_domains", train=False, ...)
+
+model = GNN(source_graph, "SAGE", hidden_channels=64, num_layers=2,
+            num_classes=10, pool="none")
+trainer = MMDTrainer(model, train_src, train_tgt, mmd_weight=1.0)
+```
+
+Pair with `shiftkit.models.GNN(..., pool="none")` so `encode()` returns per-node embeddings.
+
+### Graph-level (many graphs per domain)
+
+Pass a **list** of `Data` objects per domain. Splits are by graph index (stratified on graph labels when discrete). Use default `pool="mean"` on `GNN`.
+
+```python
+train_src, train_tgt = dm.load(
+    "pyg_domains",
+    train=True,
+    task_level="graph",
+    source=list_of_src_graphs,
+    target=list_of_tgt_graphs,
+    train_ratio=0.6,
+    val_ratio=0.2,
+)
+```
+
+### Existing masks
+
+If `data.train_mask` is already set, automatic splitting is skipped. Loaders use `train_mask` for `train=True` and `test_mask` for `train=False`.
+
+See `examples/pyg_node_mmd.py` for a full node-level example.
