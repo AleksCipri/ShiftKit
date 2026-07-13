@@ -27,26 +27,6 @@ Gretton, A., Borgwardt, K. M., Rasch, M. J., Schölkopf, B., & Smola, A. (2012).
 
 ---
 
-## Deep Adaptation Networks (DAN)
-
-Used by: [MMDTrainer](methods/mmd.md)
-
-Long, M., Cao, Y., Wang, J., & Jordan, M. (2015).
-[Learning Transferable Features with Deep Adaptation Networks](https://proceedings.mlr.press/v37/long15.html).
-*Proceedings of the 32nd International Conference on Machine Learning (ICML)*, 97–105.
-
-```bibtex
-@inproceedings{long2015learning,
-  title     = {Learning Transferable Features with Deep Adaptation Networks},
-  author    = {Long, Mingsheng and Cao, Yue and Wang, Jianmin and Jordan, Michael},
-  booktitle = {International Conference on Machine Learning (ICML)},
-  pages     = {97--105},
-  year      = {2015}
-}
-```
-
----
-
 ## Domain-Adversarial Neural Networks (DANN)
 
 Used by: [DANNTrainer](methods/dann.md)
