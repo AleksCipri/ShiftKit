@@ -1132,6 +1132,72 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#domain-adversarial-neural-networks-dann" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Domain-Adversarial Neural Networks (DANN)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deep-subdomain-adaptation-lmmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deep Subdomain Adaptation (LMMD)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deep-coral" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deep CORAL
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sidda-sinkhorn-dynamic-domain-adaptation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SIDDA — SInkhorn Dynamic Domain Adaptation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kliep-kullbackleibler-importance-estimation-procedure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        KLIEP — Kullback–Leibler Importance Estimation Procedure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#semantic-centroid-alignment-mstn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Semantic Centroid Alignment (MSTN)
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1215,6 +1281,72 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#domain-adversarial-neural-networks-dann" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Domain-Adversarial Neural Networks (DANN)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deep-subdomain-adaptation-lmmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deep Subdomain Adaptation (LMMD)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deep-coral" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deep CORAL
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sidda-sinkhorn-dynamic-domain-adaptation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SIDDA — SInkhorn Dynamic Domain Adaptation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kliep-kullbackleibler-importance-estimation-procedure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        KLIEP — Kullback–Leibler Importance Estimation Procedure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#semantic-centroid-alignment-mstn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Semantic Centroid Alignment (MSTN)
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1234,24 +1366,26 @@
 
 <h1 id="related-work">Related Work<a class="headerlink" href="#related-work" title="Permanent link">&para;</a></h1>
 <p>ShiftKit builds on foundational methods in domain adaptation and statistical testing.
-The references below are listed with plain-text citations and BibTeX entries for convenience.</p>
+Each entry includes a plain-text citation with a link to the official paper, followed by a BibTeX entry.</p>
 <hr />
 <h2 id="maximum-mean-discrepancy-mmd">Maximum Mean Discrepancy (MMD)<a class="headerlink" href="#maximum-mean-discrepancy-mmd" title="Permanent link">&para;</a></h2>
+<p>Used by: <a href="../methods/mmd/">MMDTrainer</a>, <a href="../methods/lmmd/">LMMDTrainer</a></p>
 <p>Gretton, A., Borgwardt, K. M., Rasch, M. J., Schölkopf, B., &amp; Smola, A. (2012).
 <a href="https://jmlr.csail.mit.edu/papers/v13/gretton12a.html">A Kernel Two-Sample Test</a>.
 <em>Journal of Machine Learning Research</em>, 13, 723–773.</p>
 <div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nc">@article</span><span class="p">{</span><span class="nl">gretton2012kernel</span><span class="p">,</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="na">title</span><span class="w">     </span><span class="p">=</span><span class="w"> </span><span class="s">{A Kernel Two-Sample Test}</span><span class="p">,</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="na">author</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">{Gretton, Arthur and Borgwardt, Karsten M. and Rasch, Malte J.</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="s">               and Sch{\&quot;o}lkopf, Bernhard and Smola, Alexander}</span><span class="p">,</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="na">journal</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">{Journal of Machine Learning Research}</span><span class="p">,</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="na">volume</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">{13}</span><span class="p">,</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span><span class="na">pages</span><span class="w">     </span><span class="p">=</span><span class="w"> </span><span class="s">{723--773}</span><span class="p">,</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span><span class="na">year</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="s">{2012}</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="na">title</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">{A Kernel Two-Sample Test}</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="na">author</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">{Gretton, Arthur and Borgwardt, Karsten M. and Rasch, Malte J.</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="s">             and Sch{\&quot;o}lkopf, Bernhard and Smola, Alexander}</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="na">journal</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Journal of Machine Learning Research}</span><span class="p">,</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="na">volume</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">{13}</span><span class="p">,</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span><span class="na">pages</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">{723--773}</span><span class="p">,</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span><span class="na">year</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">{2012}</span>
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="p">}</span>
 </span></code></pre></div>
 <hr />
 <h2 id="deep-adaptation-networks-dan">Deep Adaptation Networks (DAN)<a class="headerlink" href="#deep-adaptation-networks-dan" title="Permanent link">&para;</a></h2>
+<p>Used by: <a href="../methods/mmd/">MMDTrainer</a></p>
 <p>Long, M., Cao, Y., Wang, J., &amp; Jordan, M. (2015).
 <a href="https://proceedings.mlr.press/v37/long15.html">Learning Transferable Features with Deep Adaptation Networks</a>.
 <em>Proceedings of the 32nd International Conference on Machine Learning (ICML)</em>, 97–105.</p>
@@ -1262,6 +1396,105 @@ The references below are listed with plain-text citations and BibTeX entries for
 </span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="na">pages</span><span class="w">     </span><span class="p">=</span><span class="w"> </span><span class="s">{97--105}</span><span class="p">,</span>
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="na">year</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="s">{2015}</span>
 </span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="p">}</span>
+</span></code></pre></div>
+<hr />
+<h2 id="domain-adversarial-neural-networks-dann">Domain-Adversarial Neural Networks (DANN)<a class="headerlink" href="#domain-adversarial-neural-networks-dann" title="Permanent link">&para;</a></h2>
+<p>Used by: <a href="../methods/dann/">DANNTrainer</a></p>
+<p>Ganin, Y., Ustinova, E., Ajakan, H., Germain, P., Larochelle, H., Laviolette, F., Marchand, M., &amp; Lempitsky, V. (2016).
+<a href="https://jmlr.org/papers/volume17/15-239/15-239.pdf">Domain-Adversarial Training of Neural Networks</a>.
+<em>Journal of Machine Learning Research</em>, 17(59), 1–35.</p>
+<div class="highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nc">@article</span><span class="p">{</span><span class="nl">ganin2016dann</span><span class="p">,</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="na">title</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">{Domain-Adversarial Training of Neural Networks}</span><span class="p">,</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="na">author</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">{Ganin, Yaroslav and Ustinova, Evgeniya and Ajakan, Hana and</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="s">             Germain, Pascal and Larochelle, Hugo and Laviolette, Fran{\c{c}}ois</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="s">             and Marchand, Mario and Lempitsky, Victor}</span><span class="p">,</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">  </span><span class="na">journal</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Journal of Machine Learning Research}</span><span class="p">,</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">  </span><span class="na">volume</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">{17}</span><span class="p">,</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">  </span><span class="na">number</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">{59}</span><span class="p">,</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">  </span><span class="na">pages</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">{1--35}</span><span class="p">,</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">  </span><span class="na">year</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">{2016}</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="p">}</span>
+</span></code></pre></div>
+<hr />
+<h2 id="deep-subdomain-adaptation-lmmd">Deep Subdomain Adaptation (LMMD)<a class="headerlink" href="#deep-subdomain-adaptation-lmmd" title="Permanent link">&para;</a></h2>
+<p>Used by: <a href="../methods/lmmd/">LMMDTrainer</a></p>
+<p>Zhu, Y., Zhuang, F., &amp; Wang, D. (2020).
+<a href="https://arxiv.org/abs/2106.09388">Deep Subdomain Adaptation Network for Image Classification</a>.
+<em>IEEE Transactions on Neural Networks and Learning Systems</em>, 32(4), 1713–1722.</p>
+<div class="highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nc">@article</span><span class="p">{</span><span class="nl">zhu2020lmmd</span><span class="p">,</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="na">title</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">{Deep Subdomain Adaptation Network for Image Classification}</span><span class="p">,</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="na">author</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">{Zhu, Yongchun and Zhuang, Fuzhen and Wang, Deqing}</span><span class="p">,</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="na">journal</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{IEEE Transactions on Neural Networks and Learning Systems}</span><span class="p">,</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">  </span><span class="na">volume</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">{32}</span><span class="p">,</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">  </span><span class="na">number</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">{4}</span><span class="p">,</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">  </span><span class="na">pages</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">{1713--1722}</span><span class="p">,</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">  </span><span class="na">year</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">{2020}</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="p">}</span>
+</span></code></pre></div>
+<hr />
+<h2 id="deep-coral">Deep CORAL<a class="headerlink" href="#deep-coral" title="Permanent link">&para;</a></h2>
+<p>Used by: <a href="../methods/coral/">CORALTrainer</a></p>
+<p>Sun, B., &amp; Saenko, K. (2016).
+<a href="https://arxiv.org/abs/1607.01719">Deep CORAL: Correlation Alignment for Deep Domain Adaptation</a>.
+<em>ECCV Workshops 2016</em>, LNCS 9915, 443–450.</p>
+<div class="highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nc">@inproceedings</span><span class="p">{</span><span class="nl">sun2016coral</span><span class="p">,</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="na">title</span><span class="w">     </span><span class="p">=</span><span class="w"> </span><span class="s">{Deep {CORAL}: Correlation Alignment for Deep Domain Adaptation}</span><span class="p">,</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="na">author</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">{Sun, Baochen and Saenko, Kate}</span><span class="p">,</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="na">booktitle</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{ECCV Workshops}</span><span class="p">,</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span><span class="na">series</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">{LNCS}</span><span class="p">,</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">  </span><span class="na">volume</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">{9915}</span><span class="p">,</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">  </span><span class="na">pages</span><span class="w">     </span><span class="p">=</span><span class="w"> </span><span class="s">{443--450}</span><span class="p">,</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">  </span><span class="na">year</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="s">{2016}</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="p">}</span>
+</span></code></pre></div>
+<hr />
+<h2 id="sidda-sinkhorn-dynamic-domain-adaptation">SIDDA — SInkhorn Dynamic Domain Adaptation<a class="headerlink" href="#sidda-sinkhorn-dynamic-domain-adaptation" title="Permanent link">&para;</a></h2>
+<p>Used by: <a href="../methods/sidda/">SIDDATrainer</a></p>
+<p>Ciprijanovic, A., Lewis, A., Pedro, K., Downey, E., Nord, B., &amp; Stark, A. (2025).
+<a href="https://iopscience.iop.org/article/10.1088/2632-2153/adf701">SIDDA: SInkhorn Dynamic Domain Adaptation for Image Classification with Equivariant Neural Networks</a>.
+<em>Machine Learning: Science and Technology</em>, 6, 035032.</p>
+<div class="highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nc">@article</span><span class="p">{</span><span class="nl">ciprijanovic2025sidda</span><span class="p">,</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="na">title</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">{{SIDDA}: {SI}nkhorn Dynamic Domain Adaptation for Image Classification</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="s">             with Equivariant Neural Networks}</span><span class="p">,</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">  </span><span class="na">author</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">{Ciprijanovic, Aleksandra and Lewis, Ashia and Pedro, Karolina and</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="s">             Downey, Eve and Nord, Brian and Stark, Abigail}</span><span class="p">,</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">  </span><span class="na">journal</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Machine Learning: Science and Technology}</span><span class="p">,</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">  </span><span class="na">volume</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">{6}</span><span class="p">,</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">  </span><span class="na">pages</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">{035032}</span><span class="p">,</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">  </span><span class="na">year</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">{2025}</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="p">}</span>
+</span></code></pre></div>
+<hr />
+<h2 id="kliep-kullbackleibler-importance-estimation-procedure">KLIEP — Kullback–Leibler Importance Estimation Procedure<a class="headerlink" href="#kliep-kullbackleibler-importance-estimation-procedure" title="Permanent link">&para;</a></h2>
+<p>Used by: <a href="../methods/kliep/">KLIEPTrainer</a></p>
+<p>Sugiyama, M., Nakajima, S., Kashima, H., Bünau, P. V., &amp; Kawanabe, M. (2008).
+<a href="https://papers.nips.cc/paper/3248-direct-importance-estimation-with-model-selection-and-its-application-to-covariate-shift-adaptation">Direct Importance Estimation with Model Selection and Its Application to Covariate Shift Adaptation</a>.
+<em>Advances in Neural Information Processing Systems 20 (NeurIPS)</em>, 1433–1440.</p>
+<div class="highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nc">@inproceedings</span><span class="p">{</span><span class="nl">sugiyama2008kliep</span><span class="p">,</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="na">title</span><span class="w">     </span><span class="p">=</span><span class="w"> </span><span class="s">{Direct Importance Estimation with Model Selection and Its</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="s">               Application to Covariate Shift Adaptation}</span><span class="p">,</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span><span class="na">author</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">{Sugiyama, Masashi and Nakajima, Shinichi and Kashima, Hisashi and</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="s">               B{\&quot;u}nau, Paul von and Kawanabe, Motoaki}</span><span class="p">,</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">  </span><span class="na">booktitle</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Advances in Neural Information Processing Systems 20 (NeurIPS)}</span><span class="p">,</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">  </span><span class="na">pages</span><span class="w">     </span><span class="p">=</span><span class="w"> </span><span class="s">{1433--1440}</span><span class="p">,</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">  </span><span class="na">year</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="s">{2008}</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="p">}</span>
+</span></code></pre></div>
+<hr />
+<h2 id="semantic-centroid-alignment-mstn">Semantic Centroid Alignment (MSTN)<a class="headerlink" href="#semantic-centroid-alignment-mstn" title="Permanent link">&para;</a></h2>
+<p>Used by: <a href="../methods/dann/">DANNTrainer</a> (optional <code>semantic_weight</code> parameter)</p>
+<p>Xie, S., Zheng, Z., Chen, L., &amp; Chen, C. (2018).
+<a href="https://proceedings.mlr.press/v80/xie18c.html">Learning Semantic Representations for Unsupervised Domain Adaptation</a>.
+<em>Proceedings of the 35th International Conference on Machine Learning (ICML)</em>, PMLR 80:5423–5432.</p>
+<div class="highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nc">@inproceedings</span><span class="p">{</span><span class="nl">xie2018mstn</span><span class="p">,</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="na">title</span><span class="w">     </span><span class="p">=</span><span class="w"> </span><span class="s">{Learning Semantic Representations for Unsupervised Domain Adaptation}</span><span class="p">,</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span><span class="na">author</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">{Xie, Shaoan and Zheng, Zibin and Chen, Liang and Chen, Chuan}</span><span class="p">,</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span><span class="na">booktitle</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{International Conference on Machine Learning (ICML)}</span><span class="p">,</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">  </span><span class="na">pages</span><span class="w">     </span><span class="p">=</span><span class="w"> </span><span class="s">{5423--5432}</span><span class="p">,</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">  </span><span class="na">series</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">{PMLR}</span><span class="p">,</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">  </span><span class="na">volume</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">{80}</span><span class="p">,</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">  </span><span class="na">year</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="s">{2018}</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="p">}</span>
 </span></code></pre></div>
 
 
