@@ -102,20 +102,28 @@ Sun, B., & Saenko, K. (2016).
 
 Used by: [SIDDATrainer](methods/sidda.md)
 
-Ciprijanovic, A., Lewis, A., Pedro, K., Downey, E., Nord, B., & Stark, A. (2025).
-[SIDDA: SInkhorn Dynamic Domain Adaptation for Image Classification with Equivariant Neural Networks](https://iopscience.iop.org/article/10.1088/2632-2153/adf701).
-*Machine Learning: Science and Technology*, 6, 035032.
+Pandya, S., Patel, P., Nord, B. D., Walmsley, M., & Ćiprijanović, A. (2025).
+[SIDDA: SInkhorn Dynamic Domain Adaptation for image classification with equivariant neural networks](https://iopscience.iop.org/article/10.1088/2632-2153/adf701).
+*Machine Learning: Science and Technology*, 6(3), 035032.
+DOI: 10.1088/2632-2153/adf701
 
 ```bibtex
-@article{ciprijanovic2025sidda,
-  title   = {{SIDDA}: {SI}nkhorn Dynamic Domain Adaptation for Image Classification
-             with Equivariant Neural Networks},
-  author  = {Ciprijanovic, Aleksandra and Lewis, Ashia and Pedro, Karolina and
-             Downey, Eve and Nord, Brian and Stark, Abigail},
+@article{2025MLS&T...6c5032P,
+  author  = {{Pandya}, Sneh and {Patel}, Purvik and {Nord}, Brian D. and
+             {Walmsley}, Mike and {\'C}iprijanovi{\'c}, Aleksandra},
+  title   = {{SIDDA}: {SI}nkhorn Dynamic Domain Adaptation for image classification
+             with equivariant neural networks},
   journal = {Machine Learning: Science and Technology},
+  year    = {2025},
+  month   = sep,
   volume  = {6},
+  number  = {3},
+  eid     = {035032},
   pages   = {035032},
-  year    = {2025}
+  doi     = {10.1088/2632-2153/adf701},
+  eprint  = {2501.14048},
+  archivePrefix = {arXiv},
+  primaryClass  = {stat.ML}
 }
 ```
 
