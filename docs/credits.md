@@ -31,6 +31,13 @@ ShiftKit builds on the following open-source libraries:
 | [matplotlib](https://matplotlib.org) | ≥ 3.7 | All plotting and diagnostics |
 | [tqdm](https://tqdm.github.io) | ≥ 4.65 | Training progress bars |
 
+**Optional dependencies** (required only for specific methods):
+
+| Library | Version | Use |
+|---------|---------|-----|
+| [torch-geometric](https://pyg.org) | ≥ 2.0 | GNN models and PyG graph data (`shiftkit.models.GNN`) |
+| [geomloss](https://www.kernel-operations.io/geomloss/) | ≥ 0.2 | Sinkhorn divergence for `SIDDATrainer` |
+
 Documentation built with [MkDocs](https://www.mkdocs.org) and the [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) theme.
 
 ---
