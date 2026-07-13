@@ -792,6 +792,67 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#gnn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GNN
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="GNN">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#graph-level-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Graph-level example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#node-level-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Node-level example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#constructor_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Constructor
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#choosing-between-simplegcn-and-gnn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choosing between SimpleGCN and GNN
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#using-a-custom-model" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1342,6 +1403,67 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#gnn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GNN
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="GNN">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#graph-level-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Graph-level example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#node-level-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Node-level example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#constructor_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Constructor
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#choosing-between-simplegcn-and-gnn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Choosing between SimpleGCN and GNN
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#using-a-custom-model" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1629,24 +1751,254 @@
 </span><span id="__span-6-21"><a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Target accuracy: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
 </span></code></pre></div>
 <hr />
+<h2 id="gnn">GNN<a class="headerlink" href="#gnn" title="Permanent link">&para;</a></h2>
+<p>A configurable <strong>PyTorch Geometric</strong> GNN that supports both graph-level and node-level domain adaptation.
+Uses the same <code>encode</code> / <code>classify</code> / <code>regress</code> / <code>forward</code> interface as <code>CNN</code>, <code>MLP</code>, and <code>SimpleGCN</code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Optional dependency</p>
+<p><code>GNN</code> requires <code>torch-geometric</code>, which is not installed by default:
+<div class="highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>pip<span class="w"> </span>install<span class="w"> </span>torch-geometric
+</span></code></pre></div></p>
+</div>
+<p>Supported conv layers:</p>
+<table>
+<thead>
+<tr>
+<th><code>model_name</code></th>
+<th>Architecture</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>"SAGE"</code></td>
+<td>GraphSAGE</td>
+<td>Mean/max/sum neighbourhood aggregation; good default</td>
+</tr>
+<tr>
+<td><code>"GCN"</code></td>
+<td>Graph Convolutional Network</td>
+<td>Spectral-style; assumes undirected graphs</td>
+</tr>
+<tr>
+<td><code>"GAT"</code></td>
+<td>Graph Attention Network</td>
+<td>Attention-weighted aggregation</td>
+</tr>
+<tr>
+<td><code>"GIN"</code></td>
+<td>Graph Isomorphism Network</td>
+<td>Maximally expressive (Weisfeiler-Leman); uses inner MLP</td>
+</tr>
+<tr>
+<td><code>"GraphConv"</code></td>
+<td>General Graph Conv</td>
+<td>Learnable self + neighbour weights</td>
+</tr>
+</tbody>
+</table>
+<p>Supported pooling (<code>pool</code> parameter):</p>
+<table>
+<thead>
+<tr>
+<th><code>pool</code></th>
+<th>Output shape</th>
+<th>Use case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>"mean"</code> / <code>"max"</code> / <code>"sum"</code></td>
+<td><code>(num_graphs, hidden_channels)</code></td>
+<td><strong>Graph-level</strong> DA</td>
+</tr>
+<tr>
+<td><code>"none"</code></td>
+<td><code>(num_nodes, hidden_channels)</code></td>
+<td><strong>Node-level</strong> DA</td>
+</tr>
+</tbody>
+</table>
+<h3 id="graph-level-example">Graph-level example<a class="headerlink" href="#graph-level-example" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">GNN</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataManager</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">MMDTrainer</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="c1"># source_graph / target_graph are lists of PyG Data objects</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="n">dm</span> <span class="o">=</span> <span class="n">DataManager</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="n">train_src</span><span class="p">,</span> <span class="n">train_tgt</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span class="s2">&quot;pyg_domains&quot;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">task_level</span><span class="o">=</span><span class="s2">&quot;graph&quot;</span><span class="p">,</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>    <span class="n">source</span><span class="o">=</span><span class="n">list_of_src_graphs</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">list_of_tgt_graphs</span><span class="p">,</span>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="p">)</span>
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="n">model</span> <span class="o">=</span> <span class="n">GNN</span><span class="p">(</span><span class="n">list_of_src_graphs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;SAGE&quot;</span><span class="p">,</span>
+</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>            <span class="n">hidden_channels</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">num_layers</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>
+</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">MMDTrainer</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">train_src</span><span class="p">,</span> <span class="n">train_tgt</span><span class="p">,</span> <span class="n">mmd_weight</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+</span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a><span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">epochs</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="node-level-example">Node-level example<a class="headerlink" href="#node-level-example" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">GNN</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataManager</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">shiftkit.methods</span><span class="w"> </span><span class="kn">import</span> <span class="n">MMDTrainer</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="c1"># source_graph / target_graph are single PyG Data objects (one graph per domain)</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="n">dm</span> <span class="o">=</span> <span class="n">DataManager</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="n">train_src</span><span class="p">,</span> <span class="n">train_tgt</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>    <span class="s2">&quot;pyg_domains&quot;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">task_level</span><span class="o">=</span><span class="s2">&quot;node&quot;</span><span class="p">,</span>
+</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>    <span class="n">source</span><span class="o">=</span><span class="n">source_graph</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_graph</span><span class="p">,</span>
+</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>    <span class="n">train_ratio</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">val_ratio</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">split_seed</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">split_mode</span><span class="o">=</span><span class="s2">&quot;stratified&quot;</span><span class="p">,</span>
+</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="p">)</span>
+</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>
+</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="n">model</span> <span class="o">=</span> <span class="n">GNN</span><span class="p">(</span><span class="n">source_graph</span><span class="p">,</span> <span class="s2">&quot;SAGE&quot;</span><span class="p">,</span>
+</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>            <span class="n">hidden_channels</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">num_layers</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>            <span class="n">pool</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">)</span>   <span class="c1"># required: returns per-node embeddings</span>
+</span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a>
+</span><span id="__span-9-17"><a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">MMDTrainer</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">train_src</span><span class="p">,</span> <span class="n">train_tgt</span><span class="p">,</span> <span class="n">mmd_weight</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+</span><span id="__span-9-18"><a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">epochs</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="constructor_3">Constructor<a class="headerlink" href="#constructor_3" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>data</code></td>
+<td><code>Data</code></td>
+<td>—</td>
+<td>Template PyG <code>Data</code> object; <code>num_node_features</code> is read from it</td>
+</tr>
+<tr>
+<td><code>model_name</code></td>
+<td><code>str</code></td>
+<td>—</td>
+<td>Conv layer type (see table above)</td>
+</tr>
+<tr>
+<td><code>hidden_channels</code></td>
+<td><code>int</code></td>
+<td>—</td>
+<td>Width of each conv layer; also the latent dimension</td>
+</tr>
+<tr>
+<td><code>num_layers</code></td>
+<td><code>int</code></td>
+<td>—</td>
+<td>Number of message-passing layers (≥ 1)</td>
+</tr>
+<tr>
+<td><code>num_classes</code></td>
+<td><code>int</code></td>
+<td><code>2</code></td>
+<td>Output classes for <code>classify()</code></td>
+</tr>
+<tr>
+<td><code>regress</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>Build a scalar regression head instead of classifier</td>
+</tr>
+<tr>
+<td><code>pool</code></td>
+<td><code>str</code></td>
+<td><code>"mean"</code></td>
+<td>Readout aggregation; use <code>"none"</code> for node-level</td>
+</tr>
+<tr>
+<td><code>use_layernorm</code></td>
+<td><code>bool</code></td>
+<td><code>True</code></td>
+<td>Apply <code>LayerNorm</code> after each conv</td>
+</tr>
+<tr>
+<td><code>dropout</code></td>
+<td><code>float</code></td>
+<td><code>0.0</code></td>
+<td>Dropout probability between conv layers</td>
+</tr>
+<tr>
+<td><code>aggr</code></td>
+<td><code>str</code></td>
+<td><code>"mean"</code></td>
+<td>Neighbour aggregation for SAGE and GraphConv</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="choosing-between-simplegcn-and-gnn">Choosing between SimpleGCN and GNN<a class="headerlink" href="#choosing-between-simplegcn-and-gnn" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><code>SimpleGCN</code></th>
+<th><code>GNN</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PyTorch Geometric required</td>
+<td>No</td>
+<td>Yes (<code>pip install torch-geometric</code>)</td>
+</tr>
+<tr>
+<td>Install complexity</td>
+<td>None — works with base ShiftKit install</td>
+<td>Medium — must match PyTorch and CUDA versions</td>
+</tr>
+<tr>
+<td>Input format</td>
+<td>Packed <code>(B, N, N+feat_dim)</code> tensor</td>
+<td>PyG <code>Data</code> / <code>Batch</code></td>
+</tr>
+<tr>
+<td>Graph size</td>
+<td>Fixed <code>n_nodes</code> per batch</td>
+<td>Variable</td>
+</tr>
+<tr>
+<td>Conv options</td>
+<td>GCN only</td>
+<td>SAGE, GCN, GAT, GIN, GraphConv</td>
+</tr>
+<tr>
+<td>Task level</td>
+<td>Graph-level only</td>
+<td>Graph-level <strong>and</strong> node-level</td>
+</tr>
+<tr>
+<td>Best for</td>
+<td>Zero-dependency first experiments</td>
+<td>Real data, expressive convs, node-level DA</td>
+</tr>
+</tbody>
+</table>
+<p>Use <code>SimpleGCN</code> when you want no extra dependencies and your graphs are small and fixed-size.
+Use <code>GNN</code> for graph-level problems when you need a more expressive architecture — e.g. GAT attention, GIN's injective aggregation, or variable-size graphs — or when you need node-level predictions.</p>
+<hr />
 <h2 id="using-a-custom-model">Using a custom model<a class="headerlink" href="#using-a-custom-model" title="Permanent link">&para;</a></h2>
 <p>Any model that exposes <code>.encode(x)</code> and <code>.classify(z)</code> can be used with <code>MMDTrainer</code> and <code>SourceOnlyTrainer</code>:</p>
-<div class="highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyModel</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span>    <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(),</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">784</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">())</span>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">encode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>
-</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">classify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
-</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
-</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>
-</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">classify</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+<div class="highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyModel</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span>    <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(),</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">784</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">())</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">encode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>
+</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">classify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
+</span><span id="__span-10-13"><a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+</span><span id="__span-10-14"><a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>
+</span><span id="__span-10-15"><a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+</span><span id="__span-10-16"><a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">classify</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
 </span></code></pre></div>
 
 
