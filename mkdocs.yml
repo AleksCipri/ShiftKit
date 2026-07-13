@@ -64,6 +64,7 @@ nav:
           - Custom Methods: methods/custom.md
       - Diagnostics: diagnostics.md
   - Citation: citation.md
+  - Related Work: related_work.md
   - Credits: credits.md
 
 markdown_extensions:
