@@ -6,8 +6,9 @@ or less likely each source sample is under the target distribution and reweights
 the training loss accordingly.
 
 > **Reference** — Sugiyama, M., Nakajima, S., Kashima, H., Bünau, P. V., &
-> Kawanabe, M. (2008). Direct importance estimation with model selection and
-> its application to covariate shift adaptation. *NeurIPS 20*.
+> Kawanabe, M. (2008). Direct Importance Estimation with Model Selection and
+> Its Application to Covariate Shift Adaptation. *NeurIPS 20*, 1433–1440.
+> [[Paper]](https://papers.nips.cc/paper/3248-direct-importance-estimation-with-model-selection-and-its-application-to-covariate-shift-adaptation)
 
 ---
 
