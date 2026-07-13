@@ -48,6 +48,7 @@ nav:
       - Custom dataset: tutorials/custom_dataset.md
       - Tuning λ: tutorials/tuning.md
       - Regression DA: tutorials/regression.md
+      - Node-level DA (PyG): tutorials/pyg_node_mmd.md
   - API Reference:
       - Data: data.md
       - Models: models.md
