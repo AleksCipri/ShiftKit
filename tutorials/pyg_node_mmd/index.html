@@ -13,6 +13,10 @@
         <link rel="canonical" href="https://AleksCipri.github.io/ShiftKit/tutorials/pyg_node_mmd/">
       
       
+        <link rel="prev" href="../regression/">
+      
+      
+        <link rel="next" href="../../data/">
       
       
         
@@ -23,7 +27,7 @@
     
     
       
-        <title>Tutorial 7 — Node-level DA with PyTorch Geometric - ShiftKit</title>
+        <title>Node-level DA (PyG) - ShiftKit</title>
       
     
     
@@ -111,7 +115,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Tutorial 7 — Node-level DA with PyTorch Geometric
+              Node-level DA (PyG)
             
           </span>
         </div>
@@ -282,8 +286,10 @@
       
   
   
+    
   
   
+  
     
     
     
@@ -294,11 +300,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
@@ -319,7 +325,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -521,6 +527,269 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Node-level DA (PyG)
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Node-level DA (PyG)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#graph-level-vs-node-level-da" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Graph-level vs node-level DA
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-domain-gap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The domain gap
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-the-script" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run the script
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#code-walkthrough" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Code walkthrough
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Code walkthrough">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-build-the-domain-graphs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1 — Build the domain graphs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-create-stratified-node-split-loaders" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2 — Create stratified node-split loaders
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-build-the-gnn-with-poolnone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3 — Build the GNN with pool="none"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-train-source-only-baseline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4 — Train source-only baseline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-train-with-mmd-alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5 — Train with MMD alignment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-evaluate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6 — Evaluate
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#typical-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Typical results
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tuning-tips" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tuning tips
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-node-level-vs-graph-level-da" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use node-level vs graph-level DA
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gnn-node-level-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GNN (node-level configuration)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#datamanagerloadpyg_domains-task_levelnode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DataManager.load("pyg_domains", task_level="node", ...)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 

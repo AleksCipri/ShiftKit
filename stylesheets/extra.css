@@ -5,7 +5,9 @@
   --md-accent-fg-color:         #2E86AB;
 }
 
-/* Nav bar logo — larger and present on every page */
+/* ── Nav bar ─────────────────────────────────────────────────────────────── */
+
+/* Larger logo */
 .md-header__button.md-logo img,
 .md-header__button.md-logo svg {
   height: 3.2rem;
@@ -21,9 +23,103 @@
   background-color: #f0f7fb;
 }
 
+/* ── Left sidebar — Option A+C ───────────────────────────────────────────── */
+
+/* Inactive top-level section labels: bold, slightly muted */
+.md-nav--primary > .md-nav__list > .md-nav__item > .md-nav__link {
+  font-weight: 700;
+  color: #6b8fa8;
+  letter-spacing: 0.01em;
+}
+
+/* Active top-level section: full primary color */
+.md-nav--primary > .md-nav__list > .md-nav__item--active > .md-nav__link {
+  color: var(--md-primary-fg-color--dark);
+}
+
+/* Second-level items: muted by default */
+.md-nav--primary .md-nav__item .md-nav__item > .md-nav__link {
+  color: #8aabbd;
+  padding-left: 1.4rem;
+}
+
+/* Second-level active item: full color + bold */
+.md-nav--primary .md-nav__item .md-nav__item--active > .md-nav__link {
+  color: var(--md-primary-fg-color);
+  font-weight: 600;
+}
+
+/* Third-level items: more indented, lighter */
+.md-nav--primary .md-nav__item .md-nav__item .md-nav__item > .md-nav__link {
+  color: #a0bfcc;
+  padding-left: 2.4rem;
+}
+
+/* Third-level active item */
+.md-nav--primary .md-nav__item .md-nav__item .md-nav__item--active > .md-nav__link {
+  color: var(--md-primary-fg-color);
+  font-weight: 600;
+}
+
+/* Hover: always show full color so the item feels responsive */
+.md-nav--primary .md-nav__link:hover {
+  color: var(--md-primary-fg-color) !important;
+}
+
+/* ── Right TOC — Option A+C ──────────────────────────────────────────────── */
+
+/* Top-level TOC headings: semi-bold, muted when inactive */
+.md-nav--secondary .md-nav__link {
+  color: #8aabbd;
+  font-weight: 500;
+}
+
+/* Active TOC item: accent color + bold */
+.md-nav--secondary .md-nav__item--active > .md-nav__link {
+  color: var(--md-primary-fg-color--dark);
+  font-weight: 700;
+}
+
+/* Nested TOC items: more indented */
+.md-nav--secondary .md-nav__item .md-nav__item > .md-nav__link {
+  padding-left: 1.2rem;
+  color: #a0bfcc;
+}
+
+/* Nested TOC active */
+.md-nav--secondary .md-nav__item .md-nav__item--active > .md-nav__link {
+  color: var(--md-primary-fg-color);
+  font-weight: 600;
+}
+
+/* Hover */
+.md-nav--secondary .md-nav__link:hover {
+  color: var(--md-primary-fg-color) !important;
+}
+
+/* ── Dark mode overrides ──────────────────────────────────────────────────── */
+
 [data-md-color-scheme="slate"] {
   --md-primary-fg-color:        #5BA4C4;
   --md-primary-fg-color--light: #7DC0D8;
   --md-primary-fg-color--dark:  #2E86AB;
   --md-accent-fg-color:         #5BA4C4;
+}
+
+[data-md-color-scheme="slate"] .md-nav--primary > .md-nav__list > .md-nav__item > .md-nav__link {
+  color: #4a7a94;
+}
+
+[data-md-color-scheme="slate"] .md-nav--primary > .md-nav__list > .md-nav__item--active > .md-nav__link {
+  color: var(--md-primary-fg-color--light);
+}
+
+[data-md-color-scheme="slate"] .md-nav--primary .md-nav__item .md-nav__item > .md-nav__link,
+[data-md-color-scheme="slate"] .md-nav--secondary .md-nav__link {
+  color: #4a7a94;
+}
+
+[data-md-color-scheme="slate"] .md-nav--primary .md-nav__item .md-nav__item--active > .md-nav__link,
+[data-md-color-scheme="slate"] .md-nav--secondary .md-nav__item--active > .md-nav__link {
+  color: var(--md-primary-fg-color--light);
 }
