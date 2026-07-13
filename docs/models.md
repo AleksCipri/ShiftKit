@@ -156,6 +156,112 @@ print(f"Target accuracy: {result['accuracy']*100:.1f}%")
 
 ---
 
+## GNN
+
+A configurable **PyTorch Geometric** GNN that supports both graph-level and node-level domain adaptation.
+Uses the same `encode` / `classify` / `regress` / `forward` interface as `CNN`, `MLP`, and `SimpleGCN`.
+
+!!! note "Optional dependency"
+    `GNN` requires `torch-geometric`, which is not installed by default:
+    ```bash
+    pip install torch-geometric
+    ```
+
+Supported conv layers:
+
+| `model_name` | Architecture | Notes |
+|---|---|---|
+| `"SAGE"` | GraphSAGE | Mean/max/sum neighbourhood aggregation; good default |
+| `"GCN"` | Graph Convolutional Network | Spectral-style; assumes undirected graphs |
+| `"GAT"` | Graph Attention Network | Attention-weighted aggregation |
+| `"GIN"` | Graph Isomorphism Network | Maximally expressive (Weisfeiler-Leman); uses inner MLP |
+| `"GraphConv"` | General Graph Conv | Learnable self + neighbour weights |
+
+Supported pooling (`pool` parameter):
+
+| `pool` | Output shape | Use case |
+|---|---|---|
+| `"mean"` / `"max"` / `"sum"` | `(num_graphs, hidden_channels)` | **Graph-level** DA |
+| `"none"` | `(num_nodes, hidden_channels)` | **Node-level** DA |
+
+### Graph-level example
+
+```python
+from shiftkit.models import GNN
+from shiftkit.data import DataManager
+from shiftkit.methods import MMDTrainer
+
+# source_graph / target_graph are lists of PyG Data objects
+dm = DataManager(batch_size=32)
+train_src, train_tgt = dm.load(
+    "pyg_domains", train=True, task_level="graph",
+    source=list_of_src_graphs, target=list_of_tgt_graphs,
+)
+
+model = GNN(list_of_src_graphs[0], "SAGE",
+            hidden_channels=64, num_layers=3, num_classes=2)
+
+trainer = MMDTrainer(model, train_src, train_tgt, mmd_weight=1.0, lr=1e-3)
+trainer.fit(epochs=30)
+```
+
+### Node-level example
+
+```python
+from shiftkit.models import GNN
+from shiftkit.data import DataManager
+from shiftkit.methods import MMDTrainer
+
+# source_graph / target_graph are single PyG Data objects (one graph per domain)
+dm = DataManager(batch_size=1, num_workers=0)
+train_src, train_tgt = dm.load(
+    "pyg_domains", train=True, task_level="node",
+    source=source_graph, target=target_graph,
+    train_ratio=0.6, val_ratio=0.2, split_seed=42, split_mode="stratified",
+)
+
+model = GNN(source_graph, "SAGE",
+            hidden_channels=32, num_layers=2, num_classes=3,
+            pool="none")   # required: returns per-node embeddings
+
+trainer = MMDTrainer(model, train_src, train_tgt, mmd_weight=0.5, lr=1e-3)
+trainer.fit(epochs=30)
+```
+
+### Constructor
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `data` | `Data` | — | Template PyG `Data` object; `num_node_features` is read from it |
+| `model_name` | `str` | — | Conv layer type (see table above) |
+| `hidden_channels` | `int` | — | Width of each conv layer; also the latent dimension |
+| `num_layers` | `int` | — | Number of message-passing layers (≥ 1) |
+| `num_classes` | `int` | `2` | Output classes for `classify()` |
+| `regress` | `bool` | `False` | Build a scalar regression head instead of classifier |
+| `pool` | `str` | `"mean"` | Readout aggregation; use `"none"` for node-level |
+| `use_layernorm` | `bool` | `True` | Apply `LayerNorm` after each conv |
+| `dropout` | `float` | `0.0` | Dropout probability between conv layers |
+| `aggr` | `str` | `"mean"` | Neighbour aggregation for SAGE and GraphConv |
+
+---
+
+## Choosing between SimpleGCN and GNN
+
+| | `SimpleGCN` | `GNN` |
+|--|-------------|-------|
+| PyTorch Geometric required | No | Yes (`pip install torch-geometric`) |
+| Install complexity | None — works with base ShiftKit install | Medium — must match PyTorch and CUDA versions |
+| Input format | Packed `(B, N, N+feat_dim)` tensor | PyG `Data` / `Batch` |
+| Graph size | Fixed `n_nodes` per batch | Variable |
+| Conv options | GCN only | SAGE, GCN, GAT, GIN, GraphConv |
+| Task level | Graph-level only | Graph-level **and** node-level |
+| Best for | Zero-dependency first experiments | Real data, expressive convs, node-level DA |
+
+Use `SimpleGCN` when you want no extra dependencies and your graphs are small and fixed-size.
+Use `GNN` for graph-level problems when you need a more expressive architecture — e.g. GAT attention, GIN's injective aggregation, or variable-size graphs — or when you need node-level predictions.
+
+---
+
 ## Using a custom model
 
 Any model that exposes `.encode(x)` and `.classify(z)` can be used with `MMDTrainer` and `SourceOnlyTrainer`:
