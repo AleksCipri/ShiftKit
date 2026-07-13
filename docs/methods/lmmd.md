@@ -17,10 +17,10 @@ $$w_i^{(s,c)} = \frac{y_{ic}}{\sum_j y_{jc}}, \qquad w_i^{(t,c)} = \frac{\hat{p}
 - **Source** weights are derived from one-hot ground-truth labels `y_src`.
 - **Target** weights are derived from the model's current softmax predictions (treated as soft pseudo-labels; stop-gradient).
 
-> **Reference:** Zhu, Y., Zhuang, F., & Wang, D. (2020).
+> **Reference:** Zhu, Y., Zhuang, F., Wang, J., Ke, G., Chen, J., Bian, J., Xiong, H., & He, Q. (2021).
 > Deep Subdomain Adaptation Network for Image Classification.
 > *IEEE Transactions on Neural Networks and Learning Systems*, 32(4), 1713–1722.
-> [[Paper]](https://arxiv.org/abs/2106.09388)
+> [[Paper]](https://ieeexplore.ieee.org/document/9085896)
 
 ---
 

@@ -55,19 +55,22 @@ Ganin, Y., Ustinova, E., Ajakan, H., Germain, P., Larochelle, H., Laviolette, F.
 
 Used by: [LMMDTrainer](methods/lmmd.md)
 
-Zhu, Y., Zhuang, F., & Wang, D. (2020).
-[Deep Subdomain Adaptation Network for Image Classification](https://arxiv.org/abs/2106.09388).
+Zhu, Y., Zhuang, F., Wang, J., Ke, G., Chen, J., Bian, J., Xiong, H., & He, Q. (2021).
+[Deep Subdomain Adaptation Network for Image Classification](https://ieeexplore.ieee.org/document/9085896).
 *IEEE Transactions on Neural Networks and Learning Systems*, 32(4), 1713–1722.
+DOI: 10.1109/TNNLS.2020.2988928
 
 ```bibtex
-@article{zhu2020lmmd,
+@article{zhu2021lmmd,
   title   = {Deep Subdomain Adaptation Network for Image Classification},
-  author  = {Zhu, Yongchun and Zhuang, Fuzhen and Wang, Deqing},
+  author  = {Zhu, Yongchun and Zhuang, Fuzhen and Wang, Jindong and Ke, Guolin
+             and Chen, Jingwu and Bian, Jiang and Xiong, Hui and He, Qing},
   journal = {IEEE Transactions on Neural Networks and Learning Systems},
   volume  = {32},
   number  = {4},
   pages   = {1713--1722},
-  year    = {2020}
+  year    = {2021},
+  doi     = {10.1109/TNNLS.2020.2988928}
 }
 ```
 
