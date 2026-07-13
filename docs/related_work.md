@@ -133,19 +133,22 @@ DOI: 10.1088/2632-2153/adf701
 
 Used by: [KLIEPTrainer](methods/kliep.md)
 
-Sugiyama, M., Nakajima, S., Kashima, H., Bünau, P. V., & Kawanabe, M. (2008).
-[Direct Importance Estimation with Model Selection and Its Application to Covariate Shift Adaptation](https://papers.nips.cc/paper/3248-direct-importance-estimation-with-model-selection-and-its-application-to-covariate-shift-adaptation).
-*Advances in Neural Information Processing Systems 20 (NeurIPS)*, 1433–1440.
+Sugiyama, M., Nakajima, S., Kashima, H., Buenau, P., & Kawanabe, M. (2007).
+[Direct Importance Estimation with Model Selection and Its Application to Covariate Shift Adaptation](https://proceedings.neurips.cc/paper_files/paper/2007/file/be83ab3ecd0db773eb2dc1b0a17836a1-Paper.pdf).
+*Advances in Neural Information Processing Systems*, 20.
 
 ```bibtex
-@inproceedings{sugiyama2008kliep,
+@inproceedings{NIPS2007_be83ab3e,
+  author    = {Sugiyama, Masashi and Nakajima, Shinichi and Kashima, Hisashi and
+               Buenau, Paul and Kawanabe, Motoaki},
+  booktitle = {Advances in Neural Information Processing Systems},
+  editor    = {J. Platt and D. Koller and Y. Singer and S. Roweis},
+  publisher = {Curran Associates, Inc.},
   title     = {Direct Importance Estimation with Model Selection and Its
                Application to Covariate Shift Adaptation},
-  author    = {Sugiyama, Masashi and Nakajima, Shinichi and Kashima, Hisashi and
-               B{\"u}nau, Paul von and Kawanabe, Motoaki},
-  booktitle = {Advances in Neural Information Processing Systems 20 (NeurIPS)},
-  pages     = {1433--1440},
-  year      = {2008}
+  url       = {https://proceedings.neurips.cc/paper_files/paper/2007/file/be83ab3ecd0db773eb2dc1b0a17836a1-Paper.pdf},
+  volume    = {20},
+  year      = {2007}
 }
 ```
 

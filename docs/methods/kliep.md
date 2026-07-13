@@ -5,10 +5,10 @@ feature distributions (as MMD, CORAL, and DANN do), it estimates how much more
 or less likely each source sample is under the target distribution and reweights
 the training loss accordingly.
 
-> **Reference** — Sugiyama, M., Nakajima, S., Kashima, H., Bünau, P. V., &
-> Kawanabe, M. (2008). Direct Importance Estimation with Model Selection and
-> Its Application to Covariate Shift Adaptation. *NeurIPS 20*, 1433–1440.
-> [[Paper]](https://papers.nips.cc/paper/3248-direct-importance-estimation-with-model-selection-and-its-application-to-covariate-shift-adaptation)
+> **Reference** — Sugiyama, M., Nakajima, S., Kashima, H., Buenau, P., &
+> Kawanabe, M. (2007). Direct Importance Estimation with Model Selection and
+> Its Application to Covariate Shift Adaptation. *Advances in Neural Information Processing Systems*, 20.
+> [[Paper]](https://proceedings.neurips.cc/paper_files/paper/2007/file/be83ab3ecd0db773eb2dc1b0a17836a1-Paper.pdf)
 
 ---
 
