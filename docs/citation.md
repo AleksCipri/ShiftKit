@@ -5,10 +5,10 @@ If you use ShiftKit in your research, please cite it as follows.
 ## BibTeX
 
 ```bibtex
-@software{shiftkit2025,
+@software{shiftkit2026,
   author    = {Ciprijanovic, Aleksandra},
   title     = {{ShiftKit}: A Lightweight Domain Adaptation Framework for {PyTorch}},
-  year      = {2025},
+  year      = {2026},
   url       = {https://github.com/AleksCipri/ShiftKit},
   note      = {GitHub repository}
 }
@@ -16,7 +16,7 @@ If you use ShiftKit in your research, please cite it as follows.
 
 ## Plain text
 
-> Ciprijanovic, A. (2025). *ShiftKit: A Lightweight Domain Adaptation Framework for PyTorch*. GitHub. https://github.com/AleksCipri/ShiftKit
+> Ciprijanovic, A. (2026). *ShiftKit: A Lightweight Domain Adaptation Framework for PyTorch*. GitHub. https://github.com/AleksCipri/ShiftKit
 
 ---
 
