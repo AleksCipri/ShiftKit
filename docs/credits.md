@@ -5,7 +5,7 @@
 **Aleksandra Ciprijanovic**
 GitHub: [@AleksCipri](https://github.com/AleksCipri)
 
-ShiftKit was developed as a modular, research-friendly domain adaptation framework for PyTorch, with a focus on clean interfaces and extensibility.
+ShiftKit was developed as a modular, research-friendly domain adaptation framework for PyTorch, built around clean interfaces that make it easy to swap models, datasets, and methods.
 
 ---
 
@@ -15,6 +15,9 @@ ShiftKit was developed as a modular, research-friendly domain adaptation framewo
 GitHub: [@abdelrahman-helal](https://github.com/abdelrahman-helal)
 
 Added PyTorch Geometric support: GNN model, node-level and graph-level domain adaptation, PyG data utilities, and the node-level MMD example.
+
+**Karla Tame**
+GitHub: [@karlaTame](https://github.com/karlaTame)
 
 ---
 
