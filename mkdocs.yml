@@ -40,6 +40,7 @@ extra_css:
 
 nav:
   - Home: index.md
+  - Background: background.md
   - Tutorials & Examples:
       - Overview: tutorials/index.md
       - Source-Only vs MMD vs DANN: tutorials/mnist_mmd.md
