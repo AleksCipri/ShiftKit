@@ -11,13 +11,13 @@ ShiftKit was developed as a modular, research-friendly domain adaptation framewo
 
 ## Other Contributors
 
+**Karla Tame**
+GitHub: [@karlaTame](https://github.com/karlaTame)
+
 **Abdelrahman Helal**
 GitHub: [@abdelrahman-helal](https://github.com/abdelrahman-helal)
 
 Added PyTorch Geometric support: GNN model, node-level and graph-level domain adaptation, PyG data utilities, and the node-level MMD example.
-
-**Karla Tame**
-GitHub: [@karlaTame](https://github.com/karlaTame)
 
 ---
 
