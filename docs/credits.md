@@ -5,7 +5,7 @@
 **Aleksandra Ciprijanovic**
 GitHub: [@AleksCipri](https://github.com/AleksCipri)
 
-ShiftKit was developed as a modular, research-friendly domain adaptation framework for PyTorch, built around clean interfaces that make it easy to swap models, datasets, and methods.
+ShiftKit is a modular, research-friendly domain adaptation framework for PyTorch, built around clean interfaces for rapid implementation of different deep learning architectures, datasets, and domain adaptation methods.
 
 ---
 
