@@ -11,7 +11,7 @@ ShiftKit was developed as a modular, research-friendly domain adaptation framewo
 
 ## Other Contributors
 
-**Karla Tame**
+**Karla Tame-Narvaez**
 GitHub: [@karlaTame](https://github.com/karlaTame)
 
 **Abdelrahman Helal**
