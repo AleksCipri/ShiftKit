@@ -1,6 +1,6 @@
 # Background
 
-![Domain Adaptation Overview](DA.pdf){width=95%}
+![Domain Adaptation Overview](DA.pdf){width=120%}
 
 **Domain shift** occurs when the statistical distribution of data changes between the context in which a model is trained (the *source domain*) and the context in which it is deployed (the *target domain*). Even a well-trained model can fail badly when its training distribution does not match what it encounters at inference time — a classifier trained on clean images may degrade on noisy ones, or a model trained on data from one detector may not transfer to another.
 
