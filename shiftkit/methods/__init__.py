@@ -6,6 +6,7 @@ from .lmmd       import LMMDLoss, LMMDTrainer
 from .coral      import CORALLoss, CORALTrainer
 from .regression import SourceOnlyRegressionTrainer, MMDRegressionTrainer
 from .kliep      import KLIEPWeightEstimator, KLIEPTrainer
+from .kmm        import KMMWeightEstimator, KMMTrainer
 
 # ─── register built-in trainers ───────────────────────────────────────────────
 TrainerRegistry.register("source_only",  SourceOnlyTrainer)
@@ -15,6 +16,7 @@ TrainerRegistry.register("coral",        CORALTrainer)
 TrainerRegistry.register("dann",         DANNTrainer)
 TrainerRegistry.register("sidda",        SIDDATrainer)
 TrainerRegistry.register("kliep",        KLIEPTrainer)
+TrainerRegistry.register("kmm",          KMMTrainer)
 
 __all__ = [
     "BaseTrainer", "TrainerRegistry",
@@ -25,4 +27,5 @@ __all__ = [
     "SIDDATrainer",
     "SourceOnlyRegressionTrainer", "MMDRegressionTrainer",
     "KLIEPWeightEstimator", "KLIEPTrainer",
+    "KMMWeightEstimator", "KMMTrainer",
 ]

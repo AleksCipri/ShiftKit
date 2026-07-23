@@ -28,7 +28,8 @@ Instance-based methods do not modify the feature space. Instead, they estimate h
 
 | Trainer | DA mechanism | Key parameter | Page |
 |---------|-------------|---------------|------|
-| [`KLIEPTrainer`](kliep.md) | Importance weighting via density ratio estimation | `n_centers`, `weight_clip` | [→](kliep.md) |
+| [`KLIEPTrainer`](kliep.md) | Importance weighting via density ratio estimation (gradient ascent) | `n_centers`, `weight_clip` | [→](kliep.md) |
+| [`KMMTrainer`](kmm.md) | Importance weighting via kernel mean matching (QP) | `B`, `weight_clip` | [→](kmm.md) |
 
 All trainers share the same interface:
 

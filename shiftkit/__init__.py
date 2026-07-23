@@ -24,6 +24,7 @@ from .methods.dann       import DANNTrainer, GradientReversalLayer, DomainDiscri
 from .methods.sidda      import SIDDATrainer
 from .methods.regression import SourceOnlyRegressionTrainer, MMDRegressionTrainer
 from .methods.kliep      import KLIEPWeightEstimator, KLIEPTrainer
+from .methods.kmm        import KMMWeightEstimator, KMMTrainer
 from .data.datasets      import SineWaveDataset, CaliforniaHousingDataset
 from .diagnostics.plots  import (
     plot_latent_space, plot_latent_space_domains, plot_training_history,
@@ -43,6 +44,7 @@ __all__ = [
     "SIDDATrainer",
     "SourceOnlyRegressionTrainer", "MMDRegressionTrainer",
     "KLIEPWeightEstimator", "KLIEPTrainer",
+    "KMMWeightEstimator", "KMMTrainer",
     "plot_latent_space", "plot_latent_space_domains", "plot_training_history",
     "compare_latent_spaces",
     "plot_confusion_matrix", "plot_roc_curve",

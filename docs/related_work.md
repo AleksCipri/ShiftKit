@@ -129,6 +129,28 @@ DOI: 10.1088/2632-2153/adf701
 
 ---
 
+## Kernel Mean Matching (KMM)
+
+Used by: [KMMTrainer](methods/kmm.md)
+
+Huang, J., Smola, A. J., Gretton, A., Borgwardt, K. M., & Schölkopf, B. (2007).
+[Correcting Sample Selection Bias by Unlabeled Data](https://proceedings.neurips.cc/paper_files/paper/2006/file/a2186aa7c086b46ad4e8bf81e2a3a19b-Paper.pdf).
+*Advances in Neural Information Processing Systems*, 19.
+
+```bibtex
+@inproceedings{huang2007kmm,
+  author    = {Huang, Jiayuan and Smola, Alexander J. and Gretton, Arthur and
+               Borgwardt, Karsten M. and Sch{\"o}lkopf, Bernhard},
+  title     = {Correcting Sample Selection Bias by Unlabeled Data},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {19},
+  year      = {2007},
+  url       = {https://proceedings.neurips.cc/paper_files/paper/2006/file/a2186aa7c086b46ad4e8bf81e2a3a19b-Paper.pdf}
+}
+```
+
+---
+
 ## KLIEP — Kullback–Leibler Importance Estimation Procedure
 
 Used by: [KLIEPTrainer](methods/kliep.md)
