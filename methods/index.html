@@ -820,10 +820,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#available-methods" class="md-nav__link">
+  <a href="#feature-based-methods" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Available methods
+        Feature-based methods
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#instance-based-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Instance-based methods
       
     </span>
   </a>
@@ -860,6 +871,55 @@
   
 
               
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_3_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_3_2" id="__nav_4_3_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature-based
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Feature-based
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -904,34 +964,6 @@
     
   
     MMD
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="dann/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    DANN
   
 
     
@@ -1008,6 +1040,34 @@
   
   
     <li class="md-nav__item">
+      <a href="dann/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DANN
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="sidda/" class="md-nav__link">
         
   
@@ -1028,6 +1088,63 @@
   
 
               
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_3_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_3_3" id="__nav_4_3_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Instance-based
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_4_3_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Instance-based
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -1052,6 +1169,14 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -1236,10 +1361,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#available-methods" class="md-nav__link">
+  <a href="#feature-based-methods" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Available methods
+        Feature-based methods
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#instance-based-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Instance-based methods
       
     </span>
   </a>
@@ -1288,8 +1424,10 @@
 <h1 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h1>
 <p><code>shiftkit.methods</code> provides domain adaptation training loops. All trainers record
 identical per-epoch history dicts so their results can be directly compared.</p>
+<p>ShiftKit methods fall into two broad families:</p>
 <hr />
-<h2 id="available-methods">Available methods<a class="headerlink" href="#available-methods" title="Permanent link">&para;</a></h2>
+<h2 id="feature-based-methods">Feature-based methods<a class="headerlink" href="#feature-based-methods" title="Permanent link">&para;</a></h2>
+<p>Feature-based methods work by transforming the model's learned representations so that source and target features become indistinguishable. The encoder is trained jointly on a supervised task loss (cross-entropy on source labels) and a domain alignment loss that penalises differences between the source and target latent distributions. Because alignment happens in latent space, these methods require a model with a separate <code>encode()</code> step and work regardless of the input modality.</p>
 <table>
 <thead>
 <tr>
@@ -1313,15 +1451,9 @@ identical per-epoch history dicts so their results can be directly compared.</p>
 <td><a href="mmd/">→</a></td>
 </tr>
 <tr>
-<td><a href="dann/"><code>DANNTrainer</code></a></td>
-<td>Adversarial discriminator + GRL</td>
-<td><code>domain_weight</code> λ</td>
-<td><a href="dann/">→</a></td>
-</tr>
-<tr>
 <td><a href="lmmd/"><code>LMMDTrainer</code></a></td>
 <td>Per-class subdomain alignment via local MMD</td>
-<td><code>num_classes</code></td>
+<td><code>lmmd_weight</code> λ</td>
 <td><a href="lmmd/">→</a></td>
 </tr>
 <tr>
@@ -1331,22 +1463,37 @@ identical per-epoch history dicts so their results can be directly compared.</p>
 <td><a href="coral/">→</a></td>
 </tr>
 <tr>
+<td><a href="dann/"><code>DANNTrainer</code></a></td>
+<td>Adversarial discriminator + GRL</td>
+<td><code>domain_weight</code> λ</td>
+<td><a href="dann/">→</a></td>
+</tr>
+<tr>
 <td><a href="sidda/"><code>SIDDATrainer</code></a></td>
 <td>Sinkhorn optimal transport + learnable η weights</td>
 <td><code>warmup_epochs</code></td>
 <td><a href="sidda/">→</a></td>
 </tr>
+</tbody>
+</table>
+<hr />
+<h2 id="instance-based-methods">Instance-based methods<a class="headerlink" href="#instance-based-methods" title="Permanent link">&para;</a></h2>
+<p>Instance-based methods do not modify the feature space. Instead, they estimate how much more or less likely each source sample is under the target distribution and reweight the training loss accordingly. This approach is theoretically grounded under the <strong>covariate shift</strong> assumption — that the label conditionals are the same across domains (<code>p_src(y|x) = p_tgt(y|x)</code>) while only the input marginals differ. These methods require only a standard <code>forward()</code> interface and compute importance weights once before training begins.</p>
+<table>
+<thead>
+<tr>
+<th>Trainer</th>
+<th>DA mechanism</th>
+<th>Key parameter</th>
+<th>Page</th>
+</tr>
+</thead>
+<tbody>
 <tr>
 <td><a href="kliep/"><code>KLIEPTrainer</code></a></td>
-<td>Instance-based importance weighting via density ratio estimation</td>
+<td>Importance weighting via density ratio estimation</td>
 <td><code>n_centers</code>, <code>weight_clip</code></td>
 <td><a href="kliep/">→</a></td>
-</tr>
-<tr>
-<td>Custom</td>
-<td>Your own method</td>
-<td>—</td>
-<td><a href="custom/">→</a></td>
 </tr>
 </tbody>
 </table>
