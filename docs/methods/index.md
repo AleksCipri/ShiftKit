@@ -3,20 +3,32 @@
 `shiftkit.methods` provides domain adaptation training loops. All trainers record
 identical per-epoch history dicts so their results can be directly compared.
 
+ShiftKit methods fall into two broad families:
+
 ---
 
-## Available methods
+## Feature-based methods
+
+Feature-based methods work by transforming the model's learned representations so that source and target features become indistinguishable. The encoder is trained jointly on a supervised task loss (cross-entropy on source labels) and a domain alignment loss that penalises differences between the source and target latent distributions. Because alignment happens in latent space, these methods require a model with a separate `encode()` step and work regardless of the input modality.
 
 | Trainer | DA mechanism | Key parameter | Page |
 |---------|-------------|---------------|------|
 | [`SourceOnlyTrainer`](source_only.md) | No adaptation (baseline) | — | [→](source_only.md) |
 | [`MMDTrainer`](mmd.md) | Latent distribution matching via MMD | `mmd_weight` λ | [→](mmd.md) |
-| [`DANNTrainer`](dann.md) | Adversarial discriminator + GRL | `domain_weight` λ | [→](dann.md) |
-| [`LMMDTrainer`](lmmd.md) | Per-class subdomain alignment via local MMD | `num_classes` | [→](lmmd.md) |
+| [`LMMDTrainer`](lmmd.md) | Per-class subdomain alignment via local MMD | `lmmd_weight` λ | [→](lmmd.md) |
 | [`CORALTrainer`](coral.md) | Covariance alignment (second-order statistics) | `coral_weight` λ | [→](coral.md) |
+| [`DANNTrainer`](dann.md) | Adversarial discriminator + GRL | `domain_weight` λ | [→](dann.md) |
 | [`SIDDATrainer`](sidda.md) | Sinkhorn optimal transport + learnable η weights | `warmup_epochs` | [→](sidda.md) |
-| [`KLIEPTrainer`](kliep.md) | Instance-based importance weighting via density ratio estimation | `n_centers`, `weight_clip` | [→](kliep.md) |
-| Custom | Your own method | — | [→](custom.md) |
+
+---
+
+## Instance-based methods
+
+Instance-based methods do not modify the feature space. Instead, they estimate how much more or less likely each source sample is under the target distribution and reweight the training loss accordingly. This approach is theoretically grounded under the **covariate shift** assumption — that the label conditionals are the same across domains (`p_src(y|x) = p_tgt(y|x)`) while only the input marginals differ. These methods require only a standard `forward()` interface and compute importance weights once before training begins.
+
+| Trainer | DA mechanism | Key parameter | Page |
+|---------|-------------|---------------|------|
+| [`KLIEPTrainer`](kliep.md) | Importance weighting via density ratio estimation | `n_centers`, `weight_clip` | [→](kliep.md) |
 
 All trainers share the same interface:
 

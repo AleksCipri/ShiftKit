@@ -55,13 +55,15 @@ nav:
       - Models: models.md
       - Methods:
           - Overview: methods/index.md
-          - Source Only: methods/source_only.md
-          - MMD: methods/mmd.md
-          - DANN: methods/dann.md
-          - LMMD: methods/lmmd.md
-          - CORAL: methods/coral.md
-          - SIDDA: methods/sidda.md
-          - KLIEP: methods/kliep.md
+          - Feature-based:
+              - Source Only: methods/source_only.md
+              - MMD: methods/mmd.md
+              - LMMD: methods/lmmd.md
+              - CORAL: methods/coral.md
+              - DANN: methods/dann.md
+              - SIDDA: methods/sidda.md
+          - Instance-based:
+              - KLIEP: methods/kliep.md
           - Custom Methods: methods/custom.md
       - Diagnostics: diagnostics.md
   - Citation: citation.md
