@@ -1115,6 +1115,78 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#latent-space-instance-reweighting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Latent-space instance reweighting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Latent-space instance reweighting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dual-potentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dual potentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use_potentialstrue-reweight-the-ce-loss" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        use_potentials=True — reweight the CE loss
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#weight_ottrue-reweight-the-transport-plan-ema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        weight_ot=True — reweight the transport plan (EMA)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#temperature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Temperature τ
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1500,6 +1572,78 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#latent-space-instance-reweighting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Latent-space instance reweighting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Latent-space instance reweighting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dual-potentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dual potentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use_potentialstrue-reweight-the-ce-loss" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        use_potentials=True — reweight the CE loss
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#weight_ottrue-reweight-the-transport-plan-ema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        weight_ot=True — reweight the transport plan (EMA)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#temperature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Temperature τ
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1635,6 +1779,30 @@ SIDDA: SInkhorn Dynamic Domain Adaptation for image classification with equivari
 <td>Gradient clipping max-norm</td>
 </tr>
 <tr>
+<td><code>use_potentials</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>Reweight per-sample CE loss using Kantorovich dual potentials (see <a href="#latent-space-instance-reweighting">Latent-space instance reweighting</a>)</td>
+</tr>
+<tr>
+<td><code>potential_temperature</code></td>
+<td><code>float</code></td>
+<td><code>1.0</code></td>
+<td>Temperature τ for softmax reweighting: w = softmax(-f / τ). Lower τ = sharper focus on already-aligned samples</td>
+</tr>
+<tr>
+<td><code>weight_ot</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>Reweight the Sinkhorn transport plan itself via an EMA of previous-batch potentials, focusing OT alignment on the overlapping region (see <a href="#latent-space-instance-reweighting">Latent-space instance reweighting</a>)</td>
+</tr>
+<tr>
+<td><code>ot_ema_momentum</code></td>
+<td><code>float</code></td>
+<td><code>0.9</code></td>
+<td>EMA momentum for OT weight updates: w_t = mom·w_{t-1} + (1-mom)·softmax(-f_t / τ)</td>
+</tr>
+<tr>
 <td><code>device</code></td>
 <td><code>str \| None</code></td>
 <td><code>None</code></td>
@@ -1667,10 +1835,6 @@ SIDDA: SInkhorn Dynamic Domain Adaptation for image classification with equivari
 <td>Mean Sinkhorn divergence loss (<code>0.0</code> during warmup)</td>
 </tr>
 <tr>
-<td><code>mmd_loss</code></td>
-<td>Always <code>0.0</code> (for history-format compatibility)</td>
-</tr>
-<tr>
 <td><code>total_loss</code></td>
 <td>Mean total weighted loss</td>
 </tr>
@@ -1693,6 +1857,10 @@ SIDDA: SInkhorn Dynamic Domain Adaptation for image classification with equivari
 <tr>
 <td><code>sigma</code></td>
 <td>Mean Sinkhorn blur σ used this epoch (<code>0.0</code> during warmup)</td>
+</tr>
+<tr>
+<td><code>mean_potential</code></td>
+<td>Mean source Kantorovich potential F across batches (<code>0.0</code> unless <code>use_potentials=True</code>)</td>
 </tr>
 </tbody>
 </table>
@@ -1747,6 +1915,78 @@ Hard constraints are enforced after every gradient step:</p>
 </span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">epochs</span><span class="p">,</span> <span class="p">[</span><span class="n">h</span><span class="p">[</span><span class="s2">&quot;eta2&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">history</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;η₂ (DA)&quot;</span><span class="p">)</span>
 </span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Epoch&quot;</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;η&quot;</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
 </span></code></pre></div>
+<hr />
+<h2 id="latent-space-instance-reweighting">Latent-space instance reweighting<a class="headerlink" href="#latent-space-instance-reweighting" title="Permanent link">&para;</a></h2>
+<p>SIDDA exposes two optional parameters — <code>use_potentials</code> and <code>weight_ot</code> — that use the <strong>Kantorovich dual potentials</strong> computed by geomloss to focus adaptation on the overlapping region of the two distributions. Both are off by default; they can be used independently or together.</p>
+<h3 id="dual-potentials">Dual potentials<a class="headerlink" href="#dual-potentials" title="Permanent link">&para;</a></h3>
+<p>During Sinkhorn iterations, geomloss computes dual potentials (f, g) as a byproduct:</p>
+<ul>
+<li><code>f[i]</code> shape <code>(n_src,)</code> — transport cost for source point z_i in latent space</li>
+<li><code>g[j]</code> shape <code>(n_tgt,)</code> — transport cost for target point z_j</li>
+</ul>
+<p>A <strong>low</strong> <code>f[i]</code> means z_i is already close to the target; a <strong>high</strong> <code>f[i]</code> means it is far. The Sinkhorn divergence is recovered as their mean sum (primal = dual at the optimum):</p>
+<div class="arithmatex">\[\mathcal{S}_\sigma(\mu,\nu) = \mathbb{E}[f] + \mathbb{E}[g]\]</div>
+<p>Both options derive instance weights from f via a temperature-scaled softmax:</p>
+<div class="arithmatex">\[w_i = \text{softmax}\!\left(\frac{-f_i}{\tau}\right)\]</div>
+<h3 id="use_potentialstrue-reweight-the-ce-loss"><code>use_potentials=True</code> — reweight the CE loss<a class="headerlink" href="#use_potentialstrue-reweight-the-ce-loss" title="Permanent link">&para;</a></h3>
+<p>Upweights source samples already close to the target when computing the classification loss, so the classifier learns primarily from the transferable subset:</p>
+<div class="arithmatex">\[\mathcal{L}_\text{CE} = \sum_i w_i \cdot \text{CE}(f(z_i), y_i)\]</div>
+<p>The transport plan itself remains uniform — only the classifier supervision signal is reweighted.</p>
+<h3 id="weight_ottrue-reweight-the-transport-plan-ema"><code>weight_ot=True</code> — reweight the transport plan (EMA)<a class="headerlink" href="#weight_ottrue-reweight-the-transport-plan-ema" title="Permanent link">&para;</a></h3>
+<p>Modifies the Sinkhorn measure itself so that alignment effort concentrates on the overlapping region. geomloss accepts weighted discrete measures:</p>
+<div class="arithmatex">\[\alpha = \sum_i w_i^{(\text{src})} \delta_{z_i}, \quad \beta = \sum_j w_j^{(\text{tgt})} \delta_{z_j}\]</div>
+<p>Because the weights for batch <em>t</em> can only come from the potentials of batch <em>t</em> (a circularity), an <strong>exponential moving average</strong> is used: weights from the previous batch are passed into the current Sinkhorn call, then the EMA is updated from the resulting potentials:</p>
+<div class="arithmatex">\[w_t = \text{mom} \cdot w_{t-1} + (1 - \text{mom}) \cdot \text{softmax}(-f_t / \tau)\]</div>
+<p>The EMA is initialised with a uniform-measure solve on the first batch and reseeded automatically if the batch size changes (e.g. the final batch of an epoch).</p>
+<h3 id="temperature">Temperature τ<a class="headerlink" href="#temperature" title="Permanent link">&para;</a></h3>
+<p><code>potential_temperature</code> controls the sharpness of both reweightings:</p>
+<ul>
+<li><strong>τ = 1.0</strong> (default): moderate reweighting; all samples contribute</li>
+<li><strong>τ → 0</strong>: hard selection — only the most-aligned samples receive weight</li>
+<li><strong>τ → ∞</strong>: uniform weighting — equivalent to standard SIDDA</li>
+</ul>
+<h3 id="usage_1">Usage<a class="headerlink" href="#usage_1" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># CE reweighting only</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">SIDDATrainer</span><span class="p">(</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">source_loader</span><span class="o">=</span><span class="n">train_src</span><span class="p">,</span> <span class="n">target_loader</span><span class="o">=</span><span class="n">train_tgt</span><span class="p">,</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">warmup_epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">,</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">use_potentials</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="n">potential_temperature</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="p">)</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="c1"># OT plan reweighting only</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">SIDDATrainer</span><span class="p">(</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">source_loader</span><span class="o">=</span><span class="n">train_src</span><span class="p">,</span> <span class="n">target_loader</span><span class="o">=</span><span class="n">train_tgt</span><span class="p">,</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>    <span class="n">warmup_epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">,</span>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>    <span class="n">weight_ot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>    <span class="n">ot_ema_momentum</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>    <span class="n">potential_temperature</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="p">)</span>
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>
+</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="c1"># Both together — CE and OT plan reweighted from the same potentials</span>
+</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="c1"># (single Sinkhorn call per batch, no extra cost)</span>
+</span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">SIDDATrainer</span><span class="p">(</span>
+</span><span id="__span-5-21"><a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a>    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">source_loader</span><span class="o">=</span><span class="n">train_src</span><span class="p">,</span> <span class="n">target_loader</span><span class="o">=</span><span class="n">train_tgt</span><span class="p">,</span>
+</span><span id="__span-5-22"><a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a>    <span class="n">warmup_epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">,</span>
+</span><span id="__span-5-23"><a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a>    <span class="n">use_potentials</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-5-24"><a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a>    <span class="n">weight_ot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-5-25"><a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a>    <span class="n">potential_temperature</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+</span><span id="__span-5-26"><a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a>    <span class="n">ot_ema_momentum</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
+</span><span id="__span-5-27"><a id="__codelineno-5-27" name="__codelineno-5-27" href="#__codelineno-5-27"></a><span class="p">)</span>
+</span><span id="__span-5-28"><a id="__codelineno-5-28" name="__codelineno-5-28" href="#__codelineno-5-28"></a><span class="n">history</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">epochs</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+</span><span id="__span-5-29"><a id="__codelineno-5-29" name="__codelineno-5-29" href="#__codelineno-5-29"></a>
+</span><span id="__span-5-30"><a id="__codelineno-5-30" name="__codelineno-5-30" href="#__codelineno-5-30"></a><span class="c1"># Monitor transport cost — decreases as distributions align</span>
+</span><span id="__span-5-31"><a id="__codelineno-5-31" name="__codelineno-5-31" href="#__codelineno-5-31"></a><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+</span><span id="__span-5-32"><a id="__codelineno-5-32" name="__codelineno-5-32" href="#__codelineno-5-32"></a><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">h</span><span class="p">[</span><span class="s2">&quot;epoch&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">history</span><span class="p">],</span> <span class="p">[</span><span class="n">h</span><span class="p">[</span><span class="s2">&quot;mean_potential&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">history</span><span class="p">])</span>
+</span><span id="__span-5-33"><a id="__codelineno-5-33" name="__codelineno-5-33" href="#__codelineno-5-33"></a><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Epoch&quot;</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Mean source potential f&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">When to use these options</p>
+<p>Both options are most beneficial when the source and target distributions overlap
+only partially. <code>weight_ot=True</code> is the stronger intervention — it changes what
+the OT plan optimises, not just how the classifier uses source labels.
+Start with standard SIDDA as the baseline and add these if the domain gap is large.</p>
+</div>
 
 
 
