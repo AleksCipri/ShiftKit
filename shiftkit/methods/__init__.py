@@ -1,7 +1,7 @@
 from .base       import BaseTrainer, TrainerRegistry
 from .mmd        import MMDLoss, MMDTrainer, SourceOnlyTrainer
 from .dann       import DANNTrainer, GradientReversalLayer, DomainDiscriminator
-from .sidda      import SIDDATrainer
+from .sidda      import SIDDATrainer, SIDDARegressionTrainer
 from .lmmd       import LMMDLoss, LMMDTrainer
 from .coral      import CORALLoss, CORALTrainer
 from .regression import SourceOnlyRegressionTrainer, MMDRegressionTrainer
@@ -24,7 +24,7 @@ __all__ = [
     "LMMDLoss", "LMMDTrainer",
     "CORALLoss", "CORALTrainer",
     "DANNTrainer", "GradientReversalLayer", "DomainDiscriminator",
-    "SIDDATrainer",
+    "SIDDATrainer", "SIDDARegressionTrainer",
     "SourceOnlyRegressionTrainer", "MMDRegressionTrainer",
     "KLIEPWeightEstimator", "KLIEPTrainer",
     "KMMWeightEstimator", "KMMTrainer",

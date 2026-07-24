@@ -21,7 +21,7 @@ from .methods.mmd        import MMDLoss, MMDTrainer, SourceOnlyTrainer
 from .methods.lmmd       import LMMDLoss, LMMDTrainer
 from .methods.coral      import CORALLoss, CORALTrainer
 from .methods.dann       import DANNTrainer, GradientReversalLayer, DomainDiscriminator
-from .methods.sidda      import SIDDATrainer
+from .methods.sidda      import SIDDATrainer, SIDDARegressionTrainer
 from .methods.regression import SourceOnlyRegressionTrainer, MMDRegressionTrainer
 from .methods.kliep      import KLIEPWeightEstimator, KLIEPTrainer
 from .methods.kmm        import KMMWeightEstimator, KMMTrainer
@@ -41,7 +41,7 @@ __all__ = [
     "LMMDLoss", "LMMDTrainer",
     "CORALLoss", "CORALTrainer",
     "DANNTrainer", "GradientReversalLayer", "DomainDiscriminator",
-    "SIDDATrainer",
+    "SIDDATrainer", "SIDDARegressionTrainer",
     "SourceOnlyRegressionTrainer", "MMDRegressionTrainer",
     "KLIEPWeightEstimator", "KLIEPTrainer",
     "KMMWeightEstimator", "KMMTrainer",

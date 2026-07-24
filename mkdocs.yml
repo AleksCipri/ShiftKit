@@ -50,6 +50,7 @@ nav:
       - Tuning λ: tutorials/tuning.md
       - Regression DA: tutorials/regression.md
       - Node-level DA (PyG): tutorials/pyg_node_mmd.md
+      - SIDDA Regression & Reweighting: tutorials/sidda_regression.md
   - API Reference:
       - Data: data.md
       - Models: models.md

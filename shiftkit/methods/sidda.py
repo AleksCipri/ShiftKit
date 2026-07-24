@@ -384,3 +384,270 @@ class SIDDATrainer:
             correct += (self.model(x).argmax(1) == y).sum().item()
             total   += y.size(0)
         return {"domain": domain, "accuracy": correct / total, "n_samples": total}
+
+
+# ─── SIDDA Regression Trainer ─────────────────────────────────────────────────
+
+class SIDDARegressionTrainer:
+    """
+    SIDDA trainer for regression tasks.
+
+    Identical to SIDDATrainer but uses MSE regression loss instead of
+    cross-entropy, and expects a model with .encode() and .regress() methods
+    (e.g. MLPRegressor).  The Sinkhorn OT alignment and optional latent-space
+    instance reweighting (use_potentials, weight_ot) work identically.
+
+    Total loss (after warmup)
+    -------------------------
+    ℒ = (1/2η₁²)·MSE(z_src, y_src)
+      + (1/2η₂²)·Sinkhorn_σ(z_src, z_tgt)
+      + log(|η₁|·|η₂|)
+
+    Parameters
+    ----------
+    model                : network with .encode() and .regress() methods
+    source_loader        : labelled source DataLoader with float targets
+    target_loader        : target DataLoader (labels used for tgt_rmse only)
+    lr                   : AdamW learning rate
+    weight_decay         : AdamW weight decay
+    warmup_epochs        : epochs of source-only MSE pre-training before DA
+    sigma_scale          : scale factor for dynamic blur (default 0.05)
+    sigma_floor          : minimum blur value (default 0.01)
+    grad_clip            : gradient clipping max-norm (default 10.0)
+    use_potentials       : reweight per-sample MSE loss via Kantorovich potentials
+    potential_temperature: temperature τ for softmax reweighting (default 1.0)
+    weight_ot            : reweight transport plan via EMA of previous potentials
+    ot_ema_momentum      : EMA momentum for OT weight updates (default 0.9)
+    device               : auto-detected if None
+
+    History keys
+    ------------
+    epoch, mse_loss, da_loss, total_loss, src_rmse, tgt_rmse,
+    eta1, eta2, sigma, mean_potential
+    """
+
+    def __init__(
+        self,
+        model: nn.Module,
+        source_loader: DataLoader,
+        target_loader: DataLoader,
+        lr: float = 1e-2,
+        weight_decay: float = 1e-3,
+        warmup_epochs: int = 0,
+        sigma_scale: float = 0.05,
+        sigma_floor: float = 0.01,
+        grad_clip: float = 10.0,
+        use_potentials: bool = False,
+        potential_temperature: float = 1.0,
+        weight_ot: bool = False,
+        ot_ema_momentum: float = 0.9,
+        device: Optional[str] = None,
+    ):
+        try:
+            from geomloss import SamplesLoss
+            self._SamplesLoss = SamplesLoss
+        except ImportError as e:
+            raise ImportError(
+                "geomloss is required for SIDDARegressionTrainer. "
+                "Install it with:  pip install geomloss"
+            ) from e
+
+        self.device = torch.device(device) if device else _auto_device()
+        self.model = model.to(self.device)
+        self.source_loader = source_loader
+        self.target_loader = target_loader
+        self.warmup_epochs = warmup_epochs
+        self.sigma_scale = sigma_scale
+        self.sigma_floor = sigma_floor
+        self.grad_clip = grad_clip
+        self.use_potentials = use_potentials
+        self.potential_temperature = potential_temperature
+        self.weight_ot = weight_ot
+        self.ot_ema_momentum = ot_ema_momentum
+
+        self._ema_w_src: Optional[torch.Tensor] = None
+        self._ema_w_tgt: Optional[torch.Tensor] = None
+
+        self.eta1 = nn.Parameter(torch.ones(1, device=self.device))
+        self.eta2 = nn.Parameter(torch.ones(1, device=self.device))
+
+        self.mse_loss = nn.MSELoss()
+
+        self.optimizer = optim.AdamW(
+            list(model.parameters()) + [self.eta1, self.eta2],
+            lr=lr,
+            weight_decay=weight_decay,
+        )
+
+        self.history: List[dict] = []
+
+    # ------------------------------------------------------------------
+    def fit(self, epochs: int = 50) -> List[dict]:
+        """Train for *epochs* epochs. Returns per-epoch history list."""
+        for epoch in range(1, epochs + 1):
+            is_warmup = epoch <= self.warmup_epochs
+            stats = self._train_epoch(epoch, epochs, is_warmup)
+            self.history.append(stats)
+
+            phase = "warmup" if is_warmup else "SIDDA "
+            da_str = (
+                f"  DA={stats['da_loss']:.4f}"
+                f"  η₁={stats['eta1']:.3f}  η₂={stats['eta2']:.3f}"
+                f"  σ={stats['sigma']:.4f}"
+                if not is_warmup else ""
+            )
+            print(
+                f"[{epoch:>3}/{epochs}] [{phase}]  "
+                f"MSE={stats['mse_loss']:.4f}{da_str}  "
+                f"Total={stats['total_loss']:.4f}  "
+                f"SrcRMSE={stats['src_rmse']:.4f}  "
+                f"TgtRMSE={stats['tgt_rmse']:.4f}"
+            )
+        return self.history
+
+    # ------------------------------------------------------------------
+    def _train_epoch(self, epoch: int, total_epochs: int, warmup: bool) -> dict:
+        self.model.train()
+
+        total_mse = total_da = total_loss_sum = 0.0
+        src_se = tgt_se = 0.0
+        n_src = n_tgt = 0
+        last_sigma = 0.0
+        total_potential = 0.0
+
+        n_batches = min(len(self.source_loader), len(self.target_loader))
+        loader = zip(self.source_loader, self.target_loader)
+
+        for (x_src, y_src), (x_tgt, y_tgt) in tqdm(
+            loader, total=n_batches,
+            desc=f"Epoch {epoch}/{total_epochs}", leave=False
+        ):
+            x_src, y_src = x_src.to(self.device), y_src.to(self.device).float()
+            x_tgt, y_tgt = x_tgt.to(self.device), y_tgt.to(self.device).float()
+
+            z_src = self.model.encode(x_src)
+            z_tgt = self.model.encode(x_tgt)
+
+            pred_src = self.model.regress(z_src).view_as(y_src)
+            mse = self.mse_loss(pred_src, y_src)
+
+            if warmup:
+                loss = mse
+                da_val = 0.0
+
+            else:
+                sigma = _dynamic_blur(z_src, z_tgt, self.sigma_scale, self.sigma_floor)
+                last_sigma = sigma
+
+                need_potentials = self.use_potentials or self.weight_ot
+                sinkhorn = self._SamplesLoss(
+                    "sinkhorn", p=2, blur=sigma, scaling=0.9,
+                    potentials=need_potentials,
+                )
+
+                if need_potentials:
+                    ema_ready = (
+                        self.weight_ot
+                        and self._ema_w_src is not None
+                        and self._ema_w_src.shape[0] == z_src.shape[0]
+                        and self._ema_w_tgt.shape[0] == z_tgt.shape[0]
+                    )
+                    if ema_ready:
+                        f_pot, g_pot = sinkhorn(
+                            self._ema_w_src, z_src,
+                            self._ema_w_tgt, z_tgt,
+                        )
+                    else:
+                        f_pot, g_pot = sinkhorn(z_src, z_tgt)
+
+                    da_loss = f_pot.mean() + g_pot.mean()
+
+                    if self.weight_ot:
+                        new_w_src = f_pot.detach().div(-self.potential_temperature).softmax(dim=0)
+                        new_w_tgt = g_pot.detach().div(-self.potential_temperature).softmax(dim=0)
+                        if ema_ready:
+                            mom = self.ot_ema_momentum
+                            self._ema_w_src = mom * self._ema_w_src + (1 - mom) * new_w_src
+                            self._ema_w_tgt = mom * self._ema_w_tgt + (1 - mom) * new_w_tgt
+                        else:
+                            self._ema_w_src = new_w_src
+                            self._ema_w_tgt = new_w_tgt
+
+                    if self.use_potentials:
+                        w_mse = f_pot.detach().div(-self.potential_temperature).softmax(dim=0)
+                        mse_per = F.mse_loss(pred_src.squeeze(), y_src.squeeze(), reduction="none")
+                        mse = (w_mse * mse_per).sum()
+
+                    total_potential += f_pot.detach().mean().item()
+
+                else:
+                    da_loss = sinkhorn(z_src, z_tgt)
+
+                da_val = da_loss.item()
+
+                loss = (
+                    (1.0 / (2.0 * self.eta1 ** 2)) * mse
+                    + (1.0 / (2.0 * self.eta2 ** 2)) * da_loss
+                    + torch.log(self.eta1.abs() * self.eta2.abs())
+                )
+
+            self.optimizer.zero_grad()
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(
+                list(self.model.parameters()) + [self.eta1, self.eta2],
+                self.grad_clip,
+            )
+            self.optimizer.step()
+
+            if not warmup:
+                with torch.no_grad():
+                    self.eta1.clamp_(min=1e-3)
+                    self.eta2.clamp_(min=0.25 * self.eta1.item())
+
+            total_mse      += mse.item()
+            total_da       += da_val
+            total_loss_sum += loss.item()
+            src_se += ((pred_src.detach() - y_src) ** 2).sum().item()
+            n_src  += y_src.size(0)
+
+            with torch.no_grad():
+                pred_tgt = self.model.regress(z_tgt).view_as(y_tgt)
+                tgt_se  += ((pred_tgt - y_tgt) ** 2).sum().item()
+                n_tgt   += y_tgt.size(0)
+
+        return {
+            "epoch":          epoch,
+            "mse_loss":       total_mse       / n_batches,
+            "da_loss":        total_da        / n_batches,
+            "total_loss":     total_loss_sum  / n_batches,
+            "src_rmse":       (src_se / n_src) ** 0.5,
+            "tgt_rmse":       (tgt_se / n_tgt) ** 0.5,
+            "eta1":           self.eta1.item(),
+            "eta2":           self.eta2.item(),
+            "sigma":          last_sigma,
+            "mean_potential": total_potential / n_batches,
+        }
+
+    # ------------------------------------------------------------------
+    @torch.no_grad()
+    def evaluate(self, loader: DataLoader, domain: str = "source") -> dict:
+        """Compute MSE, RMSE, and R² on a labelled DataLoader."""
+        self.model.eval()
+        ys, preds = [], []
+        for x, y in loader:
+            x, y = x.to(self.device), y.to(self.device).float()
+            preds.append(self.model.regress(self.model.encode(x)).view_as(y))
+            ys.append(y)
+        ys    = torch.cat(ys)
+        preds = torch.cat(preds)
+        mse    = ((preds - ys) ** 2).mean().item()
+        ss_res = ((preds - ys) ** 2).sum().item()
+        ss_tot = ((ys - ys.mean()) ** 2).sum().item()
+        r2     = 1.0 - ss_res / ss_tot if ss_tot > 0 else 0.0
+        return {
+            "domain":    domain,
+            "mse":       mse,
+            "rmse":      mse ** 0.5,
+            "r2":        r2,
+            "n_samples": ys.size(0),
+        }
