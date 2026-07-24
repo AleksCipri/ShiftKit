@@ -192,46 +192,75 @@ plt.suptitle("Target domain predictions  (y = x₀)", fontweight="bold")
 plt.tight_layout(); plt.show()
 ```
 
-### Latent space — coloured by domain and by target value
+### Latent space — t-SNE coloured by domain and by target value
+
+t-SNE projects all `LATENT_DIM` dimensions to 2D jointly for source and target,
+so the proximity structure reflects the full embedding rather than just two
+arbitrarily chosen axes.
 
 ```python
+from sklearn.manifold import TSNE
+
+N_PLOT = 500   # points per domain — keep small for fast t-SNE
+
 def get_latents(trainer, X_src, X_tgt):
     trainer.model.eval()
     with torch.no_grad():
-        zs = trainer.model.encode(torch.from_numpy(X_src).to(trainer.device)).cpu().numpy()
-        zt = trainer.model.encode(torch.from_numpy(X_tgt).to(trainer.device)).cpu().numpy()
+        zs = trainer.model.encode(
+            torch.from_numpy(X_src).to(trainer.device)).cpu().numpy()
+        zt = trainer.model.encode(
+            torch.from_numpy(X_tgt).to(trainer.device)).cpu().numpy()
     return zs, zt
 
 fig = plt.figure(figsize=(16, 8))
 gs  = gridspec.GridSpec(2, 4, hspace=0.45, wspace=0.35)
 
 for col, (label, trainer) in enumerate(trainers.items()):
-    zs, zt = get_latents(trainer, X_src_test[:500], X_tgt_test[:500])
+    zs, zt = get_latents(trainer, X_src_test[:N_PLOT], X_tgt_test[:N_PLOT])
+
+    # Fit t-SNE on source + target jointly so both share the same embedding
+    z_all = np.vstack([zs, zt])
+    z2d   = TSNE(n_components=2, perplexity=30, random_state=42,
+                 init="pca", learning_rate="auto").fit_transform(z_all)
+    zs2d, zt2d = z2d[:N_PLOT], z2d[N_PLOT:]
 
     # Top row: colour by domain
     ax = fig.add_subplot(gs[0, col])
-    ax.scatter(zs[:, 0], zs[:, 1], s=6, alpha=0.4, label="Source")
-    ax.scatter(zt[:, 0], zt[:, 1], s=6, alpha=0.4, label="Target")
-    ax.set_title(label, fontsize=8, fontweight="bold")
+    ax.scatter(zs2d[:, 0], zs2d[:, 1], s=6, alpha=0.5,
+               color="#4C72B0", label="Source")
+    ax.scatter(zt2d[:, 0], zt2d[:, 1], s=6, alpha=0.5,
+               color="#DD8452", label="Target")
+    ax.set_title(label, fontsize=9, fontweight="bold")
+    ax.set_xticks([]); ax.set_yticks([])
     if col == 0:
-        ax.set_ylabel("Domain separation", fontsize=9)
-    ax.legend(fontsize=7, markerscale=2)
-
-    # Bottom row: colour by target value
-    ax2 = fig.add_subplot(gs[1, col])
-    all_z = np.vstack([zs, zt])
-    all_y = np.concatenate([y_src_test[:500], y_tgt_test[:500]])
-    sc = ax2.scatter(all_z[:, 0], all_z[:, 1], c=all_y,
-                     cmap="RdYlBu_r", s=6, alpha=0.5, vmin=-2, vmax=4)
+        ax.set_ylabel("By domain", fontsize=9)
     if col == 3:
-        plt.colorbar(sc, ax=ax2, label="y = x₀")
-    if col == 0:
-        ax2.set_ylabel("Coloured by y", fontsize=9)
+        ax.legend(fontsize=7, markerscale=2, loc="upper right")
 
-plt.suptitle("Latent space (first two dims)  —  top: domain  |  bottom: target value",
+    # Bottom row: colour by target value y = x₀
+    ax2 = fig.add_subplot(gs[1, col])
+    all_y = np.concatenate([y_src_test[:N_PLOT], y_tgt_test[:N_PLOT]])
+    sc = ax2.scatter(z2d[:, 0], z2d[:, 1], c=all_y,
+                     cmap="RdYlBu_r", s=6, alpha=0.6, vmin=-2, vmax=4)
+    ax2.set_xticks([]); ax2.set_yticks([])
+    if col == 0:
+        ax2.set_ylabel("By target value y", fontsize=9)
+    if col == 3:
+        plt.colorbar(sc, ax=ax2, label="y = x₀", shrink=0.8)
+
+plt.suptitle("t-SNE latent space  —  top: domain  |  bottom: target value y",
              fontweight="bold")
 plt.show()
 ```
+
+!!! note "Reading the t-SNE plots"
+    **Top row (by domain):** good alignment = source (blue) and target (orange)
+    clusters interleaved rather than separated.
+
+    **Bottom row (by target value y):** the colour gradient should be smooth and
+    continuous across both domains — this confirms the encoder captures the
+    regression target in a way that generalises.  If the gradient breaks at the
+    source/target boundary, the model is not yet transferring the y-structure.
 
 ### Mean source potential over training
 
