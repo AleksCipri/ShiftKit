@@ -71,6 +71,10 @@ print(f"Target accuracy: {result['accuracy']*100:.1f}%")
 | `sigma_scale` | `float` | `0.05` | Scale factor for dynamic blur: σ = max(scale · max‖z‖, floor) |
 | `sigma_floor` | `float` | `0.01` | Minimum blur value (prevents degenerate OT plans) |
 | `grad_clip` | `float` | `10.0` | Gradient clipping max-norm |
+| `use_potentials` | `bool` | `False` | Reweight per-sample CE loss using Kantorovich dual potentials (see [Latent-space instance reweighting](#latent-space-instance-reweighting)) |
+| `potential_temperature` | `float` | `1.0` | Temperature τ for softmax reweighting: w = softmax(-f / τ). Lower τ = sharper focus on already-aligned samples |
+| `weight_ot` | `bool` | `False` | Reweight the Sinkhorn transport plan itself via an EMA of previous-batch potentials, focusing OT alignment on the overlapping region (see [Latent-space instance reweighting](#latent-space-instance-reweighting)) |
+| `ot_ema_momentum` | `float` | `0.9` | EMA momentum for OT weight updates: w_t = mom·w_{t-1} + (1-mom)·softmax(-f_t / τ) |
 | `device` | `str \| None` | `None` | `'cuda'`, `'mps'`, or `'cpu'`; auto-detected if `None` |
 
 ---
@@ -86,13 +90,13 @@ Train for `epochs` epochs and return the history.
 | `epoch` | Epoch number (1-indexed) |
 | `ce_loss` | Mean cross-entropy loss |
 | `da_loss` | Mean Sinkhorn divergence loss (`0.0` during warmup) |
-| `mmd_loss` | Always `0.0` (for history-format compatibility) |
 | `total_loss` | Mean total weighted loss |
 | `src_acc` | Source domain training accuracy |
 | `tgt_acc` | Target domain accuracy (tracked, not directly optimised) |
 | `eta1` | Current η₁ (CE weight) at epoch end |
 | `eta2` | Current η₂ (DA weight) at epoch end |
 | `sigma` | Mean Sinkhorn blur σ used this epoch (`0.0` during warmup) |
+| `mean_potential` | Mean source Kantorovich potential F across batches (`0.0` unless `use_potentials=True`) |
 
 ---
 
@@ -162,3 +166,96 @@ plt.plot(epochs, [h["eta1"] for h in history], label="η₁ (CE)")
 plt.plot(epochs, [h["eta2"] for h in history], label="η₂ (DA)")
 plt.xlabel("Epoch"); plt.ylabel("η"); plt.legend()
 ```
+
+---
+
+## Latent-space instance reweighting
+
+SIDDA exposes two optional parameters — `use_potentials` and `weight_ot` — that use the **Kantorovich dual potentials** computed by geomloss to focus adaptation on the overlapping region of the two distributions. Both are off by default; they can be used independently or together.
+
+### Dual potentials
+
+During Sinkhorn iterations, geomloss computes dual potentials (f, g) as a byproduct:
+
+- `f[i]` shape `(n_src,)` — transport cost for source point z_i in latent space
+- `g[j]` shape `(n_tgt,)` — transport cost for target point z_j
+
+A **low** `f[i]` means z_i is already close to the target; a **high** `f[i]` means it is far. The Sinkhorn divergence is recovered as their mean sum (primal = dual at the optimum):
+
+$$\mathcal{S}_\sigma(\mu,\nu) = \mathbb{E}[f] + \mathbb{E}[g]$$
+
+Both options derive instance weights from f via a temperature-scaled softmax:
+
+$$w_i = \text{softmax}\!\left(\frac{-f_i}{\tau}\right)$$
+
+### `use_potentials=True` — reweight the CE loss
+
+Upweights source samples already close to the target when computing the classification loss, so the classifier learns primarily from the transferable subset:
+
+$$\mathcal{L}_\text{CE} = \sum_i w_i \cdot \text{CE}(f(z_i), y_i)$$
+
+The transport plan itself remains uniform — only the classifier supervision signal is reweighted.
+
+### `weight_ot=True` — reweight the transport plan (EMA)
+
+Modifies the Sinkhorn measure itself so that alignment effort concentrates on the overlapping region. geomloss accepts weighted discrete measures:
+
+$$\alpha = \sum_i w_i^{(\text{src})} \delta_{z_i}, \quad \beta = \sum_j w_j^{(\text{tgt})} \delta_{z_j}$$
+
+Because the weights for batch *t* can only come from the potentials of batch *t* (a circularity), an **exponential moving average** is used: weights from the previous batch are passed into the current Sinkhorn call, then the EMA is updated from the resulting potentials:
+
+$$w_t = \text{mom} \cdot w_{t-1} + (1 - \text{mom}) \cdot \text{softmax}(-f_t / \tau)$$
+
+The EMA is initialised with a uniform-measure solve on the first batch and reseeded automatically if the batch size changes (e.g. the final batch of an epoch).
+
+### Temperature τ
+
+`potential_temperature` controls the sharpness of both reweightings:
+
+- **τ = 1.0** (default): moderate reweighting; all samples contribute
+- **τ → 0**: hard selection — only the most-aligned samples receive weight
+- **τ → ∞**: uniform weighting — equivalent to standard SIDDA
+
+### Usage
+
+```python
+# CE reweighting only
+trainer = SIDDATrainer(
+    model=model, source_loader=train_src, target_loader=train_tgt,
+    warmup_epochs=10, lr=1e-2,
+    use_potentials=True,
+    potential_temperature=1.0,
+)
+
+# OT plan reweighting only
+trainer = SIDDATrainer(
+    model=model, source_loader=train_src, target_loader=train_tgt,
+    warmup_epochs=10, lr=1e-2,
+    weight_ot=True,
+    ot_ema_momentum=0.9,
+    potential_temperature=1.0,
+)
+
+# Both together — CE and OT plan reweighted from the same potentials
+# (single Sinkhorn call per batch, no extra cost)
+trainer = SIDDATrainer(
+    model=model, source_loader=train_src, target_loader=train_tgt,
+    warmup_epochs=10, lr=1e-2,
+    use_potentials=True,
+    weight_ot=True,
+    potential_temperature=1.0,
+    ot_ema_momentum=0.9,
+)
+history = trainer.fit(epochs=50)
+
+# Monitor transport cost — decreases as distributions align
+import matplotlib.pyplot as plt
+plt.plot([h["epoch"] for h in history], [h["mean_potential"] for h in history])
+plt.xlabel("Epoch"); plt.ylabel("Mean source potential f")
+```
+
+!!! tip "When to use these options"
+    Both options are most beneficial when the source and target distributions overlap
+    only partially. `weight_ot=True` is the stronger intervention — it changes what
+    the OT plan optimises, not just how the classifier uses source labels.
+    Start with standard SIDDA as the baseline and add these if the domain gap is large.

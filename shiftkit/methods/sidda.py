@@ -16,6 +16,19 @@ Uses the Sinkhorn divergence as the domain alignment loss with two key ideas:
    automatically balances classification and domain alignment without a fixed λ.
    The log term prevents η from collapsing to zero or growing unboundedly.
 
+3. **Optional latent-space instance reweighting** (``use_potentials=True``) —
+   geomloss computes Kantorovich dual potentials (F, G) as a byproduct of the
+   Sinkhorn iterations.  F[i] measures how expensive it is to move source point
+   z_i to match the target distribution in latent space.  With
+   ``use_potentials=True`` these potentials reweight the per-sample CE loss:
+
+       w_i = softmax(-F / τ)  →  ℒ_CE = Σ w_i · CE(f(z_i), y_i)
+
+   This upweights source samples already close to the target (low transport
+   cost), focusing the classifier on the transferable subset of source data.
+   The weighting is purely in latent space and updates every batch as the
+   encoder trains — no separate QP or input-space computation required.
+
 An optional **warmup phase** trains the encoder on source classification only
 (no DA loss) for a fixed number of epochs before domain adaptation begins.
 This ensures the encoder produces meaningful representations before alignment
@@ -105,22 +118,40 @@ class SIDDATrainer:
 
     Parameters
     ----------
-    model          : network with .encode() and .classify() methods
-                     (must expose .latent_dim)
-    source_loader  : labelled source DataLoader
-    target_loader  : target DataLoader (labels used for tgt_acc tracking only)
-    lr             : AdamW learning rate
-    weight_decay   : AdamW weight decay
-    warmup_epochs  : epochs of source-only pre-training before DA begins
-    sigma_scale    : scale factor for dynamic blur (default 0.05 from paper)
-    sigma_floor    : minimum blur value to prevent degenerate OT (default 0.01)
-    grad_clip      : gradient clipping max-norm (default 10.0 from paper)
-    device         : 'cuda', 'mps', or 'cpu' (auto-detected if None)
+    model                : network with .encode() and .classify() methods
+                           (must expose .latent_dim)
+    source_loader        : labelled source DataLoader
+    target_loader        : target DataLoader (labels used for tgt_acc tracking only)
+    lr                   : AdamW learning rate
+    weight_decay         : AdamW weight decay
+    warmup_epochs        : epochs of source-only pre-training before DA begins
+    sigma_scale          : scale factor for dynamic blur (default 0.05 from paper)
+    sigma_floor          : minimum blur value to prevent degenerate OT (default 0.01)
+    grad_clip            : gradient clipping max-norm (default 10.0 from paper)
+    use_potentials       : if True, use Kantorovich dual potentials from geomloss
+                           to reweight per-sample CE loss in latent space
+                           (default False)
+    potential_temperature: temperature τ for the softmax reweighting
+                           w_i = softmax(-F_i / τ).  Lower τ = sharper focus on
+                           already-aligned source samples.  (default 1.0)
+    weight_ot            : if True, reweight the Sinkhorn transport plan itself
+                           using an EMA of the previous batch's potentials.
+                           This focuses OT alignment on the overlapping region of
+                           the two distributions rather than aligning everything
+                           equally.  Requires one extra Sinkhorn solve only on the
+                           very first batch of each epoch (to seed the EMA).
+                           Can be used alone or combined with use_potentials.
+                           (default False)
+    ot_ema_momentum      : EMA momentum α for updating OT weights between batches.
+                           w_t = α·w_{t-1} + (1-α)·softmax(-f_t / τ).
+                           Higher α = smoother, slower-changing weights.
+                           (default 0.9)
+    device               : 'cuda', 'mps', or 'cpu' (auto-detected if None)
 
     History keys
     ------------
     epoch, ce_loss, da_loss, mmd_loss (always 0), total_loss,
-    src_acc, tgt_acc, eta1, eta2, sigma
+    src_acc, tgt_acc, eta1, eta2, sigma, mean_potential
     """
 
     def __init__(
@@ -134,6 +165,10 @@ class SIDDATrainer:
         sigma_scale: float = 0.05,
         sigma_floor: float = 0.01,
         grad_clip: float = 10.0,
+        use_potentials: bool = False,
+        potential_temperature: float = 1.0,
+        weight_ot: bool = False,
+        ot_ema_momentum: float = 0.9,
         device: Optional[str] = None,
     ):
         try:
@@ -153,6 +188,14 @@ class SIDDATrainer:
         self.sigma_scale = sigma_scale
         self.sigma_floor = sigma_floor
         self.grad_clip = grad_clip
+        self.use_potentials = use_potentials
+        self.potential_temperature = potential_temperature
+        self.weight_ot = weight_ot
+        self.ot_ema_momentum = ot_ema_momentum
+
+        # EMA buffers for OT weighting — lazily initialised on first DA batch
+        self._ema_w_src: Optional[torch.Tensor] = None
+        self._ema_w_tgt: Optional[torch.Tensor] = None
 
         # Learnable loss-weighting scalars, initialised to 1
         self.eta1 = nn.Parameter(torch.ones(1, device=self.device))  # CE
@@ -199,6 +242,7 @@ class SIDDATrainer:
         total_ce = total_da = total_loss_sum = 0.0
         src_correct = tgt_correct = n_src = n_tgt = 0
         last_sigma = 0.0
+        total_potential = 0.0
 
         n_batches = min(len(self.source_loader), len(self.target_loader))
         loader = zip(self.source_loader, self.target_loader)
@@ -227,9 +271,61 @@ class SIDDATrainer:
                 sigma = _dynamic_blur(z_src, z_tgt, self.sigma_scale, self.sigma_floor)
                 last_sigma = sigma
 
+                # need_potentials: True if either CE reweighting or EMA OT weighting is on
+                need_potentials = self.use_potentials or self.weight_ot
+
                 # 2. Sinkhorn divergence S_σ(z_src, z_tgt)
-                sinkhorn = self._SamplesLoss("sinkhorn", p=2, blur=sigma, scaling=0.9)
-                da_loss = sinkhorn(z_src, z_tgt)
+                sinkhorn = self._SamplesLoss(
+                    "sinkhorn", p=2, blur=sigma, scaling=0.9,
+                    potentials=need_potentials,
+                )
+
+                if need_potentials:
+                    # ── weighted transport plan (EMA) ──────────────────
+                    ema_ready = (
+                        self.weight_ot
+                        and self._ema_w_src is not None
+                        and self._ema_w_src.shape[0] == z_src.shape[0]
+                        and self._ema_w_tgt.shape[0] == z_tgt.shape[0]
+                    )
+                    if ema_ready:
+                        # Use previous-batch EMA weights as the discrete measures:
+                        # α = Σ w_src[i] δ_{z_src[i]},  β = Σ w_tgt[j] δ_{z_tgt[j]}
+                        # geomloss normalises internally, so raw softmax values work.
+                        f_pot, g_pot = sinkhorn(
+                            self._ema_w_src, z_src,
+                            self._ema_w_tgt, z_tgt,
+                        )
+                    else:
+                        # First batch, or batch size changed — run uniform, seed EMA below
+                        f_pot, g_pot = sinkhorn(z_src, z_tgt)
+
+                    da_loss = f_pot.mean() + g_pot.mean()
+
+                    # ── update EMA buffers from this batch's potentials ─
+                    if self.weight_ot:
+                        new_w_src = f_pot.detach().div(-self.potential_temperature).softmax(dim=0)
+                        new_w_tgt = g_pot.detach().div(-self.potential_temperature).softmax(dim=0)
+                        if ema_ready:
+                            mom = self.ot_ema_momentum
+                            self._ema_w_src = mom * self._ema_w_src + (1 - mom) * new_w_src
+                            self._ema_w_tgt = mom * self._ema_w_tgt + (1 - mom) * new_w_tgt
+                        else:
+                            # seed or reset after batch-size change
+                            self._ema_w_src = new_w_src
+                            self._ema_w_tgt = new_w_tgt
+
+                    # ── reweight per-sample CE (if requested) ──────────
+                    if self.use_potentials:
+                        w_ce = f_pot.detach().div(-self.potential_temperature).softmax(dim=0)
+                        ce_per_sample = F.cross_entropy(logits, y_src, reduction="none")
+                        ce = (w_ce * ce_per_sample).sum()
+
+                    total_potential += f_pot.detach().mean().item()
+
+                else:
+                    da_loss = sinkhorn(z_src, z_tgt)
+
                 da_val = da_loss.item()
 
                 # 3. Weighted combination with learnable etas
@@ -264,16 +360,17 @@ class SIDDATrainer:
                 n_tgt       += y_tgt.size(0)
 
         return {
-            "epoch":      epoch,
-            "ce_loss":    total_ce       / n_batches,
-            "da_loss":    total_da       / n_batches,
-            "mmd_loss":   0.0,            # history-format compatibility
-            "total_loss": total_loss_sum / n_batches,
-            "src_acc":    src_correct / n_src,
-            "tgt_acc":    tgt_correct / n_tgt,
-            "eta1":       self.eta1.item(),
-            "eta2":       self.eta2.item(),
-            "sigma":      last_sigma,
+            "epoch":           epoch,
+            "ce_loss":         total_ce       / n_batches,
+            "da_loss":         total_da       / n_batches,
+            "mmd_loss":        0.0,            # history-format compatibility
+            "total_loss":      total_loss_sum / n_batches,
+            "src_acc":         src_correct / n_src,
+            "tgt_acc":         tgt_correct / n_tgt,
+            "eta1":            self.eta1.item(),
+            "eta2":            self.eta2.item(),
+            "sigma":           last_sigma,
+            "mean_potential":  total_potential / n_batches,
         }
 
     # ------------------------------------------------------------------

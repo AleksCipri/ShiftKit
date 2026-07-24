@@ -84,6 +84,7 @@ Every `fit()` call returns a `list[dict]` with one entry per epoch:
 | `eta1` | `float` | Learned CE weight η₁ (SIDDA only) |
 | `eta2` | `float` | Learned DA weight η₂ (SIDDA only) |
 | `sigma` | `float` | Sinkhorn blur used (SIDDA only) |
+| `mean_potential` | `float` | Mean source Kantorovich potential (SIDDA with `use_potentials=True` only) |
 | `total_loss` | `float` | Total combined loss |
 | `src_acc` | `float` | Source domain accuracy |
 | `tgt_acc` | `float` | Target domain accuracy (tracked, not directly optimised) |
