@@ -7,6 +7,7 @@ from .coral      import CORALLoss, CORALTrainer
 from .regression import SourceOnlyRegressionTrainer, MMDRegressionTrainer
 from .kliep      import KLIEPWeightEstimator, KLIEPTrainer
 from .kmm        import KMMWeightEstimator, KMMTrainer
+from .node_batch import unpack_batch, latents_and_targets, node_latent_vectors
 
 # ─── register built-in trainers ───────────────────────────────────────────────
 TrainerRegistry.register("source_only",  SourceOnlyTrainer)
@@ -28,4 +29,5 @@ __all__ = [
     "SourceOnlyRegressionTrainer", "MMDRegressionTrainer",
     "KLIEPWeightEstimator", "KLIEPTrainer",
     "KMMWeightEstimator", "KMMTrainer",
+    "unpack_batch", "latents_and_targets", "node_latent_vectors",
 ]

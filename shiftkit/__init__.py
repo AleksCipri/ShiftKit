@@ -21,8 +21,11 @@ from .methods.mmd        import MMDLoss, MMDTrainer, SourceOnlyTrainer
 from .methods.lmmd       import LMMDLoss, LMMDTrainer
 from .methods.coral      import CORALLoss, CORALTrainer
 from .methods.dann       import DANNTrainer, GradientReversalLayer, DomainDiscriminator
-from .methods.sidda      import SIDDATrainer, SIDDARegressionTrainer
-from .methods.regression import SourceOnlyRegressionTrainer, MMDRegressionTrainer
+from .methods.sidda      import SIDDATrainer, SIDDARegressionTrainer, SIDDAGaussianRegressionTrainer
+from .methods.regression import (
+    SourceOnlyRegressionTrainer, MMDRegressionTrainer,
+    SourceOnlyGaussianRegressionTrainer, MMDGaussianRegressionTrainer,
+)
 from .methods.kliep      import KLIEPWeightEstimator, KLIEPTrainer
 from .methods.kmm        import KMMWeightEstimator, KMMTrainer
 from .data.datasets      import SineWaveDataset, CaliforniaHousingDataset
@@ -41,8 +44,9 @@ __all__ = [
     "LMMDLoss", "LMMDTrainer",
     "CORALLoss", "CORALTrainer",
     "DANNTrainer", "GradientReversalLayer", "DomainDiscriminator",
-    "SIDDATrainer", "SIDDARegressionTrainer",
+    "SIDDATrainer", "SIDDARegressionTrainer", "SIDDAGaussianRegressionTrainer",
     "SourceOnlyRegressionTrainer", "MMDRegressionTrainer",
+    "SourceOnlyGaussianRegressionTrainer", "MMDGaussianRegressionTrainer",
     "KLIEPWeightEstimator", "KLIEPTrainer",
     "KMMWeightEstimator", "KMMTrainer",
     "plot_latent_space", "plot_latent_space_domains", "plot_training_history",
