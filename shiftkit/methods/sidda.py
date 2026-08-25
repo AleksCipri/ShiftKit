@@ -290,8 +290,8 @@ class SIDDATrainer:
                     ema_ready = (
                         self.weight_ot
                         and self._ema_w_src is not None
-                        and self._ema_w_src.shape[0] == z_src.shape[0]
-                        and self._ema_w_tgt.shape[0] == z_tgt.shape[0]
+                        and self._ema_w_src.shape[-1] == z_src.shape[0]
+                        and self._ema_w_tgt.shape[-1] == z_tgt.shape[0]
                     )
                     if ema_ready:
                         # Use previous-batch EMA weights as the discrete measures:
@@ -309,8 +309,8 @@ class SIDDATrainer:
 
                     # ── update EMA buffers from this batch's potentials ─
                     if self.weight_ot:
-                        new_w_src = f_pot.detach().div(-self.potential_temperature).softmax(dim=0)
-                        new_w_tgt = g_pot.detach().div(-self.potential_temperature).softmax(dim=0)
+                        new_w_src = f_pot.detach().reshape(-1).div(-self.potential_temperature).softmax(dim=-1)
+                        new_w_tgt = g_pot.detach().reshape(-1).div(-self.potential_temperature).softmax(dim=-1)
                         if ema_ready:
                             mom = self.ot_ema_momentum
                             self._ema_w_src = mom * self._ema_w_src + (1 - mom) * new_w_src
@@ -322,7 +322,7 @@ class SIDDATrainer:
 
                     # ── reweight per-sample CE (if requested) ──────────
                     if self.use_potentials:
-                        w_ce = f_pot.detach().div(-self.potential_temperature).softmax(dim=0)
+                        w_ce = f_pot.detach().reshape(-1).div(-self.potential_temperature).softmax(dim=-1)
                         ce_per_sample = F.cross_entropy(logits, y_src, reduction="none")
                         ce = (w_ce * ce_per_sample).sum()
 
@@ -555,8 +555,8 @@ class SIDDARegressionTrainer:
                     ema_ready = (
                         self.weight_ot
                         and self._ema_w_src is not None
-                        and self._ema_w_src.shape[0] == z_src.shape[0]
-                        and self._ema_w_tgt.shape[0] == z_tgt.shape[0]
+                        and self._ema_w_src.shape[-1] == z_src.shape[0]
+                        and self._ema_w_tgt.shape[-1] == z_tgt.shape[0]
                     )
                     if ema_ready:
                         f_pot, g_pot = sinkhorn(
@@ -569,8 +569,8 @@ class SIDDARegressionTrainer:
                     da_loss = f_pot.mean() + g_pot.mean()
 
                     if self.weight_ot:
-                        new_w_src = f_pot.detach().div(-self.potential_temperature).softmax(dim=0)
-                        new_w_tgt = g_pot.detach().div(-self.potential_temperature).softmax(dim=0)
+                        new_w_src = f_pot.detach().reshape(-1).div(-self.potential_temperature).softmax(dim=-1)
+                        new_w_tgt = g_pot.detach().reshape(-1).div(-self.potential_temperature).softmax(dim=-1)
                         if ema_ready:
                             mom = self.ot_ema_momentum
                             self._ema_w_src = mom * self._ema_w_src + (1 - mom) * new_w_src
@@ -580,7 +580,7 @@ class SIDDARegressionTrainer:
                             self._ema_w_tgt = new_w_tgt
 
                     if self.use_potentials:
-                        w_mse = f_pot.detach().div(-self.potential_temperature).softmax(dim=0)
+                        w_mse = f_pot.detach().reshape(-1).div(-self.potential_temperature).softmax(dim=-1)
                         mse_per = F.mse_loss(pred_src.squeeze(), y_src.squeeze(), reduction="none")
                         mse = (w_mse * mse_per).sum()
 
@@ -845,8 +845,8 @@ class SIDDAGaussianRegressionTrainer:
                     ema_ready = (
                         self.weight_ot
                         and self._ema_w_src is not None
-                        and self._ema_w_src.shape[0] == z_src.shape[0]
-                        and self._ema_w_tgt.shape[0] == z_tgt.shape[0]
+                        and self._ema_w_src.shape[-1] == z_src.shape[0]
+                        and self._ema_w_tgt.shape[-1] == z_tgt.shape[0]
                     )
                     if ema_ready:
                         f_pot, g_pot = sinkhorn(
@@ -859,8 +859,8 @@ class SIDDAGaussianRegressionTrainer:
                     da_loss = f_pot.mean() + g_pot.mean()
 
                     if self.weight_ot:
-                        new_w_src = f_pot.detach().div(-self.potential_temperature).softmax(dim=0)
-                        new_w_tgt = g_pot.detach().div(-self.potential_temperature).softmax(dim=0)
+                        new_w_src = f_pot.detach().reshape(-1).div(-self.potential_temperature).softmax(dim=-1)
+                        new_w_tgt = g_pot.detach().reshape(-1).div(-self.potential_temperature).softmax(dim=-1)
                         if ema_ready:
                             mom = self.ot_ema_momentum
                             self._ema_w_src = mom * self._ema_w_src + (1 - mom) * new_w_src
@@ -870,7 +870,7 @@ class SIDDAGaussianRegressionTrainer:
                             self._ema_w_tgt = new_w_tgt
 
                     if self.use_potentials:
-                        w_reg = f_pot.detach().div(-self.potential_temperature).softmax(dim=0)
+                        w_reg = f_pot.detach().reshape(-1).div(-self.potential_temperature).softmax(dim=-1)
                         l1, l2 = _moment_network_loss(mean_src, var_src, y_src, weights=w_reg, eps=self.var_eps)
                         reg_loss = l1 + l2
 
