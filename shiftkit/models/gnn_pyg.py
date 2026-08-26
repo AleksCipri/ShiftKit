@@ -19,7 +19,7 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 if TYPE_CHECKING:
     from torch_geometric.data import Batch
@@ -139,6 +139,13 @@ class GNN(nn.Module):
     use_layernorm   : apply ``LayerNorm`` after each conv
     dropout         : dropout probability between conv layers
     aggr            : aggregation for convs that support it (e.g. SAGE, GraphConv)
+    predict_var     : if ``True`` (requires ``regress=True``), the regression head outputs
+                      2 columns ``[mean, log_var]`` instead of a single scalar, for
+                      heteroscedastic-uncertainty training (e.g. Gaussian NLL loss).
+    device          : ``torch.device`` or device string (e.g. ``"cuda"``, ``"cpu"``) to
+                      place the model on. If not passed (``None``), defaults to ``"cuda"``
+                      when available, otherwise ``"cpu"``. If ``"cuda"`` is requested but
+                      unavailable, falls back to ``"cpu"``.
     """
 
     def __init__(
@@ -153,6 +160,8 @@ class GNN(nn.Module):
         use_layernorm: bool = True,
         dropout: float = 0.0,
         aggr: str = "mean",
+        predict_var: bool = False,
+        device: Optional[Union[str, torch.device]] = None,
     ):
         super().__init__()
 
@@ -167,6 +176,9 @@ class GNN(nn.Module):
 
         if not regress and num_classes < 1:
             raise ValueError("num_classes must be >= 1 when regress=False")
+
+        if predict_var and not regress:
+            raise ValueError("predict_var=True requires regress=True")
 
         conv_key = _resolve_conv(model_name)
         in_channels = data.num_node_features
@@ -196,12 +208,24 @@ class GNN(nn.Module):
                 nn.LayerNorm(hidden_channels) if use_layernorm else nn.Identity()
             )
 
+        self.predict_var = predict_var
         if regress:
-            self.regressor = nn.Linear(hidden_channels, 1)
+            self.regressor = nn.Sequential(nn.Linear(hidden_channels, 128),
+                                            nn.ReLU(), 
+                                            nn.ReLU(), 
+                                            nn.Linear(128, 2 if predict_var else 1))
             self.classifier = None
         else:
             self.classifier = nn.Linear(hidden_channels, num_classes)
             self.regressor = None
+
+        if device is None:
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = torch.device(device)
+        if device.type == "cuda" and not torch.cuda.is_available():
+            device = torch.device("cpu")
+        self.device = device
+        self.to(self.device)
 
     def encode(self, data: PyGData) -> torch.Tensor:
         """
@@ -209,12 +233,15 @@ class GNN(nn.Module):
 
         Parameters
         ----------
-        data : PyG ``Data`` or ``Batch``
+        data : PyG ``Data`` or ``Batch``. Moved onto ``self.device`` automatically
+               if not already there (mutates ``data`` in place, per PyG's ``.to()``).
 
         Returns
         -------
         z : (num_nodes, hidden_channels) if ``pool='none'``, else (num_graphs, hidden_channels)
         """
+        if data.x.device != self.device:
+            data = data.to(self.device)
         x, edge_index = data.x, data.edge_index
 
         h = x
@@ -239,7 +266,8 @@ class GNN(nn.Module):
         return self.classifier(z)
 
     def regress(self, z: torch.Tensor) -> torch.Tensor:
-        """Linear regression head (scalar output per graph)."""
+        """Linear regression head. Scalar output per graph, or ``[mean, log_var]``
+        (2 columns) when the model was built with ``predict_var=True``."""
         if self.regressor is None:
             raise RuntimeError(
                 "GNN was built with regress=False; regress() is not available. "

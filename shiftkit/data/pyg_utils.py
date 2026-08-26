@@ -27,11 +27,35 @@ except ImportError as e:
 
 @dataclass
 class NodeGraphBatch:
-    """One full graph plus node indices and labels for the current step."""
+    """
+    One full graph plus the node indices and labels for the current step.
+
+    A node-level domain is a single graph, so a "batch" is the whole graph plus
+    a mask-derived index into it.  ``graph`` is shared across steps; only
+    ``node_idx`` / ``y`` describe the current split.
+
+    Implements ``.to(device)`` and ``__len__`` so it can stand in for a plain
+    tensor batch wherever a trainer writes ``x = x.to(device)``.  Reaching into
+    ``.graph`` directly drops ``node_idx`` and silently widens predictions to
+    every node in the graph -- go through :func:`node_latent_vectors` and friends
+    instead.
+    """
 
     graph: Data
     node_idx: torch.Tensor
     y: torch.Tensor
+
+    def to(self, device: torch.device) -> "NodeGraphBatch":
+        """Return a copy with graph, indices, and labels moved to *device*."""
+        return NodeGraphBatch(
+            graph=self.graph.to(device),
+            node_idx=self.node_idx.to(device),
+            y=self.y.to(device),
+        )
+
+    def __len__(self) -> int:
+        """Number of nodes in this split (not the number of graph nodes)."""
+        return int(self.node_idx.numel())
 
 
 def is_node_graph_batch(x) -> bool:
@@ -39,11 +63,8 @@ def is_node_graph_batch(x) -> bool:
 
 
 def move_node_graph_batch(batch: NodeGraphBatch, device: torch.device) -> NodeGraphBatch:
-    return NodeGraphBatch(
-        graph=batch.graph.to(device),
-        node_idx=batch.node_idx.to(device),
-        y=batch.y.to(device),
-    )
+    """Backwards-compatible alias for :meth:`NodeGraphBatch.to`."""
+    return batch.to(device)
 
 
 # ─── mask / split helpers ────────────────────────────────────────────────────
@@ -283,6 +304,8 @@ class _SingleGraphNodeDataset(Dataset):
         else:
             y = y.float().view(-1)
         batch = NodeGraphBatch(graph=self.data, node_idx=node_idx, y=y)
+        # y is returned twice so the loader yields the same ``(x, y)`` shape as
+        # the tensor path; ``batch.y`` is the authoritative copy.
         return batch, y
 
 
