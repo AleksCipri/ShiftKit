@@ -42,9 +42,9 @@ encoder(x) ──► z_tgt ──►                                  ├─► 
 
 Reference
 ---------
-Ciprijanovic, A., Lewis, A., Pedro, K., Downey, E., Nord, B., & Stark, A. (2025).
-SIDDA: SInkhorn Dynamic Domain Adaptation for Image Classification with
-Equivariant Neural Networks.
+Pandya, S., Patel, P., Nord, B. D., Walmsley, M., & Ćiprijanović, A. (2025). 
+SIDDA: SInkhorn Dynamic Domain Adaptation for image classification with equivariant neural networks. 
+Machine Learning: Science and Technology, 6(3), 035032.
 arXiv:2501.14048.
 https://arxiv.org/abs/2501.14048
 
