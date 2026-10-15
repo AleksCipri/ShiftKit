@@ -146,6 +146,16 @@ $$\sigma = \max\!\left(0.05 \cdot \max_{i,j}\|z_i - z_j^*\|_2,\; 0.01\right)$$
 
 The distances are between source and target latents, measured on the latents
 themselves: the features the Sinkhorn solve runs on, as in the published code.
+
+!!! note "LayerNorm on the latent"
+    The published SIDDA model ends its encoder with a LayerNorm
+    (`fc1 → nn.LayerNorm(256)`), so σ, the Sinkhorn solve and the classifier
+    all see the normalised latent. ShiftKit's models (`MLP`, `CNN`,
+    `MLPRegressor`, `SimpleGCN`, `GNN`) do not include one. To reproduce the
+    published setup, end your model's `encode()` with `nn.LayerNorm(latent_dim)`.
+    Put it inside the model rather than normalising the latent in the training
+    loop: training is the same either way, but only the in-model version is
+    applied when the model is called at test time.
 As training progresses and source/target distributions align, σ shrinks
 naturally, giving a progressively sharper (more exact) OT plan.
 
