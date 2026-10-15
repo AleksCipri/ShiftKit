@@ -103,11 +103,12 @@ def _init_etas(trainer, parametrization: str, eta_lr: Optional[float]) -> list:
     """
     Create the learnable loss weights η₁, η₂ (both η = 1 at the start).
 
+    "log" (default): ``trainer.log_eta1``/``trainer.log_eta2`` are log η,
+    trained in a separate Adam (``trainer.eta_optimizer``, lr ``eta_lr``,
+    default 1e-2, no weight decay); returns [].  This parametrisation was
+    found to give more stable training than the published one.
     "raw" (published code): ``trainer.eta1``/``trainer.eta2`` are η and are
     trained in the model's AdamW; returns them, to be added to it.
-    "log": ``trainer.log_eta1``/``trainer.log_eta2`` are log η, trained in a
-    separate Adam (``trainer.eta_optimizer``, lr ``eta_lr``, default 1e-2, no
-    weight decay); returns [].
     """
     if parametrization not in ("raw", "log"):
         raise ValueError(f"eta_parametrization must be 'raw' or 'log', got {parametrization!r}")
@@ -220,9 +221,10 @@ class SIDDATrainer:
                            Higher α = smoother, slower-changing weights.
                            (default 0.9)
     scaling              : geomloss ε-scaling for the Sinkhorn solve (default 0.9)
-    eta_parametrization  : "raw" (default, published code): η trained in the
-                           model's AdamW. "log": log η trained in a separate
-                           Adam with lr ``eta_lr`` and no weight decay.
+    eta_parametrization  : "log" (default): log η trained in a separate Adam
+                           with lr ``eta_lr`` and no weight decay; found to
+                           give more stable training. "raw" (published code):
+                           η trained in the model's AdamW.
     eta_lr               : η learning rate for ``eta_parametrization="log"``
                            (default 1e-2)
     device               : 'cuda', 'mps', or 'cpu' (auto-detected if None)
@@ -249,7 +251,7 @@ class SIDDATrainer:
         weight_ot: bool = False,
         ot_ema_momentum: float = 0.9,
         scaling: float = 0.9,
-        eta_parametrization: str = "raw",
+        eta_parametrization: str = "log",
         eta_lr: Optional[float] = None,
         device: Optional[str] = None,
     ):
@@ -504,9 +506,10 @@ class SIDDARegressionTrainer:
     weight_ot            : reweight transport plan via EMA of previous potentials
     ot_ema_momentum      : EMA momentum for OT weight updates (default 0.9)
     scaling              : geomloss ε-scaling for the Sinkhorn solve (default 0.9)
-    eta_parametrization  : "raw" (default, published code): η trained in the
-                           model's AdamW. "log": log η trained in a separate
-                           Adam with lr ``eta_lr`` and no weight decay.
+    eta_parametrization  : "log" (default): log η trained in a separate Adam
+                           with lr ``eta_lr`` and no weight decay; found to
+                           give more stable training. "raw" (published code):
+                           η trained in the model's AdamW.
     eta_lr               : η learning rate for ``eta_parametrization="log"``
                            (default 1e-2)
     device               : auto-detected if None
@@ -533,7 +536,7 @@ class SIDDARegressionTrainer:
         weight_ot: bool = False,
         ot_ema_momentum: float = 0.9,
         scaling: float = 0.9,
-        eta_parametrization: str = "raw",
+        eta_parametrization: str = "log",
         eta_lr: Optional[float] = None,
         device: Optional[str] = None,
     ):
@@ -822,7 +825,7 @@ class SIDDAGaussianRegressionTrainer:
         ot_ema_momentum: float = 0.9,
         var_eps: float = 1e-6,
         scaling: float = 0.9,
-        eta_parametrization: str = "raw",
+        eta_parametrization: str = "log",
         eta_lr: Optional[float] = None,
         device: Optional[str] = None,
     ):

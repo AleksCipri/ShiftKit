@@ -76,7 +76,7 @@ print(f"Target accuracy: {result['accuracy']*100:.1f}%")
 | `weight_ot` | `bool` | `False` | Reweight the Sinkhorn transport plan itself via an EMA of previous-batch potentials, focusing OT alignment on the overlapping region (see [Latent-space instance reweighting](#latent-space-instance-reweighting)) |
 | `ot_ema_momentum` | `float` | `0.9` | EMA momentum for OT weight updates: w_t = mom·w_{t-1} + (1-mom)·softmax(-f_t / τ) |
 | `scaling` | `float` | `0.9` | geomloss ε-scaling of the Sinkhorn solve |
-| `eta_parametrization` | `str` | `"raw"` | `"raw"`: η trained in the model's AdamW (published code). `"log"`: log η trained in a separate Adam |
+| `eta_parametrization` | `str` | `"log"` | `"log"`: log η trained in a separate Adam (found to give more stable training). `"raw"`: η trained in the model's AdamW (published code) |
 | `eta_lr` | `float \| None` | `None` | η learning rate with `eta_parametrization="log"` (`None` → `1e-2`) |
 | `device` | `str \| None` | `None` | `'cuda'`, `'mps'`, or `'cpu'`; auto-detected if `None` |
 
@@ -154,9 +154,10 @@ naturally, giving a progressively sharper (more exact) OT plan.
 ## Learnable loss weights η
 
 η₁ and η₂ are scalar parameters, both initialised to 1. With the default
-`eta_parametrization="raw"` they are optimised in the model's AdamW, as in the
-published code; with `"log"`, log η₁ and log η₂ are optimised in a separate Adam
-(`eta_lr`, no weight decay). η gradients are not clipped. Hard constraints are
+`eta_parametrization="log"`, log η₁ and log η₂ are optimised in a separate Adam
+(`eta_lr`, no weight decay); this was found to give more stable training. With
+`"raw"` they are optimised in the model's AdamW, as in the published code. η
+gradients are not clipped. Hard constraints are
 enforced at every step (with `"raw"` before the optimiser step, as published;
 with `"log"` after it):
 
