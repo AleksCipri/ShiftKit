@@ -75,7 +75,7 @@ print(f"Target accuracy: {result['accuracy']*100:.1f}%")
 | `potential_temperature` | `float` | `1.0` | Temperature τ for softmax reweighting: w = softmax(-f / τ). Lower τ = sharper focus on already-aligned samples |
 | `weight_ot` | `bool` | `False` | Reweight the Sinkhorn transport plan itself via an EMA of previous-batch potentials, focusing OT alignment on the overlapping region (see [Latent-space instance reweighting](#latent-space-instance-reweighting)) |
 | `ot_ema_momentum` | `float` | `0.9` | EMA momentum for OT weight updates: w_t = mom·w_{t-1} + (1-mom)·softmax(-f_t / τ) |
-| `scaling` | `float` | `0.9` | geomloss ε-scaling of the Sinkhorn solve |
+| `scaling` | `float` | `0.5` | geomloss ε-scaling of the Sinkhorn solve (published code: 0.9). An important hyperparameter, see [Sinkhorn scaling](#sinkhorn-scaling) |
 | `eta_parametrization` | `str` | `"log"` | `"log"`: log η trained in a separate Adam (found to give more stable training). `"raw"`: η trained in the model's AdamW (published code) |
 | `eta_lr` | `float \| None` | `None` | η learning rate with `eta_parametrization="log"` (`None` → `1e-2`) |
 | `device` | `str \| None` | `None` | `'cuda'`, `'mps'`, or `'cpu'`; auto-detected if `None` |
@@ -158,6 +158,23 @@ themselves: the features the Sinkhorn solve runs on, as in the published code.
     applied when the model is called at test time.
 As training progresses and source/target distributions align, σ shrinks
 naturally, giving a progressively sharper (more exact) OT plan.
+
+---
+
+## Sinkhorn scaling
+
+geomloss solves the entropic OT problem by ε-scaling: it starts from a large
+blur and shrinks it by the factor `scaling` at each step until it reaches σ.
+`scaling` therefore sets how exactly the Sinkhorn divergence, and its gradient,
+is computed: values near 1 take more steps and solve more exactly, smaller
+values are faster and coarser.
+
+This is an important hyperparameter for SIDDA, not just a speed setting. In our
+experiments, `scaling=0.5` gave better domain adaptation than the published
+`0.9`, even though its gradients are less exact; the coarser solve may act as
+extra smoothing. The best value is likely problem-dependent, so it is worth
+tuning. The default is `0.5`; use `scaling=0.9` (with
+`eta_parametrization="raw"`) to reproduce the published code exactly.
 
 ---
 

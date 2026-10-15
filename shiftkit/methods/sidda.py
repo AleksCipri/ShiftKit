@@ -220,7 +220,10 @@ class SIDDATrainer:
                            w_t = α·w_{t-1} + (1-α)·softmax(-f_t / τ).
                            Higher α = smoother, slower-changing weights.
                            (default 0.9)
-    scaling              : geomloss ε-scaling for the Sinkhorn solve (default 0.9)
+    scaling              : geomloss ε-scaling for the Sinkhorn solve (default 0.5;
+                           the published code uses 0.9). An important
+                           hyperparameter: it sets how exactly the solve, and
+                           so the DA gradient, is computed. Worth tuning.
     eta_parametrization  : "log" (default): log η trained in a separate Adam
                            with lr ``eta_lr`` and no weight decay; found to
                            give more stable training. "raw" (published code):
@@ -250,7 +253,7 @@ class SIDDATrainer:
         potential_temperature: float = 1.0,
         weight_ot: bool = False,
         ot_ema_momentum: float = 0.9,
-        scaling: float = 0.9,
+        scaling: float = 0.5,
         eta_parametrization: str = "log",
         eta_lr: Optional[float] = None,
         device: Optional[str] = None,
@@ -505,7 +508,10 @@ class SIDDARegressionTrainer:
     potential_temperature: temperature τ for softmax reweighting (default 1.0)
     weight_ot            : reweight transport plan via EMA of previous potentials
     ot_ema_momentum      : EMA momentum for OT weight updates (default 0.9)
-    scaling              : geomloss ε-scaling for the Sinkhorn solve (default 0.9)
+    scaling              : geomloss ε-scaling for the Sinkhorn solve (default 0.5;
+                           the published code uses 0.9). An important
+                           hyperparameter: it sets how exactly the solve, and
+                           so the DA gradient, is computed. Worth tuning.
     eta_parametrization  : "log" (default): log η trained in a separate Adam
                            with lr ``eta_lr`` and no weight decay; found to
                            give more stable training. "raw" (published code):
@@ -535,7 +541,7 @@ class SIDDARegressionTrainer:
         potential_temperature: float = 1.0,
         weight_ot: bool = False,
         ot_ema_momentum: float = 0.9,
-        scaling: float = 0.9,
+        scaling: float = 0.5,
         eta_parametrization: str = "log",
         eta_lr: Optional[float] = None,
         device: Optional[str] = None,
@@ -824,7 +830,7 @@ class SIDDAGaussianRegressionTrainer:
         weight_ot: bool = False,
         ot_ema_momentum: float = 0.9,
         var_eps: float = 1e-6,
-        scaling: float = 0.9,
+        scaling: float = 0.5,
         eta_parametrization: str = "log",
         eta_lr: Optional[float] = None,
         device: Optional[str] = None,
