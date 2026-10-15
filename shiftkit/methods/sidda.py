@@ -54,6 +54,8 @@ Peyré, G. (2019). Interpolating between Optimal Transport and MMD using
 Sinkhorn Divergences. AISTATS 2019. https://arxiv.org/abs/1810.08278
 """
 
+import math
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -89,14 +91,81 @@ def _dynamic_blur(
 
     Following the paper:  σ = max(scale · max_{i,j}||z_i − z*_j||₂, floor)
 
-    Layer normalisation is applied before computing distances to prevent
-    outlier features from inflating σ and dominating the OT plan.
+    Distances are measured on z itself, the features the Sinkhorn solve runs
+    on, as in the published SIDDA code.
     """
     with torch.no_grad():
-        z_s = F.layer_norm(z_src.detach().float(), [z_src.shape[-1]])
-        z_t = F.layer_norm(z_tgt.detach().float(), [z_tgt.shape[-1]])
-        max_dist = torch.cdist(z_s, z_t).max().item()
+        max_dist = torch.cdist(z_src.detach().float(), z_tgt.detach().float()).max().item()
     return max(scale * max_dist, floor)
+
+
+def _init_etas(trainer, parametrization: str, eta_lr: Optional[float]) -> list:
+    """
+    Create the learnable loss weights η₁, η₂ (both η = 1 at the start).
+
+    "log" (default): ``trainer.log_eta1``/``trainer.log_eta2`` are log η,
+    trained in a separate Adam (``trainer.eta_optimizer``, lr ``eta_lr``,
+    default 1e-2, no weight decay); returns [].  This parametrisation was
+    found to give more stable training than the published one.
+    "raw" (published code): ``trainer.eta1``/``trainer.eta2`` are η and are
+    trained in the model's AdamW; returns them, to be added to it.
+    """
+    if parametrization not in ("raw", "log"):
+        raise ValueError(f"eta_parametrization must be 'raw' or 'log', got {parametrization!r}")
+    trainer.eta_parametrization = parametrization
+    if parametrization == "raw":
+        trainer.eta1 = nn.Parameter(torch.ones(1, device=trainer.device))  # CE
+        trainer.eta2 = nn.Parameter(torch.ones(1, device=trainer.device))  # DA
+        trainer.eta_optimizer = None
+        return [trainer.eta1, trainer.eta2]
+    trainer.log_eta1 = nn.Parameter(torch.zeros(1, device=trainer.device))
+    trainer.log_eta2 = nn.Parameter(torch.zeros(1, device=trainer.device))
+    trainer.eta_optimizer = optim.Adam(
+        [trainer.log_eta1, trainer.log_eta2], lr=1e-2 if eta_lr is None else eta_lr
+    )
+    return []
+
+
+def _eta_values(trainer):
+    """Current (η₁, η₂) as tensors, for either parametrisation."""
+    if trainer.eta_parametrization == "log":
+        return trainer.log_eta1.exp(), trainer.log_eta2.exp()
+    return trainer.eta1, trainer.eta2
+
+
+def _clamp_etas(trainer) -> None:
+    """Enforce η₁ ≥ 1e-3,  η₂ ≥ 0.25·η₁."""
+    with torch.no_grad():
+        if trainer.eta_parametrization == "log":
+            trainer.log_eta1.clamp_(min=math.log(1e-3))
+            trainer.log_eta2.clamp_(min=trainer.log_eta1.item() + math.log(0.25))
+        else:
+            trainer.eta1.clamp_(min=1e-3)
+            trainer.eta2.clamp_(min=0.25 * trainer.eta1.item())
+
+
+def _optimizer_step(trainer, loss: torch.Tensor, warmup: bool) -> None:
+    """
+    Backward, clip, step, and enforce the η constraints.
+
+    Only the model's gradients are clipped, as in the published code; η are
+    not clipped.  "raw" follows the published order (clamp η, then step);
+    "log" clamps after its own step.
+    """
+    trainer.optimizer.zero_grad()
+    if trainer.eta_optimizer is not None:
+        trainer.eta_optimizer.zero_grad()
+    loss.backward()
+    torch.nn.utils.clip_grad_norm_(trainer.model.parameters(), trainer.grad_clip)
+    if trainer.eta_optimizer is None:
+        if not warmup:
+            _clamp_etas(trainer)
+        trainer.optimizer.step()
+    else:
+        trainer.optimizer.step()
+        if not warmup:
+            trainer.eta_optimizer.step()
+            _clamp_etas(trainer)
 
 
 # ─── SIDDA Trainer ────────────────────────────────────────────────────────────
@@ -151,6 +220,16 @@ class SIDDATrainer:
                            w_t = α·w_{t-1} + (1-α)·softmax(-f_t / τ).
                            Higher α = smoother, slower-changing weights.
                            (default 0.9)
+    scaling              : geomloss ε-scaling for the Sinkhorn solve (default 0.5;
+                           the published code uses 0.9). An important
+                           hyperparameter: it sets how exactly the solve, and
+                           so the DA gradient, is computed. Worth tuning.
+    eta_parametrization  : "log" (default): log η trained in a separate Adam
+                           with lr ``eta_lr`` and no weight decay; found to
+                           give more stable training. "raw" (published code):
+                           η trained in the model's AdamW.
+    eta_lr               : η learning rate for ``eta_parametrization="log"``
+                           (default 1e-2)
     device               : 'cuda', 'mps', or 'cpu' (auto-detected if None)
 
     History keys
@@ -174,6 +253,9 @@ class SIDDATrainer:
         potential_temperature: float = 1.0,
         weight_ot: bool = False,
         ot_ema_momentum: float = 0.9,
+        scaling: float = 0.5,
+        eta_parametrization: str = "log",
+        eta_lr: Optional[float] = None,
         device: Optional[str] = None,
     ):
         try:
@@ -197,19 +279,19 @@ class SIDDATrainer:
         self.potential_temperature = potential_temperature
         self.weight_ot = weight_ot
         self.ot_ema_momentum = ot_ema_momentum
+        self.scaling = scaling
 
         # EMA buffers for OT weighting — lazily initialised on first DA batch
         self._ema_w_src: Optional[torch.Tensor] = None
         self._ema_w_tgt: Optional[torch.Tensor] = None
 
-        # Learnable loss-weighting scalars, initialised to 1
-        self.eta1 = nn.Parameter(torch.ones(1, device=self.device))  # CE
-        self.eta2 = nn.Parameter(torch.ones(1, device=self.device))  # DA
+        # Learnable loss-weighting scalars, initialised to η = 1
+        shared_etas = _init_etas(self, eta_parametrization, eta_lr)
 
         self.ce_loss = nn.CrossEntropyLoss()
 
         self.optimizer = optim.AdamW(
-            list(model.parameters()) + [self.eta1, self.eta2],
+            list(model.parameters()) + shared_etas,
             lr=lr,
             weight_decay=weight_decay,
         )
@@ -259,8 +341,13 @@ class SIDDATrainer:
             x_src, y_src = x_src.to(self.device), y_src.to(self.device)
             x_tgt, y_tgt = x_tgt.to(self.device), y_tgt.to(self.device)
 
-            z_src = self.model.encode(x_src)
-            z_tgt = self.model.encode(x_tgt)
+            # As in the published code: source and target in one forward pass
+            # (BatchNorm sees both domains together); source only in warmup.
+            if warmup:
+                z_src = self.model.encode(x_src)
+            else:
+                z = self.model.encode(torch.cat([x_src, x_tgt]))
+                z_src, z_tgt = z[: x_src.shape[0]], z[x_src.shape[0]:]
 
             logits = self.model.classify(z_src)
             ce = self.ce_loss(logits, y_src)
@@ -281,7 +368,7 @@ class SIDDATrainer:
 
                 # 2. Sinkhorn divergence S_σ(z_src, z_tgt)
                 sinkhorn = self._SamplesLoss(
-                    "sinkhorn", p=2, blur=sigma, scaling=0.9,
+                    "sinkhorn", p=2, blur=sigma, scaling=self.scaling,
                     potentials=need_potentials,
                 )
 
@@ -296,7 +383,7 @@ class SIDDATrainer:
                     if ema_ready:
                         # Use previous-batch EMA weights as the discrete measures:
                         # α = Σ w_src[i] δ_{z_src[i]},  β = Σ w_tgt[j] δ_{z_tgt[j]}
-                        # geomloss normalises internally, so raw softmax values work.
+                        # Softmax weights and their EMA sum to 1, as geomloss expects.
                         f_pot, g_pot = sinkhorn(
                             self._ema_w_src, z_src,
                             self._ema_w_tgt, z_tgt,
@@ -305,7 +392,12 @@ class SIDDATrainer:
                         # First batch, or batch size changed — run uniform, seed EMA below
                         f_pot, g_pot = sinkhorn(z_src, z_tgt)
 
-                    da_loss = f_pot.mean() + g_pot.mean()
+                    # S(α, β) = <α, f> + <β, g>; f.mean() + g.mean() only for uniform α, β
+                    if ema_ready:
+                        da_loss = ((self._ema_w_src * f_pot.reshape(-1)).sum()
+                                   + (self._ema_w_tgt * g_pot.reshape(-1)).sum())
+                    else:
+                        da_loss = f_pot.mean() + g_pot.mean()
 
                     # ── update EMA buffers from this batch's potentials ─
                     if self.weight_ot:
@@ -334,25 +426,14 @@ class SIDDATrainer:
                 da_val = da_loss.item()
 
                 # 3. Weighted combination with learnable etas
+                eta1, eta2 = _eta_values(self)
                 loss = (
-                    (1.0 / (2.0 * self.eta1 ** 2)) * ce
-                    + (1.0 / (2.0 * self.eta2 ** 2)) * da_loss
-                    + torch.log(self.eta1.abs() * self.eta2.abs())
+                    (1.0 / (2.0 * eta1 ** 2)) * ce
+                    + (1.0 / (2.0 * eta2 ** 2)) * da_loss
+                    + torch.log(eta1.abs() * eta2.abs())
                 )
 
-            self.optimizer.zero_grad()
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(
-                list(self.model.parameters()) + [self.eta1, self.eta2],
-                self.grad_clip,
-            )
-            self.optimizer.step()
-
-            # Enforce η constraints: η₁ ≥ 1e-3,  η₂ ≥ 0.25·η₁
-            if not warmup:
-                with torch.no_grad():
-                    self.eta1.clamp_(min=1e-3)
-                    self.eta2.clamp_(min=0.25 * self.eta1.item())
+            _optimizer_step(self, loss, warmup)
 
             total_ce       += ce.item()
             total_da       += da_val
@@ -360,9 +441,13 @@ class SIDDATrainer:
             src_correct    += (logits.argmax(1) == y_src).sum().item()
             n_src          += y_src.size(0)
 
+            # Eval mode, so monitoring updates no BatchNorm statistics and
+            # draws no dropout randomness.
+            self.model.eval()
             with torch.no_grad():
                 tgt_correct += (self.model(x_tgt).argmax(1) == y_tgt).sum().item()
                 n_tgt       += y_tgt.size(0)
+            self.model.train()
 
         return {
             "epoch":           epoch,
@@ -372,8 +457,8 @@ class SIDDATrainer:
             "total_loss":      total_loss_sum / n_batches,
             "src_acc":         src_correct / n_src,
             "tgt_acc":         tgt_correct / n_tgt,
-            "eta1":            self.eta1.item(),
-            "eta2":            self.eta2.item(),
+            "eta1":            _eta_values(self)[0].item(),
+            "eta2":            _eta_values(self)[1].item(),
             "sigma":           last_sigma,
             "mean_potential":  total_potential / n_batches,
         }
@@ -423,6 +508,16 @@ class SIDDARegressionTrainer:
     potential_temperature: temperature τ for softmax reweighting (default 1.0)
     weight_ot            : reweight transport plan via EMA of previous potentials
     ot_ema_momentum      : EMA momentum for OT weight updates (default 0.9)
+    scaling              : geomloss ε-scaling for the Sinkhorn solve (default 0.5;
+                           the published code uses 0.9). An important
+                           hyperparameter: it sets how exactly the solve, and
+                           so the DA gradient, is computed. Worth tuning.
+    eta_parametrization  : "log" (default): log η trained in a separate Adam
+                           with lr ``eta_lr`` and no weight decay; found to
+                           give more stable training. "raw" (published code):
+                           η trained in the model's AdamW.
+    eta_lr               : η learning rate for ``eta_parametrization="log"``
+                           (default 1e-2)
     device               : auto-detected if None
 
     History keys
@@ -446,6 +541,9 @@ class SIDDARegressionTrainer:
         potential_temperature: float = 1.0,
         weight_ot: bool = False,
         ot_ema_momentum: float = 0.9,
+        scaling: float = 0.5,
+        eta_parametrization: str = "log",
+        eta_lr: Optional[float] = None,
         device: Optional[str] = None,
     ):
         try:
@@ -469,17 +567,17 @@ class SIDDARegressionTrainer:
         self.potential_temperature = potential_temperature
         self.weight_ot = weight_ot
         self.ot_ema_momentum = ot_ema_momentum
+        self.scaling = scaling
 
         self._ema_w_src: Optional[torch.Tensor] = None
         self._ema_w_tgt: Optional[torch.Tensor] = None
 
-        self.eta1 = nn.Parameter(torch.ones(1, device=self.device))
-        self.eta2 = nn.Parameter(torch.ones(1, device=self.device))
+        shared_etas = _init_etas(self, eta_parametrization, eta_lr)
 
         self.mse_loss = nn.MSELoss()
 
         self.optimizer = optim.AdamW(
-            list(model.parameters()) + [self.eta1, self.eta2],
+            list(model.parameters()) + shared_etas,
             lr=lr,
             weight_decay=weight_decay,
         )
@@ -547,7 +645,7 @@ class SIDDARegressionTrainer:
 
                 need_potentials = self.use_potentials or self.weight_ot
                 sinkhorn = self._SamplesLoss(
-                    "sinkhorn", p=2, blur=sigma, scaling=0.9,
+                    "sinkhorn", p=2, blur=sigma, scaling=self.scaling,
                     potentials=need_potentials,
                 )
 
@@ -566,7 +664,12 @@ class SIDDARegressionTrainer:
                     else:
                         f_pot, g_pot = sinkhorn(z_src, z_tgt)
 
-                    da_loss = f_pot.mean() + g_pot.mean()
+                    # S(α, β) = <α, f> + <β, g>; f.mean() + g.mean() only for uniform α, β
+                    if ema_ready:
+                        da_loss = ((self._ema_w_src * f_pot.reshape(-1)).sum()
+                                   + (self._ema_w_tgt * g_pot.reshape(-1)).sum())
+                    else:
+                        da_loss = f_pot.mean() + g_pot.mean()
 
                     if self.weight_ot:
                         new_w_src = f_pot.detach().reshape(-1).div(-self.potential_temperature).softmax(dim=-1)
@@ -581,7 +684,8 @@ class SIDDARegressionTrainer:
 
                     if self.use_potentials:
                         w_mse = f_pot.detach().reshape(-1).div(-self.potential_temperature).softmax(dim=-1)
-                        mse_per = F.mse_loss(pred_src.squeeze(), y_src.squeeze(), reduction="none")
+                        mse_per = F.mse_loss(pred_src, y_src, reduction="none")
+                        mse_per = mse_per.reshape(mse_per.shape[0], -1).mean(dim=1)
                         mse = (w_mse * mse_per).sum()
 
                     total_potential += f_pot.detach().mean().item()
@@ -591,24 +695,14 @@ class SIDDARegressionTrainer:
 
                 da_val = da_loss.item()
 
+                eta1, eta2 = _eta_values(self)
                 loss = (
-                    (1.0 / (2.0 * self.eta1 ** 2)) * mse
-                    + (1.0 / (2.0 * self.eta2 ** 2)) * da_loss
-                    + torch.log(self.eta1.abs() * self.eta2.abs())
+                    (1.0 / (2.0 * eta1 ** 2)) * mse
+                    + (1.0 / (2.0 * eta2 ** 2)) * da_loss
+                    + torch.log(eta1.abs() * eta2.abs())
                 )
 
-            self.optimizer.zero_grad()
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(
-                list(self.model.parameters()) + [self.eta1, self.eta2],
-                self.grad_clip,
-            )
-            self.optimizer.step()
-
-            if not warmup:
-                with torch.no_grad():
-                    self.eta1.clamp_(min=1e-3)
-                    self.eta2.clamp_(min=0.25 * self.eta1.item())
+            _optimizer_step(self, loss, warmup)
 
             total_mse      += mse.item()
             total_da       += da_val
@@ -628,8 +722,8 @@ class SIDDARegressionTrainer:
             "total_loss":     total_loss_sum  / n_batches,
             "src_rmse":       (src_se / n_src) ** 0.5,
             "tgt_rmse":       (tgt_se / n_tgt) ** 0.5,
-            "eta1":           self.eta1.item(),
-            "eta2":           self.eta2.item(),
+            "eta1":           _eta_values(self)[0].item(),
+            "eta2":           _eta_values(self)[1].item(),
             "sigma":          last_sigma,
             "mean_potential": total_potential / n_batches,
         }
@@ -736,6 +830,9 @@ class SIDDAGaussianRegressionTrainer:
         weight_ot: bool = False,
         ot_ema_momentum: float = 0.9,
         var_eps: float = 1e-6,
+        scaling: float = 0.5,
+        eta_parametrization: str = "log",
+        eta_lr: Optional[float] = None,
         device: Optional[str] = None,
     ):
         try:
@@ -759,16 +856,16 @@ class SIDDAGaussianRegressionTrainer:
         self.potential_temperature = potential_temperature
         self.weight_ot = weight_ot
         self.ot_ema_momentum = ot_ema_momentum
+        self.scaling = scaling
         self.var_eps = var_eps
 
         self._ema_w_src: Optional[torch.Tensor] = None
         self._ema_w_tgt: Optional[torch.Tensor] = None
 
-        self.eta1 = nn.Parameter(torch.ones(1, device=self.device))
-        self.eta2 = nn.Parameter(torch.ones(1, device=self.device))
+        shared_etas = _init_etas(self, eta_parametrization, eta_lr)
 
         self.optimizer = optim.AdamW(
-            list(model.parameters()) + [self.eta1, self.eta2],
+            list(model.parameters()) + shared_etas,
             lr=lr,
             weight_decay=weight_decay,
         )
@@ -837,7 +934,7 @@ class SIDDAGaussianRegressionTrainer:
 
                 need_potentials = self.use_potentials or self.weight_ot
                 sinkhorn = self._SamplesLoss(
-                    "sinkhorn", p=2, blur=sigma, scaling=0.9,
+                    "sinkhorn", p=2, blur=sigma, scaling=self.scaling,
                     potentials=need_potentials,
                 )
 
@@ -856,7 +953,12 @@ class SIDDAGaussianRegressionTrainer:
                     else:
                         f_pot, g_pot = sinkhorn(z_src, z_tgt)
 
-                    da_loss = f_pot.mean() + g_pot.mean()
+                    # S(α, β) = <α, f> + <β, g>; f.mean() + g.mean() only for uniform α, β
+                    if ema_ready:
+                        da_loss = ((self._ema_w_src * f_pot.reshape(-1)).sum()
+                                   + (self._ema_w_tgt * g_pot.reshape(-1)).sum())
+                    else:
+                        da_loss = f_pot.mean() + g_pot.mean()
 
                     if self.weight_ot:
                         new_w_src = f_pot.detach().reshape(-1).div(-self.potential_temperature).softmax(dim=-1)
@@ -881,24 +983,14 @@ class SIDDAGaussianRegressionTrainer:
 
                 da_val = da_loss.item()
 
+                eta1, eta2 = _eta_values(self)
                 loss = (
-                    (1.0 / (2.0 * self.eta1 ** 2)) * reg_loss
-                    + (1.0 / (2.0 * self.eta2 ** 2)) * da_loss
-                    + torch.log(self.eta1.abs() * self.eta2.abs())
+                    (1.0 / (2.0 * eta1 ** 2)) * reg_loss
+                    + (1.0 / (2.0 * eta2 ** 2)) * da_loss
+                    + torch.log(eta1.abs() * eta2.abs())
                 )
 
-            self.optimizer.zero_grad()
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(
-                list(self.model.parameters()) + [self.eta1, self.eta2],
-                self.grad_clip,
-            )
-            self.optimizer.step()
-
-            if not warmup:
-                with torch.no_grad():
-                    self.eta1.clamp_(min=1e-3)
-                    self.eta2.clamp_(min=0.25 * self.eta1.item())
+            _optimizer_step(self, loss, warmup)
 
             total_l1       += l1.item()
             total_l2       += l2.item()
@@ -922,8 +1014,8 @@ class SIDDAGaussianRegressionTrainer:
             "total_loss":     total_loss_sum  / n_batches,
             "src_rmse":       (src_se / n_src) ** 0.5,
             "tgt_rmse":       (tgt_se / n_tgt) ** 0.5,
-            "eta1":           self.eta1.item(),
-            "eta2":           self.eta2.item(),
+            "eta1":           _eta_values(self)[0].item(),
+            "eta2":           _eta_values(self)[1].item(),
             "sigma":          last_sigma,
             "mean_potential": total_potential / n_batches,
         }
