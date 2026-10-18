@@ -1133,6 +1133,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#sinkhorn-scaling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sinkhorn scaling
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#learnable-loss-weights" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1590,6 +1601,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#sinkhorn-scaling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sinkhorn scaling
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#learnable-loss-weights" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1774,7 +1796,7 @@ SIDDA: SInkhorn Dynamic Domain Adaptation for image classification with equivari
 <td><code>lr</code></td>
 <td><code>float</code></td>
 <td><code>1e-2</code></td>
-<td>AdamW learning rate (model + η parameters)</td>
+<td>AdamW learning rate (model, and η when <code>eta_parametrization="raw"</code>)</td>
 </tr>
 <tr>
 <td><code>weight_decay</code></td>
@@ -1804,7 +1826,7 @@ SIDDA: SInkhorn Dynamic Domain Adaptation for image classification with equivari
 <td><code>grad_clip</code></td>
 <td><code>float</code></td>
 <td><code>10.0</code></td>
-<td>Gradient clipping max-norm</td>
+<td>Gradient clipping max-norm, applied to the model parameters (η are not clipped)</td>
 </tr>
 <tr>
 <td><code>use_potentials</code></td>
@@ -1829,6 +1851,24 @@ SIDDA: SInkhorn Dynamic Domain Adaptation for image classification with equivari
 <td><code>float</code></td>
 <td><code>0.9</code></td>
 <td>EMA momentum for OT weight updates: w_t = mom·w_{t-1} + (1-mom)·softmax(-f_t / τ)</td>
+</tr>
+<tr>
+<td><code>scaling</code></td>
+<td><code>float</code></td>
+<td><code>0.5</code></td>
+<td>geomloss ε-scaling of the Sinkhorn solve (published code: 0.9). An important hyperparameter, see <a href="#sinkhorn-scaling">Sinkhorn scaling</a></td>
+</tr>
+<tr>
+<td><code>eta_parametrization</code></td>
+<td><code>str</code></td>
+<td><code>"log"</code></td>
+<td><code>"log"</code>: log η trained in a separate Adam (found to give more stable training). <code>"raw"</code>: η trained in the model's AdamW (published code)</td>
+</tr>
+<tr>
+<td><code>eta_lr</code></td>
+<td><code>float \| None</code></td>
+<td><code>None</code></td>
+<td>η learning rate with <code>eta_parametrization="log"</code> (<code>None</code> → <code>1e-2</code>)</td>
 </tr>
 <tr>
 <td><code>device</code></td>
@@ -1884,7 +1924,7 @@ SIDDA: SInkhorn Dynamic Domain Adaptation for image classification with equivari
 </tr>
 <tr>
 <td><code>sigma</code></td>
-<td>Mean Sinkhorn blur σ used this epoch (<code>0.0</code> during warmup)</td>
+<td>Sinkhorn blur σ of the epoch's last batch (<code>0.0</code> during warmup)</td>
 </tr>
 <tr>
 <td><code>mean_potential</code></td>
@@ -1923,14 +1963,43 @@ to avoid overfitting the source domain before adaptation starts.</p>
 <h2 id="dynamic-sinkhorn-blur">Dynamic Sinkhorn blur<a class="headerlink" href="#dynamic-sinkhorn-blur" title="Permanent link">&para;</a></h2>
 <p>The Sinkhorn regularisation strength σ is adapted <strong>each batch</strong>:</p>
 <div class="arithmatex">\[\sigma = \max\!\left(0.05 \cdot \max_{i,j}\|z_i - z_j^*\|_2,\; 0.01\right)\]</div>
-<p>Layer normalisation is applied to the latent features before computing pairwise
-distances, preventing a small number of outlier features from inflating σ.
-As training progresses and source/target distributions align, σ shrinks
+<p>The distances are between source and target latents, measured on the latents
+themselves: the features the Sinkhorn solve runs on, as in the published code.</p>
+<div class="admonition note">
+<p class="admonition-title">LayerNorm on the latent</p>
+<p>The published SIDDA model ends its encoder with a LayerNorm
+(<code>fc1 → nn.LayerNorm(256)</code>), so σ, the Sinkhorn solve and the classifier
+all see the normalised latent. ShiftKit's models (<code>MLP</code>, <code>CNN</code>,
+<code>MLPRegressor</code>, <code>SimpleGCN</code>, <code>GNN</code>) do not include one. To reproduce the
+published setup, end your model's <code>encode()</code> with <code>nn.LayerNorm(latent_dim)</code>.
+Put it inside the model rather than normalising the latent in the training
+loop: training is the same either way, but only the in-model version is
+applied when the model is called at test time.</p>
+</div>
+<p>As training progresses and source/target distributions align, σ shrinks
 naturally, giving a progressively sharper (more exact) OT plan.</p>
 <hr />
+<h2 id="sinkhorn-scaling">Sinkhorn scaling<a class="headerlink" href="#sinkhorn-scaling" title="Permanent link">&para;</a></h2>
+<p>geomloss solves the entropic OT problem by ε-scaling: it starts from a large
+blur and shrinks it by the factor <code>scaling</code> at each step until it reaches σ.
+<code>scaling</code> therefore sets how exactly the Sinkhorn divergence, and its gradient,
+is computed: values near 1 take more steps and solve more exactly, smaller
+values are faster and coarser.</p>
+<p>This is an important hyperparameter for SIDDA, not just a speed setting. In our
+experiments, <code>scaling=0.5</code> gave better domain adaptation than the published
+<code>0.9</code>, even though its gradients are less exact; the coarser solve may act as
+extra smoothing. The best value is likely problem-dependent, so it is worth
+tuning. The default is <code>0.5</code>; use <code>scaling=0.9</code> (with
+<code>eta_parametrization="raw"</code>) to reproduce the published code exactly.</p>
+<hr />
 <h2 id="learnable-loss-weights">Learnable loss weights η<a class="headerlink" href="#learnable-loss-weights" title="Permanent link">&para;</a></h2>
-<p>η₁ and η₂ are scalar <code>nn.Parameter</code> values optimised jointly with the model.
-Hard constraints are enforced after every gradient step:</p>
+<p>η₁ and η₂ are scalar parameters, both initialised to 1. With the default
+<code>eta_parametrization="log"</code>, log η₁ and log η₂ are optimised in a separate Adam
+(<code>eta_lr</code>, no weight decay); this was found to give more stable training. With
+<code>"raw"</code> they are optimised in the model's AdamW, as in the published code. η
+gradients are not clipped. Hard constraints are
+enforced at every step (with <code>"raw"</code> before the optimiser step, as published;
+with <code>"log"</code> after it):</p>
 <ul>
 <li>η₁ ≥ 1e-3 (prevents CE from being silenced)</li>
 <li>η₂ ≥ 0.25 · η₁ (prevents DA from completely dominating)</li>
@@ -1952,8 +2021,9 @@ Hard constraints are enforced after every gradient step:</p>
 <li><code>f[i]</code> shape <code>(n_src,)</code> — transport cost for source point z_i in latent space</li>
 <li><code>g[j]</code> shape <code>(n_tgt,)</code> — transport cost for target point z_j</li>
 </ul>
-<p>A <strong>low</strong> <code>f[i]</code> means z_i is already close to the target; a <strong>high</strong> <code>f[i]</code> means it is far. The Sinkhorn divergence is recovered as their mean sum (primal = dual at the optimum):</p>
-<div class="arithmatex">\[\mathcal{S}_\sigma(\mu,\nu) = \mathbb{E}[f] + \mathbb{E}[g]\]</div>
+<p>A <strong>low</strong> <code>f[i]</code> means z_i is already close to the target; a <strong>high</strong> <code>f[i]</code> means it is far. The Sinkhorn divergence is recovered by integrating them against the two measures (primal = dual at the optimum):</p>
+<div class="arithmatex">\[\mathcal{S}_\sigma(\alpha,\beta) = \sum_i \alpha_i f_i + \sum_j \beta_j g_j\]</div>
+<p>which is <code>f.mean() + g.mean()</code> for uniform measures; with <code>weight_ot=True</code> the weighted sum is used.</p>
 <p>Both options derive instance weights from f via a temperature-scaled softmax:</p>
 <div class="arithmatex">\[w_i = \text{softmax}\!\left(\frac{-f_i}{\tau}\right)\]</div>
 <h3 id="use_potentialstrue-reweight-the-ce-loss"><code>use_potentials=True</code> — reweight the CE loss<a class="headerlink" href="#use_potentialstrue-reweight-the-ce-loss" title="Permanent link">&para;</a></h3>
