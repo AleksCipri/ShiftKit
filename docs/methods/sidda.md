@@ -65,16 +65,19 @@ print(f"Target accuracy: {result['accuracy']*100:.1f}%")
 | `model` | `nn.Module` | — | Network with `.encode()`, `.classify()`, and `.latent_dim` |
 | `source_loader` | `DataLoader` | — | Labelled source DataLoader |
 | `target_loader` | `DataLoader` | — | Target DataLoader (labels used for `tgt_acc` tracking only) |
-| `lr` | `float` | `1e-2` | AdamW learning rate (model + η parameters) |
+| `lr` | `float` | `1e-2` | AdamW learning rate (model, and η when `eta_parametrization="raw"`) |
 | `weight_decay` | `float` | `1e-3` | AdamW weight decay |
 | `warmup_epochs` | `int` | `0` | Epochs of source-only pre-training before DA begins |
 | `sigma_scale` | `float` | `0.05` | Scale factor for dynamic blur: σ = max(scale · max‖z‖, floor) |
 | `sigma_floor` | `float` | `0.01` | Minimum blur value (prevents degenerate OT plans) |
-| `grad_clip` | `float` | `10.0` | Gradient clipping max-norm |
+| `grad_clip` | `float` | `10.0` | Gradient clipping max-norm, applied to the model parameters (η are not clipped) |
 | `use_potentials` | `bool` | `False` | Reweight per-sample CE loss using Kantorovich dual potentials (see [Latent-space instance reweighting](#latent-space-instance-reweighting)) |
 | `potential_temperature` | `float` | `1.0` | Temperature τ for softmax reweighting: w = softmax(-f / τ). Lower τ = sharper focus on already-aligned samples |
 | `weight_ot` | `bool` | `False` | Reweight the Sinkhorn transport plan itself via an EMA of previous-batch potentials, focusing OT alignment on the overlapping region (see [Latent-space instance reweighting](#latent-space-instance-reweighting)) |
 | `ot_ema_momentum` | `float` | `0.9` | EMA momentum for OT weight updates: w_t = mom·w_{t-1} + (1-mom)·softmax(-f_t / τ) |
+| `scaling` | `float` | `0.5` | geomloss ε-scaling of the Sinkhorn solve (published code: 0.9). An important hyperparameter, see [Sinkhorn scaling](#sinkhorn-scaling) |
+| `eta_parametrization` | `str` | `"log"` | `"log"`: log η trained in a separate Adam (found to give more stable training). `"raw"`: η trained in the model's AdamW (published code) |
+| `eta_lr` | `float \| None` | `None` | η learning rate with `eta_parametrization="log"` (`None` → `1e-2`) |
 | `device` | `str \| None` | `None` | `'cuda'`, `'mps'`, or `'cpu'`; auto-detected if `None` |
 
 ---
@@ -95,7 +98,7 @@ Train for `epochs` epochs and return the history.
 | `tgt_acc` | Target domain accuracy (tracked, not directly optimised) |
 | `eta1` | Current η₁ (CE weight) at epoch end |
 | `eta2` | Current η₂ (DA weight) at epoch end |
-| `sigma` | Mean Sinkhorn blur σ used this epoch (`0.0` during warmup) |
+| `sigma` | Sinkhorn blur σ of the epoch's last batch (`0.0` during warmup) |
 | `mean_potential` | Mean source Kantorovich potential F across batches (`0.0` unless `use_potentials=True`) |
 
 ---
@@ -141,17 +144,49 @@ The Sinkhorn regularisation strength σ is adapted **each batch**:
 
 $$\sigma = \max\!\left(0.05 \cdot \max_{i,j}\|z_i - z_j^*\|_2,\; 0.01\right)$$
 
-Layer normalisation is applied to the latent features before computing pairwise
-distances, preventing a small number of outlier features from inflating σ.
+The distances are between source and target latents, measured on the latents
+themselves: the features the Sinkhorn solve runs on, as in the published code.
+
+!!! note "LayerNorm on the latent"
+    The published SIDDA model ends its encoder with a LayerNorm
+    (`fc1 → nn.LayerNorm(256)`), so σ, the Sinkhorn solve and the classifier
+    all see the normalised latent. ShiftKit's models (`MLP`, `CNN`,
+    `MLPRegressor`, `SimpleGCN`, `GNN`) do not include one. To reproduce the
+    published setup, end your model's `encode()` with `nn.LayerNorm(latent_dim)`.
+    Put it inside the model rather than normalising the latent in the training
+    loop: training is the same either way, but only the in-model version is
+    applied when the model is called at test time.
 As training progresses and source/target distributions align, σ shrinks
 naturally, giving a progressively sharper (more exact) OT plan.
 
 ---
 
+## Sinkhorn scaling
+
+geomloss solves the entropic OT problem by ε-scaling: it starts from a large
+blur and shrinks it by the factor `scaling` at each step until it reaches σ.
+`scaling` therefore sets how exactly the Sinkhorn divergence, and its gradient,
+is computed: values near 1 take more steps and solve more exactly, smaller
+values are faster and coarser.
+
+This is an important hyperparameter for SIDDA, not just a speed setting. In our
+experiments, `scaling=0.5` gave better domain adaptation than the published
+`0.9`, even though its gradients are less exact; the coarser solve may act as
+extra smoothing. The best value is likely problem-dependent, so it is worth
+tuning. The default is `0.5`; use `scaling=0.9` (with
+`eta_parametrization="raw"`) to reproduce the published code exactly.
+
+---
+
 ## Learnable loss weights η
 
-η₁ and η₂ are scalar `nn.Parameter` values optimised jointly with the model.
-Hard constraints are enforced after every gradient step:
+η₁ and η₂ are scalar parameters, both initialised to 1. With the default
+`eta_parametrization="log"`, log η₁ and log η₂ are optimised in a separate Adam
+(`eta_lr`, no weight decay); this was found to give more stable training. With
+`"raw"` they are optimised in the model's AdamW, as in the published code. η
+gradients are not clipped. Hard constraints are
+enforced at every step (with `"raw"` before the optimiser step, as published;
+with `"log"` after it):
 
 - η₁ ≥ 1e-3 (prevents CE from being silenced)
 - η₂ ≥ 0.25 · η₁ (prevents DA from completely dominating)
@@ -180,9 +215,11 @@ During Sinkhorn iterations, geomloss computes dual potentials (f, g) as a byprod
 - `f[i]` shape `(n_src,)` — transport cost for source point z_i in latent space
 - `g[j]` shape `(n_tgt,)` — transport cost for target point z_j
 
-A **low** `f[i]` means z_i is already close to the target; a **high** `f[i]` means it is far. The Sinkhorn divergence is recovered as their mean sum (primal = dual at the optimum):
+A **low** `f[i]` means z_i is already close to the target; a **high** `f[i]` means it is far. The Sinkhorn divergence is recovered by integrating them against the two measures (primal = dual at the optimum):
 
-$$\mathcal{S}_\sigma(\mu,\nu) = \mathbb{E}[f] + \mathbb{E}[g]$$
+$$\mathcal{S}_\sigma(\alpha,\beta) = \sum_i \alpha_i f_i + \sum_j \beta_j g_j$$
+
+which is `f.mean() + g.mean()` for uniform measures; with `weight_ot=True` the weighted sum is used.
 
 Both options derive instance weights from f via a temperature-scaled softmax:
 
