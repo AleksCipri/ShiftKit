@@ -47,7 +47,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader, IterableDataset, Subset, default_collate
 from tqdm import tqdm
 from typing import Optional, List
 
@@ -206,6 +206,8 @@ class _WeightedDataset(Dataset):
     """Wraps a dataset to append a scalar importance weight per sample."""
 
     def __init__(self, base: Dataset, weights: np.ndarray):
+        if weights.ndim != 1 or len(weights) != len(base):
+            raise ValueError("Importance weights must contain one entry per dataset index.")
         self.base = base
         self.weights = torch.tensor(weights, dtype=torch.float32)
 
@@ -213,8 +215,72 @@ class _WeightedDataset(Dataset):
         return len(self.base)
 
     def __getitem__(self, idx):
+        if not torch.isfinite(self.weights[idx]):
+            raise ValueError(
+                f"Source index {idx} was not included in weight estimation. "
+                "Keep the source sampler membership fixed across epochs."
+            )
         x, y = self.base[idx]
         return x, y, self.weights[idx]
+
+
+def _loader_worker_options(loader: DataLoader) -> dict:
+    return {
+        name: getattr(loader, name)
+        for name in (
+            "num_workers", "pin_memory", "timeout", "worker_init_fn",
+            "multiprocessing_context", "generator", "prefetch_factor",
+            "persistent_workers",
+        )
+    }
+
+
+def _build_source_estimation_loader(source_loader: DataLoader):
+    """Collect the sampler's source indices once, including its final short batch."""
+    if isinstance(source_loader.dataset, IterableDataset) or source_loader.batch_size is None:
+        raise ValueError("Importance weighting requires a map-style source dataset and explicit batch_size.")
+    if getattr(source_loader.sampler, "replacement", False):
+        raise ValueError("Importance weighting does not support source sampling with replacement.")
+    indices = np.asarray(list(source_loader.sampler), dtype=np.int64)
+    if indices.size == 0:
+        raise ValueError("The source sampler must select at least one sample.")
+    if len(np.unique(indices)) != len(indices):
+        raise ValueError("Importance weighting does not support duplicate source sampler indices.")
+    if (indices < 0).any() or (indices >= len(source_loader.dataset)).any():
+        raise ValueError("Source sampler indices must lie within the source dataset.")
+    loader = DataLoader(
+        Subset(source_loader.dataset, indices.tolist()),
+        batch_size=source_loader.batch_size,
+        collate_fn=source_loader.collate_fn,
+        **_loader_worker_options(source_loader),
+    )
+    return loader, indices
+
+
+class _WeightedCollate:
+    """Apply the original, order-preserving collation to samples and append weights."""
+
+    def __init__(self, collate_fn):
+        self.collate_fn = collate_fn
+
+    def __call__(self, samples):
+        batch = self.collate_fn([(inputs, labels) for inputs, labels, _ in samples])
+        weights = default_collate([weight for _, _, weight in samples])
+        return batch[0], batch[1], weights
+
+
+def _build_indexed_weighted_loader(source_loader: DataLoader, indices, weights: np.ndarray):
+    """Associate fitted weights with dataset indices while preserving source batching."""
+    if weights.shape != (len(indices),) or not np.isfinite(weights).all():
+        raise ValueError("The estimator must return one finite weight per selected source index.")
+    indexed_weights = np.full(len(source_loader.dataset), np.nan, dtype=np.float32)
+    indexed_weights[indices] = weights
+    return DataLoader(
+        _WeightedDataset(source_loader.dataset, indexed_weights),
+        batch_sampler=source_loader.batch_sampler,
+        collate_fn=_WeightedCollate(source_loader.collate_fn),
+        **_loader_worker_options(source_loader),
+    )
 
 
 # ─── KLIEP Trainer ────────────────────────────────────────────────────────────
@@ -295,7 +361,8 @@ class KLIEPTrainer:
     ) -> DataLoader:
         """Run KLIEP and return a weighted DataLoader for the source domain."""
         print("Estimating KLIEP importance weights…")
-        X_src = self._collect_X(source_loader)
+        estimation_loader, source_indices = _build_source_estimation_loader(source_loader)
+        X_src = self._collect_X(estimation_loader)
         X_tgt = self._collect_X(target_loader)
 
         self._estimator.fit(X_src, X_tgt)
@@ -307,14 +374,7 @@ class KLIEPTrainer:
             f"max={weights.max():.3f}"
         )
 
-        weighted_ds = _WeightedDataset(source_loader.dataset, weights)
-        return DataLoader(
-            weighted_ds,
-            batch_size=source_loader.batch_size,
-            shuffle=True,
-            num_workers=source_loader.num_workers,
-            pin_memory=(self.device.type == "cuda"),
-        )
+        return _build_indexed_weighted_loader(source_loader, source_indices, weights)
 
     # ── training ───────────────────────────────────────────────────────────
 

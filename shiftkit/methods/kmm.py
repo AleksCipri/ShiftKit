@@ -46,7 +46,7 @@ from tqdm import tqdm
 from typing import Optional, List
 
 from .mmd import _auto_device
-from .kliep import _WeightedDataset
+from .kliep import _build_source_estimation_loader, _build_indexed_weighted_loader
 
 
 # ─── KMM weight estimator ─────────────────────────────────────────────────────
@@ -245,7 +245,8 @@ class KMMTrainer:
         self, source_loader: DataLoader, target_loader: DataLoader
     ) -> DataLoader:
         print("Estimating KMM importance weights…")
-        X_src = self._collect_X(source_loader)
+        estimation_loader, source_indices = _build_source_estimation_loader(source_loader)
+        X_src = self._collect_X(estimation_loader)
         X_tgt = self._collect_X(target_loader)
 
         self._estimator.fit(X_src, X_tgt)
@@ -257,14 +258,7 @@ class KMMTrainer:
             f"max={weights.max():.3f}"
         )
 
-        weighted_ds = _WeightedDataset(source_loader.dataset, weights)
-        return DataLoader(
-            weighted_ds,
-            batch_size=source_loader.batch_size,
-            shuffle=True,
-            num_workers=source_loader.num_workers,
-            pin_memory=(self.device.type == "cuda"),
-        )
+        return _build_indexed_weighted_loader(source_loader, source_indices, weights)
 
     def fit(self, epochs: int = 10) -> List[dict]:
         """Train for *epochs* epochs. Returns per-epoch history list."""
