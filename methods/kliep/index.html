@@ -1862,6 +1862,16 @@ to inspect or diagnose the density ratio before committing to full training:</p>
 </span></code></pre></div>
 <hr />
 <h2 id="practical-notes">Practical notes<a class="headerlink" href="#practical-notes" title="Permanent link">&para;</a></h2>
+<p><strong>Source sample identity and loader settings</strong>
+: Weights are tied to source dataset indices. Estimation includes every index
+  selected by the source sampler, including the final short batch even when
+  training uses <code>drop_last=True</code>. Training preserves the original batch sampler
+  and worker settings. <code>Subset</code> datasets and subset samplers are supported.
+  The source must be a map-style dataset with an explicit <code>batch_size</code>; sampling
+  with replacement, duplicate indices, and custom batch-sampler configurations
+  are rejected. Sampler membership must stay fixed across epochs, and custom
+  collation must preserve sample order. Use deterministic input transforms when
+  fixed weights must correspond to the exact features seen during training.</p>
 <p><strong>Bandwidth σ (median heuristic)</strong>
 : If <code>sigma=None</code>, KLIEP estimates σ from the median pairwise distance in a
   subsample of the combined data. This is usually a good default. Set σ manually
