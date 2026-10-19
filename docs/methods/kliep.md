@@ -184,6 +184,17 @@ weights = estimator.predict(X)  # (n,) float32 numpy array
 
 ## Practical notes
 
+**Source sample identity and loader settings**
+: Weights are tied to source dataset indices. Estimation includes every index
+  selected by the source sampler, including the final short batch even when
+  training uses `drop_last=True`. Training preserves the original batch sampler
+  and worker settings. `Subset` datasets and subset samplers are supported.
+  The source must be a map-style dataset with an explicit `batch_size`; sampling
+  with replacement, duplicate indices, and custom batch-sampler configurations
+  are rejected. Sampler membership must stay fixed across epochs, and custom
+  collation must preserve sample order. Use deterministic input transforms when
+  fixed weights must correspond to the exact features seen during training.
+
 **Bandwidth σ (median heuristic)**
 : If `sigma=None`, KLIEP estimates σ from the median pairwise distance in a
   subsample of the combined data. This is usually a good default. Set σ manually
