@@ -205,7 +205,7 @@ relationship is the same in both regions.
 
 ## PyG domains (`pyg_domains`)
 
-Requires the optional dependency `torch-geometric` (`pip install torch-geometric`); the rest of ShiftKit works without it. Loads external PyG graphs for domain adaptation with automatic **stratified** train/val/test splits when masks are not already on the `Data` objects.
+Requires `torch-geometric` (listed in `requirements.txt`; `pip install torch-geometric`); the rest of ShiftKit imports and works without it. Loads external PyG graphs for domain adaptation with automatic **stratified** train/val/test splits when masks are not already on the `Data` objects.
 
 ### Node-level (one graph per domain)
 

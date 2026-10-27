@@ -2,6 +2,9 @@
   <img src="docs/logo_fox.png" alt="ShiftKit" width="340"/>
 </p>
 
+WARNING: This code and its results are under active development and have not been fully validated. Numbers, figures, and conclusions may change. Please do not cite or build on these results until a stable release is tagged.
+
+
 A lightweight, modular **domain adaptation** framework for PyTorch. Transfer knowledge from a labelled *source* domain to an unlabelled *target* domain using deep latent-space alignment. Check out the full [Documentation](https://alekscipri.github.io/ShiftKit/).
 
 ## Overview

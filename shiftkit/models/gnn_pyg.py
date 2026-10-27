@@ -9,7 +9,7 @@ pooling.  Accepts PyG ``Data`` / ``Batch`` objects (use
 ``encode`` / ``classify`` / ``regress`` / ``forward`` interface as
 :class:`~shiftkit.models.gnn.SimpleGCN` and :class:`~shiftkit.models.networks.MLP`.
 
-Requires ``torch-geometric`` (optional dependency)::
+Requires ``torch-geometric`` (listed in requirements.txt; the rest of ShiftKit imports without it)::
 
     pip install torch-geometric
 """

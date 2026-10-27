@@ -16,11 +16,12 @@ cd ShiftKit
 pip install -r requirements.txt
 ```
 
-**Dependencies:** `torch`, `torchvision`, `numpy`, `matplotlib`, `scikit-learn`, `tqdm`
+**Dependencies:** `torch`, `torchvision`, `numpy`, `matplotlib`, `scikit-learn`, `tqdm`,
+`torch-geometric` (GNN models and `"pyg_domains"` data; listed in `requirements.txt`)
 
-**Optional:** `torch-geometric` (GNN models and `"pyg_domains"` data), `geomloss`
-(`SIDDATrainer`), `umap-learn` (UMAP projections). ShiftKit imports and trains on
-tensor data without them; see [Credits](credits.md) for versions.
+**Optional:** `geomloss` (`SIDDATrainer`), `umap-learn` (UMAP projections). The code imports
+and trains on tensor data even if `torch-geometric` is not installed (only the GNN features
+are then unavailable); see [Credits](credits.md) for versions.
 
 ---
 

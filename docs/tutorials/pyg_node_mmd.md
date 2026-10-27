@@ -56,7 +56,7 @@ simple translation shared by all classes.
 ## Run the script
 
 ```bash
-pip install torch-geometric   # one-time; PyG is an optional ShiftKit dependency
+pip install torch-geometric   # one-time; already included if you used requirements.txt
 python examples/pyg_node_mmd.py
 ```
 
