@@ -6,5 +6,7 @@
 
 **Domain adaptation (DA)** is a family of machine learning techniques that address this problem by explicitly accounting for the gap between source and target distributions. Rather than simply retraining on target data (which is often scarce or unlabelled), DA methods align representations, reweight samples, or align feature statistics so that a model trained on the source generalises better to the target.
 
+These methods rely on assumptions — for example, that the labelling rule is shared across domains (covariate shift) and that the target lies within the support of the source. When the assumptions fail, alignment can make target performance worse (negative transfer), and with no target labels this can be hard to detect. Whenever possible, evaluate on held-out labelled target data and compare against a source-only baseline over several seeds.
+
 For a more detailed introduction to domain adaptation concepts and theory, see the
 [Introduction to Domain Adaptation](assets/Intro to Domain Adaptation.pdf) lecture notes.

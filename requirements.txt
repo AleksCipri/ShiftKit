@@ -1,3 +1,9 @@
+# Lower bounds are the minimum versions the code is written for. Upper bounds
+# are intentionally not pinned; the combination most recently exercised in the
+# local audit (CPU) was: torch 2.12, numpy 2.4, scikit-learn 1.9,
+# matplotlib 3.11, torch-geometric 2.8.1, geomloss 0.3.1. Other combinations
+# within the ranges below are untested. Pin exact versions in your own
+# environment (e.g. pip freeze) to make experiments reproducible.
 torch>=2.0.0
 torchvision>=0.15.0
 numpy>=1.24.0
@@ -5,7 +11,8 @@ matplotlib>=3.7.0
 scikit-learn>=1.2.0
 tqdm>=4.65.0
 
-# Optional — required only for shiftkit.models.GNN (PyTorch Geometric)
+# Optional — required only for shiftkit.models.GNN and the "pyg_domains"
+# DataManager key (PyTorch Geometric). ShiftKit imports without it.
 # torch-geometric>=2.4.0
 
 # Optional — required only for UMAP projection in diagnostics

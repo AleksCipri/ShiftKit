@@ -12,6 +12,11 @@ covariance matrices of the two domains, normalised by feature dimensionality:
 where C_S and C_T are the unbiased sample covariance matrices of the source
 and target latent vectors, and d is the feature (latent) dimensionality.
 
+Centering removes each domain's mean, so CORAL does **not** align means:
+``CORALLoss(Z, Z + c) == 0`` for any constant shift c.  The 1/(4d²) factor is
+a dimensional normalisation, not scale invariance: scaling all features by a
+multiplies the loss by a⁴.  Covariances need at least two samples per domain.
+
 This is computationally lightweight (O(n·d²)) compared to kernel methods,
 and does not require choosing a kernel or bandwidth.
 
@@ -28,6 +33,8 @@ ECCV Workshops 2016, LNCS 9915, 443–450.
 https://arxiv.org/abs/1607.01719
 """
 
+import warnings
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -35,27 +42,25 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from typing import Optional, List
 
-
-# ─── shared helpers ───────────────────────────────────────────────────────────
-
-def _auto_device() -> torch.device:
-    if torch.cuda.is_available():
-        return torch.device("cuda")
-    if torch.backends.mps.is_available():
-        return torch.device("mps")
-    return torch.device("cpu")
-
-
-@torch.no_grad()
-def _batch_accuracy(model: nn.Module, x: torch.Tensor, y: torch.Tensor) -> int:
-    return (model(x).argmax(1) == y).sum().item()
+from .base import BaseTrainer
+from .mmd import _auto_device
+from .node_batch import (
+    unpack_batch,
+    unpack_target_batch,
+    batch_accuracy,
+    encode_domains,
+    evaluate_accuracy,
+    paired_batches,
+)
 
 
 # ─── CORAL Loss ───────────────────────────────────────────────────────────────
 
 def _covariance(X: torch.Tensor) -> torch.Tensor:
-    """Unbiased sample covariance matrix of a batch of row-vectors."""
+    """Unbiased sample covariance matrix of a batch of row-vectors (n ≥ 2)."""
     n = X.size(0)
+    if n < 2:
+        raise ValueError(f"CORAL covariance needs at least 2 samples per domain, got {n}")
     X_c = X - X.mean(0, keepdim=True)          # centre
     return (X_c.t() @ X_c) / (n - 1)
 
@@ -65,6 +70,9 @@ class CORALLoss(nn.Module):
     Deep CORAL loss: squared Frobenius norm between source and target covariances.
 
     L_CORAL = (1 / 4d²) ||C_S - C_T||²_F
+
+    Only second-order statistics are compared (means are removed by
+    centering).  Raises ``ValueError`` if either domain has fewer than 2 rows.
 
     Parameters
     ----------
@@ -91,7 +99,7 @@ class CORALLoss(nn.Module):
 
 # ─── CORAL Trainer ────────────────────────────────────────────────────────────
 
-class CORALTrainer:
+class CORALTrainer(BaseTrainer):
     """
     Domain adaptation trainer using Deep CORAL.
 
@@ -103,11 +111,19 @@ class CORALTrainer:
     ----------
     model         : network with .encode() and .classify() methods
     source_loader : labelled source DataLoader
-    target_loader : target DataLoader (labels used only for accuracy tracking)
+    target_loader : target DataLoader yielding ``x`` or ``(x, y)``; labels,
+                    if present, are used only for ``tgt_acc`` monitoring
     coral_weight  : λ weighting the CORAL term  (total = CE + λ·L_CORAL)
     lr            : Adam learning rate
     warmup_epochs : epochs of source-only CE pre-training before CORAL begins
     device        : 'cuda', 'mps', or 'cpu' (auto-detected if None)
+
+    An epoch covers the longer loader; during CORAL epochs tensor source and
+    target batches are encoded jointly (shared BatchNorm batch statistics).
+    If a source or target batch has fewer than 2 samples, the CORAL term is
+    skipped for that step (CE only) with a warning, instead of producing NaN.
+    ``src_acc`` uses training-mode logits before each update; ``tgt_acc`` is
+    measured in eval mode after it (``nan`` without target labels).
 
     History keys
     ------------
@@ -159,25 +175,32 @@ class CORALTrainer:
         total_ce = total_coral = total_loss_sum = 0.0
         src_correct = tgt_correct = n_src = n_tgt = 0
 
-        n_batches = min(len(self.source_loader), len(self.target_loader))
-        loader = zip(self.source_loader, self.target_loader)
+        loader, n_batches = paired_batches(self.source_loader, self.target_loader)
 
-        for (x_src, y_src), (x_tgt, y_tgt) in tqdm(
+        for (x_src, y_src), tgt_batch in tqdm(
             loader, total=n_batches,
             desc=f"Epoch {epoch}/{total_epochs}", leave=False
         ):
-            x_src, y_src = x_src.to(self.device), y_src.to(self.device)
-            x_tgt, y_tgt = x_tgt.to(self.device), y_tgt.to(self.device)
+            x_src, y_src, _ = unpack_batch(x_src, y_src, self.device)
+            x_tgt, y_tgt = unpack_target_batch(tgt_batch, self.device)
 
-            z_src  = self.model.encode(x_src)
+            # joint source+target encode for tensor batches (shared BN stats)
+            z_src, z_tgt = encode_domains(self.model, x_src, None if warmup else x_tgt)
             logits = self.model.classify(z_src)
             ce     = self.ce_loss(logits, y_src)
 
             if warmup:
                 loss      = ce
                 coral_val = 0.0
+            elif z_src.size(0) < 2 or z_tgt.size(0) < 2:
+                warnings.warn(
+                    f"CORAL term skipped for a batch with {z_src.size(0)} source / "
+                    f"{z_tgt.size(0)} target samples (covariance needs ≥ 2)",
+                    RuntimeWarning,
+                )
+                loss      = ce
+                coral_val = 0.0
             else:
-                z_tgt     = self.model.encode(x_tgt)
                 coral     = self.coral_loss(z_src, z_tgt)
                 loss      = ce + self.coral_weight * coral
                 coral_val = coral.item()
@@ -189,11 +212,14 @@ class CORALTrainer:
             total_ce       += ce.item()
             total_coral    += coral_val
             total_loss_sum += loss.item()
+            # src_acc: training-mode logits of this batch, before the update
             src_correct    += (logits.argmax(1) == y_src).sum().item()
             n_src          += y_src.size(0)
 
-            tgt_correct += _batch_accuracy(self.model, x_tgt, y_tgt)
-            n_tgt       += y_tgt.size(0)
+            # tgt_acc: eval mode (no BN update / dropout), after the update
+            if y_tgt is not None:
+                tgt_correct += batch_accuracy(self.model, x_tgt, y_tgt)
+                n_tgt       += y_tgt.size(0)
 
         return {
             "epoch":      epoch,
@@ -202,16 +228,9 @@ class CORALTrainer:
             "mmd_loss":   0.0,   # history-format compatibility
             "total_loss": total_loss_sum / n_batches,
             "src_acc":    src_correct / n_src,
-            "tgt_acc":    tgt_correct / n_tgt,
+            "tgt_acc":    tgt_correct / n_tgt if n_tgt else float("nan"),
         }
 
-    @torch.no_grad()
     def evaluate(self, loader: DataLoader, domain: str = "source") -> dict:
-        """Compute accuracy on a labelled DataLoader."""
-        self.model.eval()
-        correct = total = 0
-        for x, y in loader:
-            x, y = x.to(self.device), y.to(self.device)
-            correct += (self.model(x).argmax(1) == y).sum().item()
-            total   += y.size(0)
-        return {"domain": domain, "accuracy": correct / total, "n_samples": total}
+        """Compute accuracy on a labelled DataLoader (evaluation mode)."""
+        return evaluate_accuracy(self.model, loader, self.device, domain)

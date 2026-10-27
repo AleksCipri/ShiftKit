@@ -11,8 +11,11 @@ Run from the repo root:
 Edit the CONFIG block below to customise the run.
 """
 
-import sys, os
+import sys, os, json, random, platform
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
+import numpy as np
+import torch
 
 from shiftkit.data        import DataManager
 from shiftkit.models      import CNN
@@ -21,6 +24,7 @@ from shiftkit.diagnostics import plot_training_history, compare_latent_spaces
 
 # ─── CONFIG ──────────────────────────────────────────────────────────────────
 
+SEED          = 0       # seeds Python, NumPy and PyTorch (one run = one seed)
 LATENT_DIM    = 128
 EPOCHS        = 15
 BATCH_SIZE    = 128
@@ -32,11 +36,31 @@ NOISE_STD     = 0.3
 WARMUP        = 3       # warmup epochs (source-only CE) before DA loss kicks in
 SAVE_DIR      = os.path.join(os.path.dirname(__file__), "..", "outputs")
 
+
+def set_seed(seed: int) -> None:
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+
+
+def record_config(path: str) -> dict:
+    """Print and save the run configuration and library versions."""
+    cfg = {k: v for k, v in globals().items()
+           if k.isupper() and isinstance(v, (int, float, str, bool))}
+    cfg["versions"] = {"python": platform.python_version(),
+                       "torch": torch.__version__, "numpy": np.__version__}
+    print("config:", json.dumps(cfg))
+    with open(path, "w") as f:
+        json.dump(cfg, f, indent=2)
+    return cfg
+
 # ─── MAIN ────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
 
     os.makedirs(SAVE_DIR, exist_ok=True)
+    set_seed(SEED)
+    record_config(os.path.join(SAVE_DIR, "mnist_mmd_lmmd_config.json"))
 
     # ── 1. Data ──────────────────────────────────────────────────────────────
     print("=" * 60)

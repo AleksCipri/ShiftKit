@@ -10,7 +10,7 @@ from shiftkit.diagnostics import plot_latent_space, plot_training_history
 """
 
 from .data.datasets      import DataManager
-from .models.networks    import MLP, CNN, MLPRegressor
+from .models.networks    import MLP, CNN, GalaxyCNN, MLPRegressor
 from .models.gnn         import SimpleGCN
 try:
     from .models.gnn_pyg import GNN
@@ -29,6 +29,7 @@ from .methods.regression import (
 from .methods.kliep      import KLIEPWeightEstimator, KLIEPTrainer
 from .methods.kmm        import KMMWeightEstimator, KMMTrainer
 from .data.datasets      import SineWaveDataset, CaliforniaHousingDataset
+from . import uq
 from .diagnostics.plots  import (
     plot_latent_space, plot_latent_space_domains, plot_training_history,
     compare_latent_spaces, plot_confusion_matrix, plot_roc_curve,
@@ -37,7 +38,7 @@ from .diagnostics.plots  import (
 __version__ = "0.1.0"
 __all__ = [
     "DataManager",
-    "MLP", "CNN", "MLPRegressor", "SimpleGCN",
+    "MLP", "CNN", "GalaxyCNN", "MLPRegressor", "SimpleGCN",
     "SineWaveDataset", "CaliforniaHousingDataset",
     "BaseTrainer", "TrainerRegistry",
     "MMDLoss", "MMDTrainer", "SourceOnlyTrainer",
@@ -52,6 +53,7 @@ __all__ = [
     "plot_latent_space", "plot_latent_space_domains", "plot_training_history",
     "compare_latent_spaces",
     "plot_confusion_matrix", "plot_roc_curve",
+    "uq",
 ]
 if GNN is not None:
     __all__.append("GNN")

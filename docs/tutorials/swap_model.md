@@ -21,7 +21,8 @@ trainer.fit(epochs=10)
 ```
 
 `MLP` flattens the input automatically, so it works on the same MNIST loaders
-without any data changes.
+without any data changes. Its input width is `input_dim` (default 784 = 1×28×28);
+for other feature vectors pass the flattened size, e.g. `MLP(input_dim=32, ...)`.
 
 ---
 

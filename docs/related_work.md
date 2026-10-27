@@ -129,6 +129,32 @@ DOI: 10.1088/2632-2153/adf701
 
 ---
 
+## Sinkhorn divergences
+
+Used by: [SIDDATrainer](methods/sidda.md) (via the `geomloss` library)
+
+Feydy, J., Séjourné, T., Vialard, F.-X., Amari, S., Trouvé, A., & Peyré, G. (2019).
+[Interpolating between Optimal Transport and MMD using Sinkhorn Divergences](https://proceedings.mlr.press/v89/feydy19a.html).
+*Proceedings of the 22nd International Conference on Artificial Intelligence and Statistics (AISTATS)*, PMLR 89:2681–2690.
+(The arXiv preprint, 1810.08278, is dated 2018.)
+
+```bibtex
+@inproceedings{feydy2019interpolating,
+  title     = {Interpolating between Optimal Transport and {MMD} using
+               {S}inkhorn Divergences},
+  author    = {Feydy, Jean and S{\'e}journ{\'e}, Thibault and Vialard, Fran{\c{c}}ois-Xavier
+               and Amari, Shun-ichi and Trouv{\'e}, Alain and Peyr{\'e}, Gabriel},
+  booktitle = {Proceedings of the Twenty-Second International Conference on
+               Artificial Intelligence and Statistics},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {89},
+  pages     = {2681--2690},
+  year      = {2019}
+}
+```
+
+---
+
 ## Kernel Mean Matching (KMM)
 
 Used by: [KMMTrainer](methods/kmm.md)
@@ -155,14 +181,17 @@ Huang, J., Smola, A. J., Gretton, A., Borgwardt, K. M., & Schölkopf, B. (2007).
 
 Used by: [KLIEPTrainer](methods/kliep.md)
 
-Sugiyama, M., Nakajima, S., Kashima, H., Buenau, P., & Kawanabe, M. (2007).
+Sugiyama, M., Nakajima, S., Kashima, H., von Bünau, P., & Kawanabe, M. (2007).
 [Direct Importance Estimation with Model Selection and Its Application to Covariate Shift Adaptation](https://proceedings.neurips.cc/paper_files/paper/2007/file/be83ab3ecd0db773eb2dc1b0a17836a1-Paper.pdf).
 *Advances in Neural Information Processing Systems*, 20.
+(The proceedings landing page lists the fourth author as "Paul V. Buenau".
+NeurIPS 2007 was held in December 2007; the proceedings volume is dated 2008 in
+some indexes.)
 
 ```bibtex
 @inproceedings{NIPS2007_be83ab3e,
   author    = {Sugiyama, Masashi and Nakajima, Shinichi and Kashima, Hisashi and
-               Buenau, Paul and Kawanabe, Motoaki},
+               von B{\"u}nau, Paul and Kawanabe, Motoaki},
   booktitle = {Advances in Neural Information Processing Systems},
   editor    = {J. Platt and D. Koller and Y. Singer and S. Roweis},
   publisher = {Curran Associates, Inc.},

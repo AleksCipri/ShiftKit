@@ -42,6 +42,8 @@ except ImportError as e:
         "Install it with:  pip install torch-geometric"
     ) from e
 
+from .networks import VAR_EPS, mean_var_from_head
+
 PyGData = Union[Data, "Batch"]
 
 # ─── conv registry ───────────────────────────────────────────────────────────
@@ -140,12 +142,18 @@ class GNN(nn.Module):
     dropout         : dropout probability between conv layers
     aggr            : aggregation for convs that support it (e.g. SAGE, GraphConv)
     predict_var     : if ``True`` (requires ``regress=True``), the regression head outputs
-                      2 columns ``[mean, log_var]`` instead of a single scalar, for
-                      heteroscedastic-uncertainty training (e.g. Gaussian NLL loss).
+                      2 columns ``[mean, raw]`` instead of a single scalar.  Column 1 is
+                      an unconstrained value mapped to a variance by
+                      ``softplus(raw) + eps`` (see
+                      :func:`shiftkit.models.networks.mean_var_from_head`); it is
+                      neither a log-variance nor a standard deviation.  Use
+                      :meth:`predict_mean_var` to obtain ``(mean, var)``.
     device          : ``torch.device`` or device string (e.g. ``"cuda"``, ``"cpu"``) to
-                      place the model on. If not passed (``None``), defaults to ``"cuda"``
-                      when available, otherwise ``"cpu"``. If ``"cuda"`` is requested but
-                      unavailable, falls back to ``"cpu"``.
+                      place the model on at construction. If not passed (``None``), defaults
+                      to ``"cuda"`` when available, otherwise ``"cpu"``. If ``"cuda"`` is
+                      requested but unavailable, falls back to ``"cpu"``.  After
+                      construction the model follows ordinary ``.to(...)`` calls: the
+                      ``device`` attribute always reports where the parameters are.
     """
 
     def __init__(
@@ -210,9 +218,11 @@ class GNN(nn.Module):
 
         self.predict_var = predict_var
         if regress:
+            # Index 2 is an Identity (formerly a redundant second ReLU, which
+            # was a no-op); kept so existing state_dict keys remain valid.
             self.regressor = nn.Sequential(nn.Linear(hidden_channels, 128),
-                                            nn.ReLU(), 
-                                            nn.ReLU(), 
+                                            nn.ReLU(),
+                                            nn.Identity(),
                                             nn.Linear(128, 2 if predict_var else 1))
             self.classifier = None
         else:
@@ -224,8 +234,12 @@ class GNN(nn.Module):
         device = torch.device(device)
         if device.type == "cuda" and not torch.cuda.is_available():
             device = torch.device("cpu")
-        self.device = device
-        self.to(self.device)
+        self.to(device)
+
+    @property
+    def device(self) -> torch.device:
+        """Device of the model parameters (authoritative; follows ``.to()``)."""
+        return next(self.parameters()).device
 
     def encode(self, data: PyGData) -> torch.Tensor:
         """
@@ -233,15 +247,17 @@ class GNN(nn.Module):
 
         Parameters
         ----------
-        data : PyG ``Data`` or ``Batch``. Moved onto ``self.device`` automatically
-               if not already there (mutates ``data`` in place, per PyG's ``.to()``).
+        data : PyG ``Data`` or ``Batch``. Moved onto the parameters' device
+               automatically if not already there (mutates ``data`` in place,
+               per PyG's ``.to()``).
 
         Returns
         -------
         z : (num_nodes, hidden_channels) if ``pool='none'``, else (num_graphs, hidden_channels)
         """
-        if data.x.device != self.device:
-            data = data.to(self.device)
+        device = self.device
+        if data.x.device != device:
+            data = data.to(device)
         x, edge_index = data.x, data.edge_index
 
         h = x
@@ -266,8 +282,9 @@ class GNN(nn.Module):
         return self.classifier(z)
 
     def regress(self, z: torch.Tensor) -> torch.Tensor:
-        """Linear regression head. Scalar output per graph, or ``[mean, log_var]``
-        (2 columns) when the model was built with ``predict_var=True``."""
+        """MLP regression head. Scalar output per graph/node, or ``[mean, raw]``
+        (2 columns, ``var = softplus(raw) + eps``) when built with
+        ``predict_var=True``."""
         if self.regressor is None:
             raise RuntimeError(
                 "GNN was built with regress=False; regress() is not available. "
@@ -280,3 +297,9 @@ class GNN(nn.Module):
         if self.is_regression:
             return self.regress(z)
         return self.classify(z)
+
+    def predict_mean_var(self, data: PyGData, eps: float = VAR_EPS):
+        """Return ``(mean, var)`` for a model built with ``predict_var=True``."""
+        if not self.predict_var:
+            raise RuntimeError("predict_mean_var requires GNN(..., predict_var=True)")
+        return mean_var_from_head(self.forward(data), eps)

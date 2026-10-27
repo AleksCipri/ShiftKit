@@ -13,9 +13,11 @@ The complete runnable script lives at `examples/mnist_mmd_lmmd.py`.
 python examples/mnist_mmd_lmmd.py
 ```
 
-Config block:
+Config block (the script seeds Python, NumPy and PyTorch with `SEED` and prints
+and saves its configuration to `outputs/mnist_mmd_lmmd_config.json`):
 
 ```python
+SEED         = 0
 LATENT_DIM   = 128
 EPOCHS       = 15
 BATCH_SIZE   = 128
@@ -42,9 +44,10 @@ $$\hat{d}(p, q) = \frac{1}{C}\sum_{c=1}^{C}\left[\ldots k(z_i^s, z_j^s)\ldots - 
 where source weights come from ground-truth labels and target weights from the
 model's current softmax predictions.
 
-The benefit is that global MMD can accidentally push *class 3 source* features
-toward *class 8 target* features (negative transfer), whereas LMMD only aligns
-class 3 to class 3.
+The intended benefit is that global MMD can push *class 3 source* features
+toward *class 8 target* features (negative transfer), whereas LMMD aligns
+class 3 to (predicted) class 3. Because target class weights come from the
+model's own predictions, wrong pseudo-labels can also cause misalignment.
 
 ---
 
@@ -82,6 +85,11 @@ history_lmmd     = lmmd.fit(epochs=15)
 
 ## Outputs
 
+!!! warning "Illustrative output"
+    The digits below are placeholders from a single unrecorded run of an earlier
+    version of the script; they are not a benchmark and have not been reproduced.
+    Whether LMMD beats MMD on this task has not been verified across seeds.
+
 ```
   Domain               Source-Only         MMD        LMMD
   ---------------------------------------------------------
@@ -90,7 +98,8 @@ history_lmmd     = lmmd.fit(epochs=15)
   target-test               95.x%       96.x%       97.x%
 ```
 
-*(Exact numbers vary by run; LMMD typically matches or beats MMD on target.)*
+*(Exact numbers vary by run. Compare methods over several seeds, with λ chosen on
+validation data — see [Tuning λ](tuning.md).)*
 
 The script saves two figures to `outputs/`:
 

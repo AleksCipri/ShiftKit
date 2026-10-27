@@ -46,8 +46,21 @@ distribution a valid probability distribution:
 
 $$\frac{1}{n_\text{src}} \sum_{\mathbf{x} \in \mathcal{S}} w(\mathbf{x};\boldsymbol{\theta}) = 1, \quad \theta_l \geq 0$$
 
-Optimisation proceeds by gradient ascent, followed by non-negativity
-projection and re-normalisation after each step.
+Maximising this target log-weight objective minimises the KL divergence from
+the target distribution to the reweighted source distribution.
+
+Optimisation proceeds by gradient ascent, followed by a Euclidean projection
+onto both constraints together. Define the source kernel means
+$b_l = n_\text{src}^{-1}\sum_{\mathbf{x}\in\mathcal{S}} K_\sigma(\mathbf{x},\mathbf{c}_l)$.
+For the gradient-step proposal $\mathbf{v}$, the projected coefficients are
+
+$$\theta_l = \max(v_l - \tau b_l, 0), \qquad \mathbf{b}^\top\boldsymbol{\theta} = 1,$$
+
+where $\tau$ is determined from the active coefficients. This enforces
+non-negativity and empirical source normalisation jointly, rather than merely
+clipping and rescaling. Numerical accuracy still depends on `lr` and `n_iter`;
+a finite iteration budget does not guarantee convergence. Optional
+`weight_clip` is applied afterwards to predictions and can change their mean.
 
 Once weights are estimated, the model is trained with an importance-weighted
 cross-entropy loss:
@@ -183,6 +196,17 @@ weights = estimator.predict(X)  # (n,) float32 numpy array
 ---
 
 ## Practical notes
+
+**Source sample identity and loader settings**
+: Weights are tied to source dataset indices. Estimation includes every index
+  selected by the source sampler, including the final short batch even when
+  training uses `drop_last=True`. Training preserves the original batch sampler
+  and worker settings. `Subset` datasets and subset samplers are supported.
+  The source must be a map-style dataset with an explicit `batch_size`; sampling
+  with replacement, duplicate indices, and custom batch-sampler configurations
+  are rejected. Sampler membership must stay fixed across epochs, and custom
+  collation must preserve sample order. Use deterministic input transforms when
+  fixed weights must correspond to the exact features seen during training.
 
 **Bandwidth σ (median heuristic)**
 : If `sigma=None`, KLIEP estimates σ from the median pairwise distance in a

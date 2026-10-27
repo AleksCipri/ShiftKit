@@ -13,9 +13,12 @@ The complete runnable script lives at `examples/mnist_mmd.py`.
 python examples/mnist_mmd.py
 ```
 
-The script is configured via a `CONFIG` block at the top:
+The script is configured via a `CONFIG` block at the top. It seeds Python,
+NumPy and PyTorch with `SEED` and prints the full configuration (and library
+versions) at the start of the run, so the printed output records its settings:
 
 ```python
+SEED          = 0
 MODEL_TYPE    = "cnn"   # "cnn" or "mlp"
 LATENT_DIM    = 128
 EPOCHS        = 10
@@ -42,6 +45,9 @@ test_src,  test_tgt  = dm.load("mnist_noisy_mnist", train=False, noise_std=0.3)
 
 `DataManager` returns paired `(source_loader, target_loader)` DataLoaders. The
 target domain is MNIST with additive Gaussian noise; class labels are identical.
+Test-split noise is fixed per image, so every evaluation sees the same corrupted
+test set; training noise is redrawn on each access. The trainers use only the
+target *images* — target labels are used only for monitoring and evaluation.
 
 ### Step 2 — Build independent models
 
@@ -72,6 +78,13 @@ history_dann     = dann.fit(epochs=10)
 
 ### Step 4 — Evaluate
 
+!!! warning "Illustrative output"
+    The table below is illustrative output from a single unrecorded run of an
+    earlier version of the script (no seed, configuration or environment was
+    saved, and target test noise was then redrawn on every evaluation). It is
+    not a benchmark and has not been reproduced. Your numbers will differ;
+    repeat over several seeds before comparing methods.
+
 ```
   Domain               Source-Only         MMD        DANN
   ---------------------------------------------------------
@@ -95,9 +108,12 @@ plot_training_history(
 )
 ```
 
-The left panel shows total loss per epoch; the right panel overlays source
-(solid) and target (dashed) accuracy — the gap between them quantifies remaining
-domain shift.
+The left panel shows the **cross-entropy (classification) loss** per epoch — not
+the total loss including the MMD/DANN term; the right panel overlays source
+(solid) and target (dashed) accuracy. These accuracies are measured on the
+*training* batches during training (target labels are used only for this
+monitoring), so the gap between them indicates, but does not precisely measure,
+the remaining domain shift; use the held-out evaluation above for that.
 
 ### Step 6 — Plot latent spaces
 
@@ -117,14 +133,19 @@ compare_latent_spaces(
 )
 ```
 
-Each panel shows a t-SNE projection coloured by class (filled = source,
-open = target). Better alignment means source and target clusters overlap.
+Each model gets one row with two t-SNE panels of the same 2-D projection: the
+**left panel is coloured by domain** (source vs target) and the **right panel by
+class label**. Overlap of source and target points in the left panel suggests
+more similar latent distributions; the projection is exploratory and does not by
+itself show that target classes are correctly aligned.
 
 ---
 
 ## What to look for
 
-- **Source-Only**: source clusters (filled) are tight; target clusters (open) are shifted.
-- **MMD**: global distribution matching reduces the gap.
-- **DANN**: adversarial training typically produces even tighter alignment.
-- Target accuracy improvement over Source-Only quantifies the DA benefit.
+- **Source-Only**: in the domain panel, source and target points often occupy
+  partly different regions.
+- **MMD / DANN**: alignment terms usually increase domain overlap in the projection.
+  Whether this helps the target task must be checked with held-out target accuracy.
+- The target-test accuracy difference relative to Source-Only, averaged over several
+  seeds, is the measure of DA benefit; a single run is not.

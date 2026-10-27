@@ -1,5 +1,6 @@
-# Downloaded datasets
-data/
+# Downloaded datasets (top-level only; shiftkit/data/ is source code)
+/data/
+/examples/data/
 
 # Python
 __pycache__/
@@ -16,3 +17,6 @@ env/
 
 # OS
 .DS_Store
+
+# Jupyter
+.ipynb_checkpoints/

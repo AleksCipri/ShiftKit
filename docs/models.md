@@ -2,13 +2,16 @@
 
 `shiftkit.models` provides neural network architectures with a shared **encoder / classifier** interface. Splitting these two components is central to how domain adaptation methods operate — the encoder produces a latent representation `z`, and DA losses (e.g. MMD) are computed on `z` directly.
 
-All models implement:
+All classification models implement:
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
 | `encode` | `(x: Tensor) → Tensor` | Map input to latent vector `z ∈ ℝᵈ` |
 | `classify` | `(z: Tensor) → Tensor` | Map latent vector to class logits |
 | `forward` | `(x: Tensor) → Tensor` | `classify(encode(x))` — standard `nn.Module` interface |
+
+Regression models (`MLPRegressor`, `GNN(regress=True)`) expose `regress(z)` instead of
+`classify(z)`; see [Two-column regression heads](#two-column-regression-heads).
 
 ---
 
@@ -47,10 +50,10 @@ logits = model(x)           # equivalent
 
 ## MLP
 
-A fully-connected network that flattens the input and passes it through configurable hidden layers before the bottleneck.
+A fully-connected network that flattens the input and passes it through configurable hidden layers before the bottleneck. The flattened input width is `input_dim`, which defaults to 784 (1×28×28 MNIST-like images); set it for other inputs.
 
 ```
-Input (1×28×28 → flattened 784)
+Input (flattened, input_dim = 784 by default)
   → Linear(784→h₁) + ReLU + Dropout
   → Linear(h₁→h₂)  + ReLU + Dropout
   → ...
@@ -76,6 +79,53 @@ logits = model(x)           # equivalent
 | `num_classes` | `int` | `10` | Number of output classes |
 | `hidden_dims` | `Tuple[int, ...]` | `(512, 256)` | Sizes of hidden layers before the bottleneck |
 | `dropout` | `float` | `0.3` | Dropout probability after each hidden layer |
+| `input_dim` | `int` | `784` | Number of input features after flattening |
+
+---
+
+## MLPRegressor
+
+Fully-connected encoder with a linear regression head, used by the regression trainers.
+
+```python
+from shiftkit.models import MLPRegressor
+
+model = MLPRegressor(input_dim=8, latent_dim=64, output_dim=1,
+                     hidden_dims=(128, 64), dropout=0.1)
+z    = model.encode(x)     # (B, 64)
+pred = model.regress(z)    # (B, 1)
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `input_dim` | `int` | — | Number of input features |
+| `latent_dim` | `int` | `64` | Bottleneck size (used by DA losses) |
+| `output_dim` | `int` | `1` | Number of regression outputs |
+| `hidden_dims` | `Tuple[int, ...]` | `(128, 64)` | Hidden layer sizes |
+| `dropout` | `float` | `0.1` | Dropout after each hidden layer |
+| `predict_var` | `bool` | `False` | Build a 2-column (mean, raw-variance) head for a scalar target |
+
+---
+
+## Two-column regression heads
+
+`MLPRegressor(predict_var=True)` and `GNN(regress=True, predict_var=True)` return two
+columns per sample. ShiftKit uses one contract for them
+(`shiftkit.models.mean_var_from_head`):
+
+- column 0 — predicted mean μ;
+- column 1 — an unconstrained raw value r, mapped to the predicted variance
+  **σ² = softplus(r) + 1e-6**.
+
+Column 1 is neither a standard deviation nor a log-variance. Use
+`model.predict_mean_var(x)` to get `(mean, var)` directly. The Gaussian trainers
+(`SourceOnlyGaussianRegressionTrainer`, `MMDGaussianRegressionTrainer`,
+`SIDDAGaussianRegressionTrainer`) use this mapping, train it with a Gaussian NLL by default
+(`loss="nll"`) or the Moment-Network objective (`loss="moment"`), and report NLL and
+68 %/95 % interval coverage in `evaluate()`. These diagnostics assume a Gaussian
+predictive distribution. Good values on one dataset do not prove calibration under other
+shifts, and a variance head estimates noise (aleatoric uncertainty) only, not model
+(epistemic) uncertainty.
 
 ---
 
@@ -85,7 +135,7 @@ logits = model(x)           # equivalent
 |--|-----|-----|
 | Input type | 2-D images (preserves spatial structure) | Any flattened vector |
 | Inductive bias | Translation equivariance | None |
-| Parameters (default) | ~856 K | ~560 K |
+| Parameters (default) | 856,266 | 567,434 |
 | Speed | Slightly faster on GPU | Slightly faster on CPU |
 
 For image inputs, **CNN is recommended**. MLP is useful when inputs are already feature vectors.
@@ -237,11 +287,17 @@ trainer.fit(epochs=30)
 | `hidden_channels` | `int` | — | Width of each conv layer; also the latent dimension |
 | `num_layers` | `int` | — | Number of message-passing layers (≥ 1) |
 | `num_classes` | `int` | `2` | Output classes for `classify()` |
-| `regress` | `bool` | `False` | Build a scalar regression head instead of classifier |
+| `regress` | `bool` | `False` | Build a regression head (`Linear(hidden,128) → ReLU → Linear(128, 1 or 2)`) instead of a classifier |
 | `pool` | `str` | `"mean"` | Readout aggregation; use `"none"` for node-level |
 | `use_layernorm` | `bool` | `True` | Apply `LayerNorm` after each conv |
 | `dropout` | `float` | `0.0` | Dropout probability between conv layers |
 | `aggr` | `str` | `"mean"` | Neighbour aggregation for SAGE and GraphConv |
+| `predict_var` | `bool` | `False` | With `regress=True`: 2-column head (mean, raw value with variance `softplus(raw) + 1e-6`) |
+| `device` | `str \| torch.device \| None` | `None` | Initial placement (CUDA if available, else CPU) |
+
+Each layer applies conv → `LayerNorm` (if `use_layernorm`) → ReLU → dropout. The
+`device` attribute is read from the parameters, so it stays correct after
+`model.to(...)`; `encode` moves input graphs to that device.
 
 ---
 

@@ -1,7 +1,11 @@
 # Methods
 
-`shiftkit.methods` provides domain adaptation training loops. All trainers record
-identical per-epoch history dicts so their results can be directly compared.
+`shiftkit.methods` provides domain adaptation training loops. Every trainer
+returns a per-epoch list of history dicts. The classification trainers share
+the core keys `epoch`, `ce_loss`, `total_loss`, `src_acc` and `tgt_acc` and add
+method-specific keys; regression trainers report errors (e.g. `src_rmse`)
+instead of accuracies. The schemas are therefore comparable on their shared
+keys, not identical.
 
 ShiftKit methods fall into two broad families:
 
@@ -39,27 +43,45 @@ history = trainer.fit(epochs=10)
 result  = trainer.evaluate(test_loader, domain="target-test")
 ```
 
+The eight registered classification trainers (`TrainerRegistry.available()`)
+are all `BaseTrainer` instances: SourceOnly, MMD, LMMD, CORAL and DANN subclass
+it directly; SIDDA, KLIEP and KMM are registered as virtual subclasses.
+
+**Target labels.** For SourceOnly, MMD, LMMD, CORAL and DANN, target loaders
+may yield `x` (or `(x,)`) without labels; then `tgt_acc` is `nan`. If labels are
+present they are used only for monitoring, never for gradients. Other trainers
+may still expect `(x, y)` target batches — see their pages.
+
+**Epochs and monitoring (SourceOnly, MMD, LMMD, CORAL, DANN).** One epoch
+covers the longer of the source and target loaders (the shorter one restarts);
+empty loaders raise `ValueError`. `src_acc` uses training-mode predictions on
+each batch before its update; `tgt_acc` is measured in evaluation mode after the
+update, so monitoring never changes BatchNorm statistics. Trainers do not seed
+random number generators; call `shiftkit.utils.set_seed(seed)` before building the model and
+loaders for repeatable runs. It seeds Python, NumPy and PyTorch and asks PyTorch for
+deterministic GPU kernels (without which the same seed can give different networks on a GPU).
+
 ---
 
 ## Method comparison
 
-| | Source Only | MMD | LMMD | CORAL | DANN | SIDDA | KLIEP |
-|--|:-----------:|:---:|:----:|:-----:|:----:|:-----:|:-----:|
-| **DA family** | — | Feature-based | Feature-based | Feature-based | Feature-based | Feature-based | Instance-based |
-| **Alignment target** | None | Full distribution | Per-class subdomains | Covariance matrix | Domain labels | Optimal transport plan | Sample weights (density ratio) |
-| **What is matched** | — | All moments (via kernel) | Class-conditional moments | 2nd-order statistics | Domain membership | Entire marginal distribution | p_tgt(x) / p_src(x) |
-| **Kernel required** | No | Yes — RBF, bandwidth σ | Yes — RBF, bandwidth σ | No | No | No (Sinkhorn entropic OT) | Yes — RBF in input space |
-| **Needs source labels** | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
-| **Needs target labels** | No | No | Pseudo-labels (soft) | No | No | No | No |
-| **Adversarial training** | No | No | No | No | Yes (GRL) | No | No |
-| **Learnable loss weights** | No | No | No | No | No | Yes (η₁, η₂) | No |
-| **Alignment cost** | — | Every batch | Every batch | Every batch | Every batch | Every batch | Once at init |
-| **Model interface** | `forward()` | `encode()` + `classify()` | `encode()` + `classify()` | `encode()` + `classify()` | `encode()` + `classify()` | full SIDDA interface | `forward()` only |
-| **Computation per batch** | O(n·d) | O(n²) kernel matrices | O(n²) per class | O(n·d²) covariance | O(n·d) + discriminator | O(n²) Sinkhorn iterations | O(n·m) weight lookup |
-| **Key hyperparameter** | — | `mmd_weight` λ | `lmmd_weight` λ | `coral_weight` λ | `domain_weight` λ | `warmup_epochs`, blur schedule | `n_centers`, `weight_clip` |
-| **Warmup supported** | — | Yes | Yes | Yes | Yes | Mandatory | No |
-| **Covariate shift assumption** | No | No | No | No | No | No | Yes |
-| **Best suited for** | Reference baseline | General distribution shift | Class-level shift with label imbalance | Shift in feature scale / correlation | Strong covariate shift with large batches | Unknown shift type; automatically reweights objectives | Covariate shift on tabular / low-dim data |
+| | Source Only | MMD | LMMD | CORAL | DANN | SIDDA | KLIEP | KMM |
+|--|:-----------:|:---:|:----:|:-----:|:----:|:-----:|:-----:|:---:|
+| **DA family** | — | Feature-based | Feature-based | Feature-based | Feature-based | Feature-based | Instance-based | Instance-based |
+| **Alignment target** | None | Full distribution | Per-class subdomains | Covariance matrix | Domain labels | Optimal transport plan | Sample weights (density ratio) | Sample weights (kernel mean matching) |
+| **What is matched** | — | Kernel mean embeddings (all moments only for a characteristic kernel and in the large-sample limit) | Class-conditional kernel means (pseudo-labelled target) | Covariances only (means removed) | Domain membership | Entire marginal distribution | p_tgt(x) / p_src(x) | Weighted source vs target kernel mean (input space) |
+| **Kernel required** | No | Yes — RBF, bandwidth σ | Yes — RBF, bandwidth σ | No | No | No (Sinkhorn entropic OT) | Yes — RBF in input space | Yes — RBF in input space |
+| **Needs source labels** | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
+| **Needs target labels** | No | No | Pseudo-labels (soft) | No | No | No | No | No |
+| **Adversarial training** | No | No | No | No | Yes (GRL) | No | No | No |
+| **Learnable loss weights** | No | No | No | No | No | Yes (η₁, η₂) | No | No |
+| **Alignment cost** | — | Every batch | Every batch | Every batch | Every batch | Every batch | Once at init | Once at init (QP) |
+| **Model interface** | `forward()` | `encode()` + `classify()` | `encode()` + `classify()` | `encode()` + `classify()` | `encode()` + `classify()` | full SIDDA interface | `forward()` only | `forward()` only |
+| **Computation per batch** | O(n·d) | O(n²) kernel matrices | O(n²) per class | O(n·d²) covariance | O(n·d) + discriminator | O(n²) Sinkhorn iterations | O(n·m) weight lookup | O(n) weight lookup |
+| **Key hyperparameter** | — | `mmd_weight` λ | `lmmd_weight` λ | `coral_weight` λ | `domain_weight` λ | `warmup_epochs`, blur schedule | `n_centers`, `weight_clip` | `B`, `sigma`, `weight_clip` |
+| **Warmup supported** | — | Yes | Yes | Yes | Yes | Mandatory | No | No |
+| **Covariate shift assumption** | No | No | No | No | No | No | Yes | Yes |
+| **Best suited for** | Reference baseline | General distribution shift | Class-level shift with label imbalance | Shift in feature scale / correlation | Strong covariate shift with large batches | Unknown shift type; automatically reweights objectives | Covariate shift on tabular / low-dim data | Covariate shift on small tabular / low-dim data |
 
 > **Choosing a method:** Start with the Source-Only baseline to measure the domain gap.
 > For most tasks, MMD or CORAL is a fast, strong first attempt.
@@ -72,7 +94,10 @@ result  = trainer.evaluate(test_loader, domain="target-test")
 
 ## Shared history format
 
-Every `fit()` call returns a `list[dict]` with one entry per epoch:
+Every `fit()` call returns a `list[dict]` with one entry per epoch. The table
+lists keys used across the classification trainers; each trainer reports only
+its own subset (see each method page), e.g. `domain_loss` appears only for
+DANN, and LMMD/CORAL add `lmmd_loss`/`coral_loss`:
 
 | Key | Type | Description |
 |-----|------|-------------|
@@ -86,8 +111,8 @@ Every `fit()` call returns a `list[dict]` with one entry per epoch:
 | `sigma` | `float` | Sinkhorn blur used (SIDDA only) |
 | `mean_potential` | `float` | Mean source Kantorovich potential (SIDDA with `use_potentials=True` only) |
 | `total_loss` | `float` | Total combined loss |
-| `src_acc` | `float` | Source domain accuracy |
-| `tgt_acc` | `float` | Target domain accuracy (tracked, not directly optimised) |
+| `src_acc` | `float` | Source training accuracy (see each method page for when it is measured) |
+| `tgt_acc` | `float` | Target accuracy (diagnostic, not optimised; `nan` when target labels are absent, where supported) |
 
 ---
 

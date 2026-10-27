@@ -3,6 +3,7 @@
 ShiftKit makes it easy to plug in your own domain adaptation method. Two tools are provided:
 
 - **`BaseTrainer`** — abstract base class that defines the required interface
+  (all eight registered built-in trainers are `BaseTrainer` instances)
 - **`TrainerRegistry`** — name-to-class registry so custom trainers can be stored, discovered, and instantiated by name
 
 ---
@@ -45,6 +46,8 @@ class FeatureAlignTrainer(BaseTrainer):
             self.model.train()
             ce_sum = da_sum = 0.0
             n = 0
+            # zip stops at the shorter loader; the built-in trainers instead
+            # use shiftkit.methods.node_batch.paired_batches to cover the longer one
             for (x_src, y_src), (x_tgt, _) in zip(self.source_loader,
                                                     self.target_loader):
                 x_src, y_src = x_src.to(self.device), y_src.to(self.device)
@@ -130,9 +133,9 @@ Both forms are equivalent. Use the decorator when defining the class; use the ex
 ### Using the registry
 
 ```python
-# List all available trainers
+# List all available trainers (built-ins plus your registration)
 print(TrainerRegistry.available())
-# ['dann', 'feature_align', 'mmd', 'sidda', 'source_only']
+# ['coral', 'dann', 'feature_align', 'kliep', 'kmm', 'lmmd', 'mmd', 'sidda', 'source_only']
 
 # Get the class
 cls = TrainerRegistry.get("feature_align")
@@ -183,6 +186,8 @@ from shiftkit.methods import BaseTrainer
 ```
 
 Abstract base class. Subclass and implement `fit()` and `evaluate()`.
+Regression trainers (`SourceOnlyRegressionTrainer`, `MMDRegressionTrainer`, …)
+are not registered; import and construct them directly.
 
 ### `TrainerRegistry`
 

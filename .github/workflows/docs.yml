@@ -20,8 +20,11 @@ jobs:
         with:
           python-version: "3.11"
 
+      # Major version pinned so a breaking Material/MkDocs release cannot change
+      # the published site unnoticed; docs last built locally with
+      # mkdocs 1.6.1 + mkdocs-material 9.7.7.
       - name: Install MkDocs Material
-        run: pip install mkdocs-material
+        run: pip install "mkdocs-material>=9.5,<10" "mkdocs>=1.6,<2"
 
       - name: Deploy to GitHub Pages
         run: mkdocs gh-deploy --force

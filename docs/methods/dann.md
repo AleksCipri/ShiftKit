@@ -33,7 +33,7 @@ trainer = DANNTrainer(
     domain_weight=1.0,
     lr=1e-3,
     alpha=1.0,
-    schedule_alpha=True,   # ramp α from 0→1 over training (recommended)
+    schedule_alpha=True,   # ramp α per epoch over the DA epochs
 )
 history = trainer.fit(epochs=10)
 
@@ -49,23 +49,28 @@ print(f"Target accuracy: {result['accuracy']*100:.1f}%")
 |-----------|------|---------|-------------|
 | `model` | `nn.Module` | — | Network with `.encode()`, `.classify()`, and `.latent_dim` |
 | `source_loader` | `DataLoader` | — | Labelled source DataLoader |
-| `target_loader` | `DataLoader` | — | Target DataLoader (labels used for `tgt_acc` tracking only) |
+| `target_loader` | `DataLoader` | — | Target DataLoader yielding `x` or `(x, y)`; labels, if present, are used only for `tgt_acc` |
 | `domain_weight` | `float` | `1.0` | λ_d — weight on the adversarial domain loss |
 | `lr` | `float` | `1e-3` | Adam learning rate (shared by model + discriminator) |
-| `alpha` | `float` | `1.0` | Final GRL reversal strength |
-| `schedule_alpha` | `bool` | `True` | Ramp α from 0→`alpha` using the paper's sigmoid schedule (counts only over the DA phase) |
+| `alpha` | `float` | `1.0` | GRL reversal strength: final value when scheduled, constant value for every DA epoch otherwise |
+| `schedule_alpha` | `bool` | `True` | Ramp α per epoch with a sigmoid over the DA epochs (variant of the paper's schedule, see below); `False` uses α = `alpha` after warmup |
 | `discriminator_hidden` | `int` | `128` | Hidden dim of the domain discriminator MLP |
 | `warmup_epochs` | `int` | `0` | Epochs of source-only CE pre-training before adversarial DA begins; α is held at 0 during warmup |
 | `semantic_weight` | `float` | `0.0` | λ_s — weight on the centroid alignment loss; `0.0` disables it |
 | `centroid_momentum` | `float` | `0.1` | EMA momentum β for updating target centroids |
-| `num_classes` | `int` | `10` | Number of classes (required when `semantic_weight > 0`) |
+| `num_classes` | `int` | `10` | Number of classes (required when `semantic_weight > 0`; source labels must be `< num_classes`, otherwise `ValueError`) |
 | `device` | `str \| None` | `None` | `'cuda'`, `'mps'`, or `'cpu'`; auto-detected if `None` |
 
 ---
 
 ## `fit(epochs=10)`
 
-Train for `epochs` epochs and return the history.
+Train for `epochs` epochs and return the history. One epoch covers the
+**longer** of the two loaders; the shorter one is restarted as needed. Empty
+loaders raise `ValueError`. During DA epochs, tensor source and target
+batches are encoded in one joint forward pass, so BatchNorm layers use shared
+batch statistics for both domains. Trainers do not seed random number
+generators.
 
 **Returns:** `list[dict]` — one dict per epoch:
 
@@ -77,14 +82,16 @@ Train for `epochs` epochs and return the history.
 | `semantic_loss` | Mean centroid alignment loss (`0.0` when disabled) |
 | `mmd_loss` | Always `0.0` (for history-format compatibility) |
 | `total_loss` | Mean total loss |
-| `src_acc` | Source domain training accuracy |
-| `tgt_acc` | Target domain accuracy (tracked, not directly optimised) |
+| `src_acc` | Source training accuracy: training-mode predictions on each batch, taken *before* that batch's update |
+| `tgt_acc` | Target accuracy in evaluation mode, after each update; `nan` without target labels (diagnostic only) |
 
 ---
 
 ## `evaluate(loader, domain="source")`
 
-Compute classification accuracy on any labelled DataLoader.
+Compute classification accuracy on any labelled DataLoader, in evaluation
+mode. Accepts tensor batches, PyG graph batches and node-level graph batches.
+An empty or unlabelled loader raises `ValueError`.
 
 **Returns:** `dict` with keys `domain` (str), `accuracy` (float), `n_samples` (int).
 
@@ -93,9 +100,10 @@ Compute classification accuracy on any labelled DataLoader.
 ## Warmup phase
 
 Set `warmup_epochs > 0` to run source-only CE training before the adversarial
-loop begins. During warmup the GRL strength α is held at 0 and the discriminator
-receives no useful gradients, so neither is updated. The α schedule (if enabled)
-only starts ramping **after** warmup ends, over the remaining DA epochs.
+loop begins. During warmup the discriminator and GRL are not used (α is set
+to 0). The α schedule (if enabled) only starts ramping **after** warmup ends,
+over the remaining DA epochs; with `schedule_alpha=False`, α is set to `alpha`
+for every epoch after warmup.
 
 ```python
 trainer = DANNTrainer(
@@ -104,12 +112,12 @@ trainer = DANNTrainer(
     target_loader=train_tgt,
     domain_weight=1.0,
     warmup_epochs=5,     # first 5 epochs: CE only, α=0
-    schedule_alpha=True, # then ramp α from 0→1 over epochs 6–N
+    schedule_alpha=True, # then ramp α toward 1 over epochs 6–20
     lr=1e-3,
 )
 history = trainer.fit(epochs=20)
 # Epochs 1–5:  [warmup]  CE only
-# Epochs 6–20: [DANN ]   CE + λ·BCE_GRL  (α ramping 0→1)
+# Epochs 6–20: [DANN ]   CE + λ·BCE_GRL  (α ≈ 0.32 at epoch 6 → ≈ 1 at epoch 20)
 ```
 
 ---
@@ -117,31 +125,43 @@ history = trainer.fit(epochs=20)
 ## Alpha scheduling
 
 !!! note
-    The original paper ramps the GRL strength as:
+    ShiftKit sets the GRL strength once per epoch:
 
-    $$\alpha(p) = \alpha_\text{max} \cdot \left(\frac{2}{1 + e^{-10p}} - 1\right), \quad p = \frac{\text{epoch}}{\text{epochs}}$$
+    $$\alpha(p) = \alpha_\text{max} \cdot \left(\frac{2}{1 + e^{-10p}} - 1\right), \quad p = \frac{\text{epoch} - \text{warmup}}{\text{epochs} - \text{warmup}}$$
 
-    This avoids large adversarial gradients early in training when encoder
-    representations are still noisy. Set `schedule_alpha=False` to use a fixed
-    reversal strength instead.
+    where warmup is `warmup_epochs`, so $p$ counts DA epochs only and reaches
+    1 in the last epoch. Ganin et al. use the same sigmoid but with $p$ the
+    overall training progress updated every iteration, together with an
+    annealed learning rate. ShiftKit's schedule is therefore an epoch-level
+    **variant**, and the Adam learning rate stays constant (no annealing). Set
+    `schedule_alpha=False` to use the fixed strength `alpha` for all DA epochs.
 
 ---
 
 ## Semantic Centroid Alignment
 
 Enable by setting `semantic_weight > 0`. This adds a class-level alignment term
-from **MSTN** (Xie et al., 2018) on top of the adversarial loss:
+inspired by **MSTN** (Xie et al., 2018) on top of the adversarial loss:
 
-$$\mathcal{L} = \text{CE} + \lambda_d \cdot \text{BCE}_\text{GRL} + \lambda_s \cdot \frac{1}{K}\sum_{k=1}^{K} \left\| \mathbf{c}_k^\text{src} - \mathbf{c}_k^\text{tgt} \right\|^2$$
+$$\mathcal{L} = \text{CE} + \lambda_d \cdot \text{BCE}_\text{GRL} + \lambda_s \cdot \frac{1}{|K|}\sum_{k\in K} \frac{1}{d}\left\| \mathbf{c}_k^\text{src} - \mathbf{c}_k^\text{tgt} \right\|^2$$
 
-where source centroids are computed per-batch from ground-truth labels and target
-centroids are maintained as an **exponential moving average** (EMA) of
-pseudo-labeled target features:
+where $d$ is `latent_dim` (the code averages the squared difference over latent
+dimensions) and $K$ is the set of classes that appear in the current source
+batch **and** whose target centroid has already been initialised. Source
+centroids are computed per batch from ground-truth labels; target centroids are
+maintained as an **exponential moving average** (EMA) of pseudo-labeled target
+features, initialised from the first batch in which a class is predicted:
 
 $$\mathbf{c}_k^\text{tgt} \leftarrow (1 - \beta)\,\mathbf{c}_k^\text{tgt} + \beta \cdot \overline{z}_k^\text{tgt}$$
 
-The EMA stabilises alignment when early pseudo-labels are noisy, since target
-centroids evolve smoothly rather than jumping each batch.
+The EMA smooths the target centroids when early pseudo-labels are noisy.
+
+This is an MSTN-style **variant**, not a faithful reproduction: MSTN keeps
+moving averages for both source and target centroids, whereas ShiftKit uses
+per-batch source centroids and *detached* EMA target centroids. Target
+features therefore receive no direct gradient from this term; only the source
+centroids are pulled toward the target ones. Classes never predicted on the
+target are skipped rather than pulled toward an uninitialised (zero) centroid.
 
 ```python
 trainer = DANNTrainer(
@@ -162,7 +182,8 @@ history = trainer.fit(epochs=10)
     - Lower `centroid_momentum` (e.g. `0.05`) gives smoother centroid updates, which
       helps early in training when pseudo-labels are unreliable.
     - Centroid alignment complements the adversarial loss: the GRL aligns global
-      distributions while centroid alignment enforces class-level correspondence.
+      distributions while centroid alignment encourages (it cannot enforce)
+      class-level correspondence, to the extent the pseudo-labels are correct.
 
 > **Reference:** Xie, S., Zheng, Z., Chen, L., & Chen, C. (2018).
 > Learning Semantic Representations for Unsupervised Domain Adaptation.

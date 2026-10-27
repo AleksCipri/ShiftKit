@@ -51,6 +51,9 @@ nav:
       - Regression DA: tutorials/regression.md
       - Node-level DA (PyG): tutorials/pyg_node_mmd.md
       - SIDDA Regression & Reweighting: tutorials/sidda_regression.md
+      - Prediction intervals: tutorials/uq_intervals.md
+      - Uncertainty under shift: tutorials/uq_shift.md
+      - Local intervals (LVD): tutorials/uq_lvd.md
   - API Reference:
       - Data: data.md
       - Models: models.md
@@ -67,6 +70,7 @@ nav:
               - KLIEP: methods/kliep.md
               - KMM: methods/kmm.md
           - Custom Methods: methods/custom.md
+      - Uncertainty: uq.md
       - Diagnostics: diagnostics.md
   - Citation: citation.md
   - Related Work: related_work.md
@@ -89,8 +93,10 @@ markdown_extensions:
   - pymdownx.arithmatex:
       generic: true
 
+# MathJax 3 supports all browsers that Material for MkDocs supports; no
+# polyfill is needed (polyfill.io was removed after its 2024 supply-chain
+# compromise).
 extra_javascript:
-  - https://polyfill.io/v3/polyfill.min.js?features=es6
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
 
 plugins:

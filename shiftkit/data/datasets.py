@@ -14,24 +14,44 @@ import numpy as np
 # ─── built-in dataset pairs ───────────────────────────────────────────────────
 
 class NoisyMNIST(Dataset):
-    """MNIST with additive Gaussian noise — used as a synthetic target domain."""
+    """
+    MNIST with additive Gaussian noise — used as a synthetic target domain.
+
+    By default the noise for sample ``idx`` is drawn from a generator seeded by
+    ``(noise_seed, idx)``, so every access to the same index returns the same
+    corrupted image. Evaluating a model twice on the test split therefore uses
+    the same fixed corruption. Pass ``fixed_noise=False`` to restore the old
+    behaviour of drawing fresh noise from the global RNG on every access (an
+    augmentation that makes repeated evaluations differ).
+    """
 
     def __init__(self, root: str, train: bool = True, noise_std: float = 0.3,
-                 transform=None, download: bool = True):
+                 transform=None, download: bool = True,
+                 noise_seed: int = 0, fixed_noise: bool = True):
         self.base = torchvision.datasets.MNIST(
             root=root, train=train, download=download,
             transform=T.ToTensor()
         )
         self.noise_std = noise_std
         self.extra_transform = transform
+        self.noise_seed = int(noise_seed)
+        self.fixed_noise = fixed_noise
 
     def __len__(self):
         return len(self.base)
 
+    def _noise_like(self, img: torch.Tensor, idx: int) -> torch.Tensor:
+        """Return N(0, noise_std²) noise for *idx* (deterministic if fixed_noise)."""
+        if not self.fixed_noise:
+            return torch.randn_like(img) * self.noise_std
+        state = np.random.SeedSequence([self.noise_seed, int(idx)]).generate_state(2)
+        gen = torch.Generator().manual_seed(int(state[0]) << 32 | int(state[1]))
+        noise = torch.randn(img.shape, generator=gen, dtype=img.dtype)
+        return noise.to(img.device) * self.noise_std
+
     def __getitem__(self, idx):
         img, label = self.base[idx]
-        noise = torch.randn_like(img) * self.noise_std
-        img = (img + noise).clamp(0.0, 1.0)
+        img = (img + self._noise_like(img, idx)).clamp(0.0, 1.0)
         if self.extra_transform is not None:
             img = self.extra_transform(img)
         return img, label
@@ -65,14 +85,18 @@ class SyntheticGraphDataset(Dataset):
 
     Parameters
     ----------
-    n_graphs       : number of graphs per domain
+    n_graphs       : number of graphs generated for *this split* (the train and
+                     test splits each contain ``n_graphs`` graphs, drawn with
+                     different seeds; this is not an 80/20 split of one pool)
     n_nodes        : nodes per graph (fixed; enables tensor batching)
     feat_dim       : node feature dimensionality
     feature_noise  : std of Gaussian noise added to node features
-    edge_flip_prob : probability of flipping each edge (structural perturbation)
+    edge_flip_prob : probability of toggling each node pair (XOR: an existing
+                     edge is removed, a missing edge is added)
     p_in, p_out    : SBM intra/inter-community edge probability (class 0)
     p_er           : Erdős–Rényi edge probability (class 1)
-    train          : True → training split, False → test split (different seed)
+    train          : True → training split (``seed``), False → test split
+                     (``seed + 100``). Graphs are generated once at construction.
     seed           : base random seed
     """
 
@@ -141,10 +165,17 @@ class SyntheticGraphDataset(Dataset):
 
     @staticmethod
     def _flip_edges(adj, p, rng):
+        """Toggle each off-diagonal undirected edge independently with prob. *p*.
+
+        True XOR: present edges are removed and absent edges are added. The
+        result stays symmetric with an empty diagonal (no self-loops).
+        """
         n = adj.shape[0]
         flip = np.triu(rng.random((n, n)) < p, k=1)
-        flip = flip + flip.T
-        return np.clip(adj + flip, 0, 1)   # XOR-like but bounded to [0,1]
+        flip = flip | flip.T
+        out = np.logical_xor(adj > 0, flip).astype(adj.dtype)
+        np.fill_diagonal(out, 0)
+        return out
 
     @staticmethod
     def _node_features(adj, n, feat_dim, label, noise_std, rng):
@@ -173,8 +204,11 @@ class SineWaveDataset(Dataset):
     Source domain: y = sin(x) + noise
     Target domain: y = sin(x + phase_shift) + noise  (default: π/3 shift)
 
-    The phase shift creates a smooth but measurable domain gap — perfect for
-    visualising how MMD alignment helps a regressor generalise across domains.
+    Both domains draw x from the same range, so the phase shift changes only
+    p(y|x) (concept shift).  Unlabelled marginal alignment cannot identify the
+    new phase: use this as a limitation example, not as a demonstration that
+    feature alignment helps.  For a covariate-shift example, use different
+    ``x_range`` values with ``phase=0`` for both domains.
 
     Parameters
     ----------
@@ -213,20 +247,89 @@ class SineWaveDataset(Dataset):
 
 # ─── California Housing Regression Dataset ────────────────────────────────────
 
+def _fetch_california(data_home=None, download_if_missing=True):
+    try:
+        from sklearn.datasets import fetch_california_housing
+    except ImportError as e:
+        raise ImportError(
+            "CaliforniaHousingDataset requires scikit-learn. "
+            "Install it with: pip install scikit-learn"
+        ) from e
+    # scikit-learn downloads the data on first use unless it is already cached.
+    return fetch_california_housing(
+        data_home=data_home, download_if_missing=download_if_missing
+    )
+
+
+def _california_split_indices(latitude: np.ndarray, domain: str, seed: int):
+    """Return (train_idx, test_idx) into the full dataset for one region."""
+    if domain not in ("north", "south"):
+        raise ValueError(f"domain must be 'north' or 'south', got {domain!r}")
+    mask = (latitude >= 36.0) if domain == "north" else (latitude < 36.0)
+    region = np.flatnonzero(mask)
+    # Reproducible 80/20 train-test split within the region
+    rng = np.random.RandomState(seed)
+    perm = rng.permutation(len(region))
+    split = int(0.8 * len(region))
+    return region[perm[:split]], region[perm[split:]]
+
+
+def california_normalisation_stats(
+    seed: int = 42,
+    fit_on: str = "source_train",
+    data=None,
+    data_home=None,
+    download_if_missing: bool = True,
+):
+    """
+    Per-feature ``(x_mean, x_std)`` for the California Housing domain split.
+
+    Statistics are fitted on *training* inputs only, never on test rows:
+
+    - ``fit_on="source_train"`` (default): northern (source) training rows.
+    - ``fit_on="source_target_train"``: northern training rows plus the
+      *unlabelled inputs* of the southern (target) training rows. Using
+      unlabelled target training inputs is a legitimate choice in
+      unsupervised DA, but it makes preprocessing depend on target data.
+
+    Labels are never used. The same statistics should be applied to every
+    split of both domains.
+    """
+    if data is None:
+        data = _fetch_california(data_home, download_if_missing)
+    X_all = data.data.astype(np.float32)
+    lat = data.data[:, 6]
+    rows = [_california_split_indices(lat, "north", seed)[0]]
+    if fit_on == "source_target_train":
+        rows.append(_california_split_indices(lat, "south", seed)[0])
+    elif fit_on != "source_train":
+        raise ValueError(
+            "fit_on must be 'source_train' or 'source_target_train', "
+            f"got {fit_on!r}"
+        )
+    X_fit = X_all[np.concatenate(rows)]
+    return X_fit.mean(0), X_fit.std(0) + 1e-8
+
+
 class CaliforniaHousingDataset(Dataset):
     """
     Geographic domain split of the California Housing dataset (sklearn builtin).
 
-    Source domain: Northern California — latitude >= 36°
-    Target domain: Southern California — latitude <  36°
+    Source domain: Northern California — latitude >= 36° (8,826 districts)
+    Target domain: Southern California — latitude <  36° (11,814 districts)
 
-    The two regions have meaningfully different price distributions, housing
-    density, and feature correlations, making this a realistic tabular DA task.
+    The two regions differ in price distribution, housing density and feature
+    correlations. A geographic split alone does not guarantee that the
+    conditional distribution of prices given features is the same in both.
 
-    Both domains are normalised using statistics computed from the *full* dataset
-    (passed in as ``x_mean`` / ``x_std``) so that the scale is consistent across
-    domains. Use the ``"california_housing"`` DataManager key, which handles this
-    automatically.
+    Features are standardised with statistics fitted on **training rows only**
+    (see :func:`california_normalisation_stats`) and the same statistics are
+    applied to the train and test splits of both domains. If ``x_mean`` /
+    ``x_std`` are not given, the statistics are fitted on the northern (source)
+    training rows for this ``seed``, so standalone datasets share one scale.
+
+    scikit-learn downloads the data on first use if it is not cached in
+    ``data_home``.
 
     Parameters
     ----------
@@ -235,8 +338,8 @@ class CaliforniaHousingDataset(Dataset):
     seed     : random seed for the train/test shuffle
     x_mean   : per-feature mean for normalisation (numpy array, shape (8,))
     x_std    : per-feature std  for normalisation (numpy array, shape (8,))
-               If None, computed from this domain's own data (not recommended
-               when comparing source/target — use the DataManager factory).
+    data_home, download_if_missing : forwarded to
+               ``sklearn.datasets.fetch_california_housing``
     """
 
     FEATURE_NAMES = [
@@ -251,38 +354,27 @@ class CaliforniaHousingDataset(Dataset):
         seed: int = 42,
         x_mean=None,
         x_std=None,
+        data_home=None,
+        download_if_missing: bool = True,
     ):
-        try:
-            from sklearn.datasets import fetch_california_housing
-        except ImportError as e:
-            raise ImportError(
-                "CaliforniaHousingDataset requires scikit-learn. "
-                "Install it with: pip install scikit-learn"
-            ) from e
-
-        data = fetch_california_housing()
+        data = _fetch_california(data_home, download_if_missing)
         X_all = data.data.astype(np.float32)
         y_all = data.target.astype(np.float32)
 
-        # Normalise with provided global stats (or fallback to local)
+        # Normalise with training-only statistics (never test rows)
+        if (x_mean is None) != (x_std is None):
+            raise ValueError("Pass both x_mean and x_std, or neither.")
         if x_mean is None:
-            x_mean = X_all.mean(0)
-            x_std  = X_all.std(0) + 1e-8
-        X_norm = (X_all - x_mean) / x_std
+            x_mean, x_std = california_normalisation_stats(seed=seed, data=data)
 
-        # Geographic split on raw latitude (feature index 6 in original data)
-        lat = data.data[:, 6]
-        mask = (lat >= 36.0) if domain == "north" else (lat < 36.0)
-        X, y = X_norm[mask], y_all[mask]
+        # Geographic split on raw latitude (feature index 6 in original data),
+        # then a reproducible 80/20 train-test split within the region
+        tr_idx, te_idx = _california_split_indices(data.data[:, 6], domain, seed)
+        idx = tr_idx if train else te_idx
 
-        # Reproducible 80/20 train-test split within the region
-        rng = np.random.RandomState(seed)
-        idx = rng.permutation(len(y))
-        split = int(0.8 * len(y))
-        idx = idx[:split] if train else idx[split:]
-
-        self.x = torch.from_numpy(X[idx])
-        self.y = torch.from_numpy(y[idx]).unsqueeze(1)   # (N, 1)
+        X = (X_all[idx] - x_mean) / x_std
+        self.x = torch.from_numpy(X.astype(np.float32))
+        self.y = torch.from_numpy(y_all[idx]).unsqueeze(1)   # (N, 1)
         self.x_mean = x_mean
         self.x_std  = x_std
 
@@ -303,6 +395,12 @@ def _register_defaults():
 
     def _mnist_noisy_mnist(root, batch_size, train, num_workers, **kw):
         noise_std = kw.get("noise_std", 0.3)
+        # Test split: fixed per-index noise, so repeated evaluations see the
+        # same corrupted images. Train split: fresh noise on every access by
+        # default (augmentation, as before); pass fixed_noise=True to freeze it.
+        # Train and test use different base seeds.
+        noise_seed = int(kw.get("noise_seed", 0)) + (0 if train else 1_000_003)
+        fixed_noise = bool(kw.get("fixed_noise", not train))
         base_tf = T.Normalize((0.1307,), (0.3081,))
 
         source_ds = torchvision.datasets.MNIST(
@@ -311,7 +409,8 @@ def _register_defaults():
         )
         target_ds = NoisyMNIST(
             root=root, train=train, noise_std=noise_std,
-            transform=base_tf, download=True
+            transform=base_tf, download=True,
+            noise_seed=noise_seed, fixed_noise=fixed_noise,
         )
         pin = torch.cuda.is_available()
         source_loader = DataLoader(
@@ -396,28 +495,27 @@ def _register_defaults():
         Source: Northern California (latitude >= 36).
         Target: Southern California (latitude <  36).
 
-        Global normalisation stats are computed once from the full dataset and
-        shared between both domains so feature scales are consistent.
+        Normalisation statistics are fitted once on training rows only and
+        shared by both domains and both splits.
+
+        Keyword overrides (all optional):
+          seed (42), norm_fit_on ("source_train" | "source_target_train"),
+          data_home, download_if_missing
         """
-        try:
-            from sklearn.datasets import fetch_california_housing
-        except ImportError as e:
-            raise ImportError(
-                "The 'california_housing' dataset requires scikit-learn. "
-                "Install it with: pip install scikit-learn"
-            ) from e
-
-        data = fetch_california_housing()
-        X_all = data.data.astype(np.float32)
-        x_mean = X_all.mean(0)
-        x_std  = X_all.std(0) + 1e-8
-
-        src_ds = CaliforniaHousingDataset(
-            domain="north", train=train, x_mean=x_mean, x_std=x_std
+        seed = int(kw.get("seed", 42))
+        data_home = kw.get("data_home")
+        download_if_missing = kw.get("download_if_missing", True)
+        x_mean, x_std = california_normalisation_stats(
+            seed=seed,
+            fit_on=kw.get("norm_fit_on", "source_train"),
+            data_home=data_home,
+            download_if_missing=download_if_missing,
         )
-        tgt_ds = CaliforniaHousingDataset(
-            domain="south", train=train, x_mean=x_mean, x_std=x_std
-        )
+        common = dict(train=train, seed=seed, x_mean=x_mean, x_std=x_std,
+                      data_home=data_home,
+                      download_if_missing=download_if_missing)
+        src_ds = CaliforniaHousingDataset(domain="north", **common)
+        tgt_ds = CaliforniaHousingDataset(domain="south", **common)
         pin = torch.cuda.is_available()
         return (
             DataLoader(src_ds, batch_size=batch_size, shuffle=train,
@@ -439,7 +537,8 @@ def _register_defaults():
 
         Optional kwargs
         -----------------
-        train_ratio, val_ratio, split_seed, split_mode (``"stratified"`` | ``"random"``)
+        train_ratio, val_ratio, split_seed, split_mode (``"stratified"`` | ``"random"``),
+        split (node-level only: ``"train"`` | ``"val"`` | ``"test"``; overrides ``train``)
         """
         from .pyg_utils import build_pyg_domain_loaders
 
@@ -467,6 +566,7 @@ def _register_defaults():
             val_ratio=val_ratio,
             split_seed=split_seed,
             split_mode=split_mode,
+            split=kw.get("split"),
         )
 
     _REGISTRY["pyg_domains"] = _pyg_domains

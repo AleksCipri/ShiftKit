@@ -7,12 +7,14 @@ domain) domain adaptation with stratified train/val/test splits.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import warnings
 from typing import List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import torch
 from torch.utils.data import DataLoader, Dataset
+
+from .node_batch import NodeGraphBatch, is_node_graph_batch, move_node_graph_batch
 
 try:
     from torch_geometric.data import Data, Batch
@@ -21,50 +23,6 @@ except ImportError as e:
         "shiftkit.data.pyg_utils requires torch-geometric. "
         "Install it with:  pip install torch-geometric"
     ) from e
-
-
-# ─── batch container for node-level single-graph domains ─────────────────────
-
-@dataclass
-class NodeGraphBatch:
-    """
-    One full graph plus the node indices and labels for the current step.
-
-    A node-level domain is a single graph, so a "batch" is the whole graph plus
-    a mask-derived index into it.  ``graph`` is shared across steps; only
-    ``node_idx`` / ``y`` describe the current split.
-
-    Implements ``.to(device)`` and ``__len__`` so it can stand in for a plain
-    tensor batch wherever a trainer writes ``x = x.to(device)``.  Reaching into
-    ``.graph`` directly drops ``node_idx`` and silently widens predictions to
-    every node in the graph -- go through :func:`node_latent_vectors` and friends
-    instead.
-    """
-
-    graph: Data
-    node_idx: torch.Tensor
-    y: torch.Tensor
-
-    def to(self, device: torch.device) -> "NodeGraphBatch":
-        """Return a copy with graph, indices, and labels moved to *device*."""
-        return NodeGraphBatch(
-            graph=self.graph.to(device),
-            node_idx=self.node_idx.to(device),
-            y=self.y.to(device),
-        )
-
-    def __len__(self) -> int:
-        """Number of nodes in this split (not the number of graph nodes)."""
-        return int(self.node_idx.numel())
-
-
-def is_node_graph_batch(x) -> bool:
-    return isinstance(x, NodeGraphBatch)
-
-
-def move_node_graph_batch(batch: NodeGraphBatch, device: torch.device) -> NodeGraphBatch:
-    """Backwards-compatible alias for :meth:`NodeGraphBatch.to`."""
-    return batch.to(device)
 
 
 # ─── mask / split helpers ────────────────────────────────────────────────────
@@ -104,19 +62,28 @@ def _stratified_indices(
     train_mask = np.zeros(n, dtype=bool)
     val_mask = np.zeros(n, dtype=bool)
     test_mask = np.zeros(n, dtype=bool)
+    small_classes = []
 
     for cls in np.unique(y):
         idx = np.where(y == cls)[0]
         rng.shuffle(idx)
         n_cls = len(idx)
-        n_train = max(1, int(n_cls * train_ratio)) if n_cls > 2 else max(0, n_cls - 1)
-        n_val = max(0, int(n_cls * val_ratio))
-        if n_train + n_val >= n_cls:
-            n_train = max(1, n_cls - 1)
-            n_val = 0
+        # Every class with at least one node contributes at least one training
+        # node. Classes with 1–2 nodes have no room for validation; a class
+        # with a single node has no test node either.
+        if n_cls <= 2:
+            n_train, n_val = 1, 0
+        else:
+            n_train = max(1, int(n_cls * train_ratio))
+            n_val = max(0, int(n_cls * val_ratio))
+            if n_train + n_val >= n_cls:
+                n_train = max(1, n_cls - 1)
+                n_val = 0
         train_mask[idx[:n_train]] = True
         val_mask[idx[n_train : n_train + n_val]] = True
         test_mask[idx[n_train + n_val :]] = True
+        if n_cls < 3:
+            small_classes.append((cls, n_cls))
 
     unassigned = ~(train_mask | val_mask | test_mask)
     if unassigned.any():
@@ -124,6 +91,14 @@ def _stratified_indices(
         rng.shuffle(idx_rest)
         test_mask[idx_rest] = True
 
+    if small_classes:
+        warnings.warn(
+            "Stratified split: classes with fewer than 3 samples "
+            f"{[(c.item() if hasattr(c, 'item') else c, k) for c, k in small_classes]} "
+            "(label, count) get one training sample and no validation sample; "
+            "a single-sample class has no test sample.",
+            stacklevel=3,
+        )
     return train_mask, val_mask, test_mask
 
 
@@ -155,6 +130,9 @@ def _random_indices(
     return train_mask, val_mask, test_mask
 
 
+_SPLIT_PARAMS_ATTR = "_shiftkit_split_params"
+
+
 def ensure_masks(
     data: Data,
     train_ratio: float = 0.6,
@@ -163,12 +141,25 @@ def ensure_masks(
     split_mode: str = "stratified",
 ) -> Data:
     """
-  Assign ``train_mask``, ``val_mask``, and ``test_mask`` on *data* in-place.
+      Assign ``train_mask``, ``val_mask``, and ``test_mask`` on *data* in-place.
 
-    Skips splitting if ``train_mask`` is already present and non-empty.
+    - Masks created by this function record the split parameters used. If it
+      is called again with different ``train_ratio`` / ``val_ratio`` /
+      ``seed`` / ``split_mode`` (or on a graph whose size changed), the masks
+      are recomputed instead of silently reusing the stale split.
+    - User-supplied masks (a non-empty ``train_mask`` not created by
+      ShiftKit) are respected and never overwritten.
+    - The same ``Data`` object passed as both source and target is split
+      with the target seed on the second call; pass separate objects (e.g.
+      ``data.clone()``) if both domains share one graph.
     """
+    params = (float(train_ratio), float(val_ratio), int(seed), str(split_mode),
+              int(data.num_nodes))
     if _has_masks(data):
-        return data
+        previous = getattr(data, _SPLIT_PARAMS_ATTR, None)
+        if previous is None or previous == params:
+            # User-supplied masks, or masks already made with these params.
+            return data
 
     y_np = _labels_numpy(data)
     n = data.num_nodes
@@ -183,6 +174,9 @@ def ensure_masks(
     data.train_mask = torch.tensor(tr, dtype=torch.bool, device=device)
     data.val_mask = torch.tensor(va, dtype=torch.bool, device=device)
     data.test_mask = torch.tensor(te, dtype=torch.bool, device=device)
+    # Plain Python attribute (not a graph attribute): survives copy/pickle/.to()
+    # and is not collated into batches.
+    setattr(data, _SPLIT_PARAMS_ATTR, params)
     return data
 
 
@@ -206,6 +200,11 @@ def split_graph_list(
 ) -> List[Data]:
     """
     Split a list of graphs into train+val (``train=True``) or test (``train=False``).
+
+    Note: for graph-level tasks the training selection is ``train | val``;
+    there is no separate validation loader. Node-level splitting differs: the
+    training loader uses ``train_mask`` only and ``val_mask`` is left unused
+    for the caller (e.g. for model selection).
     """
     graph_list = _normalize_graph_list(graphs)
     n = len(graph_list)
@@ -285,18 +284,26 @@ def build_graph_loaders(
     return src_loader, tgt_loader
 
 
-class _SingleGraphNodeDataset(Dataset):
-    """One batch per epoch: full graph + train or test node indices."""
+_NODE_SPLIT_MASKS = {"train": "train_mask", "val": "val_mask", "test": "test_mask"}
 
-    def __init__(self, data: Data, eval_split: bool = False):
+
+class _SingleGraphNodeDataset(Dataset):
+    """One batch per epoch: full graph + train, val or test node indices."""
+
+    def __init__(self, data: Data, eval_split: bool = False, split: Optional[str] = None):
         self.data = data
-        self.eval_split = eval_split
+        if split is None:
+            split = "test" if eval_split else "train"
+        if split not in _NODE_SPLIT_MASKS:
+            raise ValueError(f"split must be one of {list(_NODE_SPLIT_MASKS)}, got {split!r}")
+        self.split = split
+        self.eval_split = split != "train"
 
     def __len__(self):
         return 1
 
     def __getitem__(self, idx):
-        mask = self.data.test_mask if self.eval_split else self.data.train_mask
+        mask = getattr(self.data, _NODE_SPLIT_MASKS[self.split])
         node_idx = mask.nonzero(as_tuple=False).view(-1)
         y = self.data.y[node_idx]
         if y.dtype in (torch.int64, torch.int32):
@@ -319,17 +326,24 @@ def build_node_loaders(
     batch_size: int,
     num_workers: int,
     train: bool,
+    split: Optional[str] = None,
 ) -> Tuple[DataLoader, DataLoader]:
-    eval_split = not train
+    """
+    Node-level loaders. ``split`` (``"train"``, ``"val"`` or ``"test"``)
+    overrides ``train``; by default ``train=True`` → train nodes and
+    ``train=False`` → test nodes.
+    """
+    if split is None:
+        split = "train" if train else "test"
     src_loader = DataLoader(
-        _SingleGraphNodeDataset(source, eval_split=eval_split),
+        _SingleGraphNodeDataset(source, split=split),
         batch_size=1,
         shuffle=False,
         num_workers=num_workers,
         collate_fn=_node_collate,
     )
     tgt_loader = DataLoader(
-        _SingleGraphNodeDataset(target, eval_split=eval_split),
+        _SingleGraphNodeDataset(target, split=split),
         batch_size=1,
         shuffle=False,
         num_workers=num_workers,
@@ -349,9 +363,12 @@ def build_pyg_domain_loaders(
     val_ratio: float,
     split_seed: int,
     split_mode: str,
+    split: Optional[str] = None,
 ) -> Tuple[DataLoader, DataLoader]:
     """
     Build (source_loader, target_loader) for ``pyg_domains`` factory.
+
+    ``split="val"`` (node-level only) returns loaders over ``val_mask`` nodes.
     """
     task_level = task_level.lower()
     if task_level not in ("node", "graph"):
@@ -364,7 +381,13 @@ def build_pyg_domain_loaders(
             )
         source = ensure_masks(source, train_ratio, val_ratio, split_seed, split_mode)
         target = ensure_masks(target, train_ratio, val_ratio, split_seed + 1, split_mode)
-        return build_node_loaders(source, target, batch_size, num_workers, train)
+        return build_node_loaders(source, target, batch_size, num_workers, train, split)
+
+    if split is not None:
+        raise ValueError(
+            "split= is only supported for task_level='node'; graph-level "
+            "splitting returns train+val (train=True) or test (train=False)."
+        )
 
     src_graphs = split_graph_list(
         source, train, train_ratio, val_ratio, split_seed, split_mode

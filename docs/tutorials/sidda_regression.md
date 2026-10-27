@@ -5,27 +5,34 @@ This tutorial demonstrates `SIDDARegressionTrainer` on a synthetic 2D
 
 | Variant | `use_potentials` | `weight_ot` | What changes |
 |---------|:---:|:---:|---|
-| **SIDDA** | ✗ | ✗ | Baseline — uniform OT, mean MSE |
-| **SIDDA + CE-reweight** | ✓ | ✗ | Per-sample MSE weighted by alignment potential |
-| **SIDDA + OT-reweight** | ✗ | ✓ | Transport plan focused on overlapping region |
-| **SIDDA + Both** | ✓ | ✓ | Both reweightings from a single Sinkhorn call |
+| **SIDDA** | ✗ | ✗ | Baseline — uniform measures, mean MSE |
+| **SIDDA + CE-reweight** | ✓ | ✗ | Per-sample MSE weighted by softmax(−f/τ) of the batch's source potentials |
+| **SIDDA + OT-reweight** | ✗ | ✓ | Sinkhorn measures reweighted by softmax(−f/τ), softmax(−g/τ) of the same batch |
+| **SIDDA + Both** | ✓ | ✓ | Both reweightings |
+
+The two reweighting options are experimental heuristics (see the
+[SIDDA method page](../methods/sidda.md#potential-based-reweighting-experimental));
+this tutorial shows how to run them, not that they help.
 
 ---
 
 ## The problem
 
 Two 2D Gaussian blobs — one per domain — partially overlap.
-The regression target is the **first feature** `x₀`, which spans the shift direction.
+Each coordinate has **standard deviation 0.8** (covariance 0.64·I). The
+regression target is the **first feature** `x₀`, which spans the shift direction.
 
 ```
-Source: N([0, 0], 0.8·I)      Target: N([1.5, 0], 0.8·I)
-                                         ↑
-                               overlapping region ~ 30 %
+Source: N([0, 0], 0.64·I)     Target: N([1.5, 0], 0.64·I)
+        (per-coordinate SD 0.8)        (centres 1.5 apart ≈ 1.9 SD)
 ```
 
 A model trained only on source sees a range of `x₀` that is systematically lower
-than the target's range.  SIDDA aligns the latent distributions so the encoder
-generalises across the gap.
+than the target's range. Because `y = x₀` is the same function in both domains,
+this is a covariate shift: a source model that learns the identity well can
+already extrapolate, and the source-only reference below is a strong baseline.
+Aligning the latent distributions can also *hurt*, because matching the two
+latent marginals can pull apart the mapping from latent to `y`.
 
 ---
 
@@ -120,11 +127,24 @@ for cfg in configs:
         use_potentials=cfg["use_potentials"],
         weight_ot=cfg["weight_ot"],
         potential_temperature=1.0,
-        ot_ema_momentum=0.9,
     )
     histories[label] = trainer.fit(epochs=EPOCHS)
     trainers[label]  = trainer
 ```
+
+As a reference, train the same architecture on source only:
+
+```python
+from shiftkit import SourceOnlyRegressionTrainer
+
+ref = SourceOnlyRegressionTrainer(make_model(), train_src, train_tgt, lr=LR)
+ref.fit(epochs=EPOCHS)
+r_tgt = ref.evaluate(test_tgt, domain="target")
+print(f"Source-only reference: tgt RMSE={r_tgt['rmse']:.4f}  R²={r_tgt['r2']:.3f}")
+```
+
+The history's `tgt_rmse`/`tgt_r2` use the target training labels for
+monitoring only (evaluation mode, after each step); they never enter the loss.
 
 ---
 
@@ -254,18 +274,21 @@ plt.show()
 ```
 
 !!! note "Reading the t-SNE plots"
-    **Top row (by domain):** good alignment = source (blue) and target (orange)
-    clusters interleaved rather than separated.
+    **Top row (by domain):** interleaved source (blue) and target (orange)
+    points indicate that the latent marginals overlap.
 
-    **Bottom row (by target value y):** the colour gradient should be smooth and
-    continuous across both domains — this confirms the encoder captures the
-    regression target in a way that generalises.  If the gradient breaks at the
-    source/target boundary, the model is not yet transferring the y-structure.
+    **Bottom row (by target value y):** a smooth colour gradient across both
+    domains is consistent with the encoder representing y, but it is only a
+    visual hint: t-SNE distorts distances, and a smooth gradient does not show
+    that predictions on the target are accurate. Use labelled target test
+    metrics for that.
 
 ### Mean source potential over training
 
-Only meaningful when `use_potentials=True` or `weight_ot=True`.  Decreasing
-potential = encoder is aligning the two distributions in latent space.
+Only recorded when `use_potentials=True` or `weight_ot=True`. The mean source
+potential f is **not** the Sinkhorn divergence (that is mean(f) + mean(g)), and
+it depends on σ, which changes every batch, so it is not a monotone measure of
+alignment. Plot `da_loss` if you want the divergence itself.
 
 ```python
 fig, ax = plt.subplots(figsize=(7, 3))
@@ -277,7 +300,7 @@ for (label, hist), color in zip(histories.items(), colors):
 
 ax.axvline(WARMUP, color="gray", linestyle=":", linewidth=1, label="Warmup end")
 ax.set_xlabel("Epoch"); ax.set_ylabel("Mean source potential f")
-ax.set_title("Transport cost — decreases as distributions align")
+ax.set_title("Mean source potential f (not the Sinkhorn divergence)")
 ax.legend(fontsize=8)
 plt.tight_layout(); plt.show()
 ```
@@ -300,30 +323,39 @@ for label in [c["label"] for c in configs]:
     )
 ```
 
-### Typical results
+### Results from one run
+
+The table below was produced by running exactly the code above on CPU with
+`torch.manual_seed(42)` / `np.random.seed(42)`, 60 epochs (10 warmup), plus the
+source-only reference. This is **one seed**. Label variance is 0.664 (source
+test) and 0.644 (target test), so R² = 1 − MSE/0.644 on the target.
 
 | Variant | Src RMSE | Src R² | Tgt RMSE | Tgt R² |
 |---------|:--------:|:------:|:--------:|:------:|
-| SIDDA | ~0.80 | ~0.98 | ~0.82 | ~0.97 |
-| SIDDA + CE-reweight | ~0.80 | ~0.98 | ~0.81 | ~0.97 |
-| SIDDA + OT-reweight | ~0.80 | ~0.98 | ~0.80 | ~0.98 |
-| SIDDA + Both | ~0.80 | ~0.98 | ~0.79 | ~0.98 |
+| SIDDA | 0.103 | 0.984 | 0.898 | −0.253 |
+| SIDDA + CE-reweight | 0.183 | 0.949 | 1.364 | −1.888 |
+| SIDDA + OT-reweight | 0.068 | 0.993 | 0.414 | 0.734 |
+| SIDDA + Both | 0.050 | 0.996 | 0.152 | 0.964 |
+| Source-only (reference) | 0.055 | 0.995 | 0.144 | 0.968 |
 
-!!! note "Interpreting the results"
-    With 30 % overlap the domain gap is moderate and baseline SIDDA already
-    transfers well.  The reweighting variants show the most benefit when the
-    overlap is smaller — try reducing the blob separation to `center=(2.5, 0.0)`
-    or increasing it to `center=(3.0, 0.0)` to see the effect amplify.
-    The latent-space plots are often more telling than RMSE: look for whether the
-    source and target embeddings become more interleaved and whether the target
-    value gradient stays smooth across both domains.
+!!! warning "Interpreting the results"
+    Results vary strongly between seeds. Repeating the same script with seeds
+    0–3 gave target RMSE 0.33–1.08 for SIDDA, 0.23–0.35 for CE-reweight,
+    0.07–0.28 for OT-reweight, 0.04–0.27 for Both, and 0.16–0.23 for source-only.
+    The ranking of the variants changed from seed to seed, so this example does
+    **not** show that any reweighting option is better, and on this covariate
+    shift plain SIDDA was often worse than training on source only. Compare
+    methods over several seeds, with a labelled target test set, before drawing
+    conclusions. Your numbers may differ with other hardware or library
+    versions.
 
 ---
 
 ## Exercises
 
-1. **Widen the gap** — change `center=(2.5, 0.0)` or `(3.0, 0.0)`.
-   Which variant degrades least?
+1. **Widen the gap** — move the target centre further away, e.g.
+   `center=(2.5, 0.0)` or `(3.0, 0.0)` (this *increases* the separation and
+   reduces the overlap). Which variant degrades least, over several seeds?
 
 2. **Lower temperature** — set `potential_temperature=0.3`.
    Does sharper reweighting help or hurt when the gap is large?

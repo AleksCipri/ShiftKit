@@ -40,9 +40,9 @@ Both KMM and KLIEP are instance-based methods that estimate the same density rat
 
 | | KMM | KLIEP |
 |--|-----|-------|
-| **Objective** | Minimise MMD between reweighted source and target | Maximise KL divergence from target to reweighted source |
-| **Solver** | Convex QP (scipy SLSQP) | Gradient ascent with projection |
-| **Weights defined on** | All source samples jointly (global solution) | Each source sample independently via basis expansion |
+| **Objective** | Minimise MMD between reweighted source and target | Minimise KL divergence from target to reweighted source by maximising target log-weights |
+| **Solver** | Convex QP (scipy SLSQP) | Gradient ascent with joint non-negativity and normalisation projection |
+| **Weights defined on** | All source samples jointly (global solution) | Shared kernel-basis coefficients fitted jointly; weights evaluated per sample |
 | **Scales with** | n_src² (kernel matrix) | n_centers (basis size) |
 | **Upper bound on weights** | Yes — explicit parameter `B` | Via `weight_clip` |
 | **Best for** | Small-to-medium datasets, when exact QP is tractable | Larger datasets where kernel matrix is expensive |
@@ -54,12 +54,22 @@ Both KMM and KLIEP are instance-based methods that estimate the same density rat
 ### Basic
 
 ```python
+import torch
 from shiftkit import DataManager, CNN
 from shiftkit import KMMTrainer
 
 dm = DataManager(batch_size=256)
 train_src, train_tgt = dm.load("mnist_noisy_mnist")
 test_src,  test_tgt  = dm.load("mnist_noisy_mnist", train=False)
+
+# KMM builds an n_src x n_src kernel matrix (float64). All 60,000 MNIST images
+# would need ~29 GB, so the default memory guard rejects them, and the QP solve
+# time grows steeply with n (about 13 s at 1,000 samples on one CPU core).
+# Subsample the source set (here 1,000 images) and keep that subset fixed.
+from torch.utils.data import DataLoader, Subset
+g = torch.Generator().manual_seed(0)
+keep = torch.randperm(len(train_src.dataset), generator=g)[:1000].tolist()
+train_src = DataLoader(Subset(train_src.dataset, keep), batch_size=256, shuffle=True)
 
 model = CNN(latent_dim=128, num_classes=10)
 
@@ -156,6 +166,17 @@ weights = estimator.predict(X_src)  # returns the fitted weights (n_src,)
 ---
 
 ## Practical notes
+
+**Source sample identity and loader settings**
+: Weights are tied to source dataset indices. Estimation includes every index
+  selected by the source sampler, including the final short batch even when
+  training uses `drop_last=True`. Training preserves the original batch sampler
+  and worker settings. `Subset` datasets and subset samplers are supported.
+  The source must be a map-style dataset with an explicit `batch_size`; sampling
+  with replacement, duplicate indices, and custom batch-sampler configurations
+  are rejected. Sampler membership must stay fixed across epochs, and custom
+  collation must preserve sample order. Use deterministic input transforms when
+  fixed weights must correspond to the exact features seen during training.
 
 **Bandwidth σ (median heuristic)**
 : If `sigma=None`, KMM uses the median pairwise distance across a subsample of the

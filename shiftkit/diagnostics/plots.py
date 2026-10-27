@@ -38,8 +38,44 @@ import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 from typing import Dict, List, Optional, Union
 
+from shiftkit.data.node_batch import is_node_graph_batch
+
 
 # ─── helpers ─────────────────────────────────────────────────────────────────
+
+# Label used for samples whose loader yields no labels (unlabelled target).
+_UNLABELLED = -1
+
+
+def _split_batch(batch):
+    """Return ``(x, y_or_None)`` for ``(x, y)`` batches or bare ``x`` batches."""
+    if isinstance(batch, (tuple, list)):
+        if len(batch) >= 2:
+            return batch[0], batch[1]
+        return batch[0], None
+    return batch, None
+
+
+def _encode_batch(model: nn.Module, x, y, device: torch.device):
+    """
+    Encode one batch; return ``(z, y)`` restricted to the batch's samples.
+
+    A ``NodeGraphBatch`` is encoded as a whole graph and indexed by
+    ``node_idx`` so only the selected split's nodes are returned, with
+    ``batch.y`` as the authoritative labels.
+    """
+    if is_node_graph_batch(x):
+        batch = x.to(device)
+        z = model.encode(batch.graph)[batch.node_idx]
+        return z, batch.y
+    return model.encode(x.to(device)), y
+
+
+def _labels_numpy(y, n: int) -> np.ndarray:
+    if y is None:
+        return np.full(n, _UNLABELLED, dtype=np.int64)
+    return y.detach().cpu().numpy().reshape(-1)
+
 
 @torch.no_grad()
 def _collect_embeddings(
@@ -48,19 +84,35 @@ def _collect_embeddings(
     device: torch.device,
     max_samples: int,
 ):
-    """Return (embeddings, labels) numpy arrays, capped at max_samples."""
+    """
+    Return (embeddings, labels) numpy arrays, capped at max_samples.
+
+    Supports tensor batches, PyG graph batches and node-level
+    ``NodeGraphBatch`` items. Loaders that yield inputs only get label
+    ``-1`` (shown as "unlabelled").
+    """
     model.eval()
     zs, ys = [], []
     n = 0
-    for x, y in loader:
-        x = x.to(device)
-        z = model.encode(x).cpu().numpy()
+    for batch in loader:
+        x, y = _split_batch(batch)
+        z, y = _encode_batch(model, x, y, device)
+        z = z.cpu().numpy()
         zs.append(z)
-        ys.append(y.numpy())
-        n += len(y)
+        ys.append(_labels_numpy(y, len(z)))
+        n += len(z)
         if n >= max_samples:
             break
     return np.concatenate(zs)[:max_samples], np.concatenate(ys)[:max_samples]
+
+
+def _class_palette(n: int) -> np.ndarray:
+    """Distinct colours for *n* classes (tab10 ≤ 10, tab20 ≤ 20, else HSV)."""
+    if n <= 10:
+        return plt.cm.tab10(np.arange(10))[:max(n, 1)]
+    if n <= 20:
+        return plt.cm.tab20(np.arange(20))[:n]
+    return plt.cm.hsv(np.linspace(0, 1, n, endpoint=False))
 
 
 def _device_of(model: nn.Module) -> torch.device:
@@ -178,13 +230,20 @@ def _collect_node_embeddings(
 
 def _draw_class_panel(ax, z2d, y_src, y_tgt, title, class_names):
     class_labels = np.concatenate([y_src, y_tgt])
-    unique       = sorted(np.unique(class_labels))
-    palette      = plt.cm.tab10(np.linspace(0, 1, max(len(unique), 10)))
+    unique       = sorted(c for c in np.unique(class_labels) if c != _UNLABELLED)
+    palette      = _class_palette(len(unique))
+    # >10 classes: vary the marker as well as the colour for legibility
+    markers      = ["o", "s", "^", "D", "v", "P", "X", "*"] if len(unique) > 10 else ["o"]
+    unl = class_labels == _UNLABELLED
+    if unl.any():
+        ax.scatter(z2d[unl, 0], z2d[unl, 1], c="lightgrey",
+                   label="unlabelled", s=8, alpha=0.5, linewidths=0)
     for i, c in enumerate(unique):
         mask  = class_labels == c
-        label = class_names[c] if class_names else str(c)
+        label = class_names[int(c)] if class_names else str(c)
         ax.scatter(z2d[mask, 0], z2d[mask, 1],
-                   c=[palette[i]], label=label, s=8, alpha=0.6, linewidths=0)
+                   c=[palette[i]], marker=markers[i % len(markers)],
+                   label=label, s=8, alpha=0.6, linewidths=0)
     ax.set_title(title, fontsize=11)
     ax.legend(markerscale=3, framealpha=0.8, ncol=2, fontsize=7, loc="best")
     ax.set_xticks([]); ax.set_yticks([])
@@ -219,7 +278,8 @@ def plot_latent_space(
     perplexity  : t-SNE perplexity (t-SNE only)
     n_iter      : t-SNE iterations (t-SNE only)
     n_neighbors : neighbourhood size (Isomap and UMAP)
-    min_dist    : minimum distance between embedded points (UMAP only)
+    min_dist    : UMAP spread parameter (UMAP only); smaller packs points more
+                  tightly — not a guaranteed minimum distance
     """
     device = _device_of(model)
     print("Collecting source embeddings …")
@@ -338,7 +398,8 @@ def compare_latent_spaces(
     perplexity  : t-SNE perplexity (t-SNE only)
     n_iter      : t-SNE iterations (t-SNE only)
     n_neighbors : neighbourhood size (Isomap and UMAP)
-    min_dist    : minimum distance between embedded points (UMAP only)
+    min_dist    : UMAP spread parameter (UMAP only); smaller packs points more
+                  tightly — not a guaranteed minimum distance
     """
     model_names = list(models.keys())
     n_models    = len(model_names)
@@ -388,18 +449,33 @@ def _collect_predictions(
     device: torch.device,
     max_samples: int,
 ):
-    """Return (true_labels, predicted_labels, softmax_probs) numpy arrays."""
+    """
+    Return (true_labels, predicted_labels, softmax_probs) numpy arrays.
+
+    Requires a labelled loader. ``NodeGraphBatch`` items are evaluated on
+    their selected nodes only.
+    """
     model.eval()
     ys, y_preds, probs = [], [], []
     n = 0
-    for x, y in loader:
-        x = x.to(device)
-        logits = model(x)
+    for batch in loader:
+        x, y = _split_batch(batch)
+        if is_node_graph_batch(x):
+            nb = x.to(device)
+            logits = model.classify(model.encode(nb.graph)[nb.node_idx])
+            y = nb.y
+        else:
+            logits = model(x.to(device))
+        if y is None:
+            raise ValueError(
+                "Confusion-matrix / ROC diagnostics need a labelled loader; "
+                "this loader yields inputs only."
+            )
         p = torch.softmax(logits, dim=1).cpu().numpy()
         probs.append(p)
         y_preds.append(logits.argmax(1).cpu().numpy())
-        ys.append(y.numpy())
-        n += len(y)
+        ys.append(y.detach().cpu().numpy().reshape(-1))
+        n += len(p)
         if n >= max_samples:
             break
     ys      = np.concatenate(ys)[:max_samples]
@@ -428,7 +504,7 @@ def plot_training_history(
     if isinstance(histories, list):
         histories = {"Model": histories}
 
-    colors = plt.cm.tab10(np.linspace(0, 1, max(len(histories), 2)))
+    colors = _class_palette(len(histories))
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 5))
     fig.suptitle("Training History", fontsize=13, fontweight="bold")
@@ -438,14 +514,17 @@ def plot_training_history(
         epochs  = [h["epoch"]         for h in history]
         ce      = [h["ce_loss"]       for h in history]
         src_acc = [h["src_acc"] * 100 for h in history]
-        tgt_acc = [h["tgt_acc"] * 100 for h in history]
+        # tgt_acc is None/nan when the target loader is unlabelled
+        tgt_acc = [np.nan if h.get("tgt_acc") is None else float(h["tgt_acc"]) * 100
+                   for h in history]
 
         ax1.plot(epochs, ce, color=color, marker="o", ms=4, label=label)
 
         ax2.plot(epochs, src_acc, color=color, marker="o", ms=4,
                  ls="-",  label=f"{label} — Source")
-        ax2.plot(epochs, tgt_acc, color=color, marker="s", ms=4,
-                 ls="--", label=f"{label} — Target")
+        if not np.all(np.isnan(tgt_acc)):   # unlabelled target → no curve
+            ax2.plot(epochs, tgt_acc, color=color, marker="s", ms=4,
+                     ls="--", label=f"{label} — Target")
 
     ax1.set_xlabel("Epoch"); ax1.set_ylabel("CE Loss")
     ax1.set_title("Cross-Entropy Loss"); ax1.legend(); ax1.grid(True, alpha=0.3)
@@ -507,19 +586,27 @@ def plot_confusion_matrix(
 
     for col, (name, model) in enumerate(models.items()):
         device = _device_of(model)
-        y_true, y_pred, _ = _collect_predictions(model, loader, device, max_samples)
+        y_true, y_pred, probs = _collect_predictions(model, loader, device, max_samples)
 
-        cm = confusion_matrix(y_true, y_pred)
+        # Fix the class order to the model's output classes so absent or
+        # non-consecutive labels cannot shift rows/columns.
+        n_classes = probs.shape[1]
+        if class_names is not None and len(class_names) != n_classes:
+            raise ValueError(
+                f"class_names has {len(class_names)} entries but the model "
+                f"outputs {n_classes} classes"
+            )
+        cm = confusion_matrix(y_true, y_pred, labels=np.arange(n_classes))
         if normalize:
             row_sums = cm.sum(axis=1, keepdims=True)
-            cm = np.where(row_sums == 0, 0.0, cm / row_sums.astype(float))
+            with np.errstate(invalid="ignore", divide="ignore"):
+                cm = np.where(row_sums == 0, 0.0, cm / np.maximum(row_sums, 1).astype(float))
 
         ax = axes[0, col]
         im = ax.imshow(cm, interpolation="nearest", cmap="Blues",
                        vmin=0.0, vmax=(1.0 if normalize else None))
         fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
 
-        n_classes = cm.shape[0]
         ticks = np.arange(n_classes)
         labels = class_names if class_names else [str(i) for i in ticks]
         ax.set_xticks(ticks); ax.set_xticklabels(labels, rotation=45, ha="right", fontsize=8)
@@ -535,8 +622,8 @@ def plot_confusion_matrix(
                         ha="center", va="center", fontsize=7,
                         color="white" if val > thresh else "black")
 
-        acc = np.diag(cm).sum() / (cm.sum() if not normalize else n_classes)
-        ax.set_title(f"{name}\nacc={y_true[y_pred == y_true].size / y_true.size * 100:.1f}%",
+        acc = float(np.mean(y_pred == y_true)) * 100
+        ax.set_title(f"{name}\nacc={acc:.1f}%",
                      fontsize=10)
         ax.set_xlabel("Predicted label")
         ax.set_ylabel("True label")
@@ -608,8 +695,10 @@ def plot_roc_curve(
                     label=f"{labels[1]}  (AUC={roc_auc:.3f})")
         else:
             y_bin = label_binarize(y_true, classes=np.arange(n_classes))
-            colors = plt.cm.tab10(np.linspace(0, 1, n_classes))
+            colors = _class_palette(n_classes)
             for c in range(n_classes):
+                if y_bin[:, c].all() or not y_bin[:, c].any():
+                    continue   # ROC undefined when a class is absent (or only class)
                 fpr, tpr, _ = roc_curve(y_bin[:, c], probs[:, c])
                 roc_auc = auc(fpr, tpr)
                 ax.plot(fpr, tpr, color=colors[c], lw=1.5,

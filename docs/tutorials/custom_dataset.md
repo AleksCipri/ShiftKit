@@ -56,6 +56,20 @@ train_src, train_tgt = dm.load("tabular_shift", train=True)
 test_src,  test_tgt  = dm.load("tabular_shift", train=False)
 ```
 
+Use a model whose input width matches the 32 features, e.g.
+`MLP(input_dim=32, latent_dim=16, num_classes=2)` (the `MLP` default is 784).
+
+!!! note "Use separate generators per split"
+    The factory above draws train and test data from the global RNG, so the two
+    calls produce different samples only by chance of RNG state. For reproducible,
+    independent splits, seed a `torch.Generator` per split (e.g. seed 0 for train,
+    1 for test) and pass it to `torch.randn(..., generator=g)`.
+
+!!! note "Unlabelled target"
+    In unsupervised DA the target training loader only needs inputs; the
+    built-in trainers accept target batches that are `x` alone (the history's
+    `tgt_acc` is then `nan`, i.e. not available). Keep target labels for evaluation loaders.
+
 ---
 
 ## Passing extra kwargs

@@ -19,6 +19,14 @@ TrainerRegistry.register("sidda",        SIDDATrainer)
 TrainerRegistry.register("kliep",        KLIEPTrainer)
 TrainerRegistry.register("kmm",          KMMTrainer)
 
+# SourceOnly/MMD/LMMD/CORAL/DANN subclass BaseTrainer directly.  SIDDA, KLIEP
+# and KMM implement the same fit/evaluate interface; registering them as
+# virtual subclasses makes isinstance/issubclass(…, BaseTrainer) hold for all
+# eight registered trainers (a no-op for classes that already subclass it).
+for _cls in (SIDDATrainer, KLIEPTrainer, KMMTrainer):
+    BaseTrainer.register(_cls)
+del _cls
+
 __all__ = [
     "BaseTrainer", "TrainerRegistry",
     "MMDLoss", "MMDTrainer", "SourceOnlyTrainer",

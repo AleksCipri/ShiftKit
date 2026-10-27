@@ -1,9 +1,8 @@
 # Tutorial 6 — Regression with Domain Adaptation
 
 Most ShiftKit examples use **classification** tasks, but domain shift affects regression
-problems just as commonly — a model trained to predict house prices in Northern California
-or fit a sine wave at one phase will generalise poorly when deployed in a different
-geographic region or with a shifted input signal.
+problems too — for example, a model trained to predict house prices in Northern California
+may generalise poorly when deployed in Southern California.
 
 This tutorial walks through two regression DA experiments using `SourceOnlyRegressionTrainer`
 (baseline) and `MMDRegressionTrainer` (alignment).  The same `MLPRegressor` architecture and
@@ -18,52 +17,66 @@ This tutorial walks through two regression DA experiments using `SourceOnlyRegre
 | `MLPRegressor` | `shiftkit.models` | Flexible MLP with `encode` / `regress` interface |
 | `SourceOnlyRegressionTrainer` | `shiftkit.methods` | MSE baseline, no alignment |
 | `MMDRegressionTrainer` | `shiftkit.methods` | MSE + λ·MMD² feature alignment |
-| `SineWaveDataset` | `shiftkit.data` | Synthetic phase-shifted sine regression |
+| `SineWaveDataset` | `shiftkit.data` | Synthetic sine regression (used in the limitation example) |
 | `CaliforniaHousingDataset` | `shiftkit.data` | Geographic CA housing split |
 
-All regression trainers track **RMSE** per epoch (source and target) and report **MSE**,
-**RMSE**, and **R²** from `evaluate()`.
+All regression trainers track **RMSE** and **R²** per epoch (source and target) and report
+**MSE**, **RMSE**, **MAE** and **R²** from `evaluate()`. History and `evaluate()` use the same
+convention: MSE/RMSE/MAE average over all output elements; R² is computed per output column
+and averaged. Target labels, if present, are used only for monitoring (`tgt_rmse` is `None`
+for an unlabelled target loader).
 
 ---
 
-## Example 1 — Sine Wave (Phase Shift)
+## Example 1 — Sine Wave (Covariate Shift)
 
 ### The domain gap
 
-The source domain is `y = sin(x)` sampled uniformly from `(−π, π)`.
-The target domain has the same shape but is shifted by π/3 (60°):
+Both domains share the same labelling rule, `y = sin(x) + noise` (noise SD 0.05);
+only the input distribution changes:
 
 ```
-source: y = sin(x)
-target: y = sin(x + π/3)
+source: x ~ Uniform(−π, π)
+target: x ~ Normal(π/2, 0.6²), clipped to (−π, π)
 ```
 
-A model trained only on source data will try to predict the *wrong* phase on the target,
-leading to high RMSE.  MMD alignment encourages the encoder to map both signals to a
-shared latent space, reducing the phase-induced gap.
+The target inputs lie inside the source range, so the shift is identifiable: a
+model that fits `sin(x)` well on the source also fits the target. This example
+builds the data inline with `TensorDataset`.
 
 ### Setup
 
 ```python
-import shiftkit
-from shiftkit import DataManager, MLPRegressor
-from shiftkit import SourceOnlyRegressionTrainer, MMDRegressionTrainer
+import copy
+import numpy as np
+import torch
+from torch.utils.data import TensorDataset, DataLoader
+from shiftkit import MLPRegressor, SourceOnlyRegressionTrainer, MMDRegressionTrainer
 
-dm = DataManager(batch_size=256)
-train_src, train_tgt = dm.load("sine_wave")           # phase 0  vs  π/3
-test_src,  test_tgt  = dm.load("sine_wave", train=False)
+torch.manual_seed(0)
+rng = np.random.default_rng(0)
+
+def make_domain(n, target):
+    if target:   # target: x concentrated near π/2, inside the source range
+        x = np.clip(rng.normal(np.pi / 2, 0.6, n), -np.pi, np.pi)
+    else:        # source: x uniform on (−π, π)
+        x = rng.uniform(-np.pi, np.pi, n)
+    y = np.sin(x) + 0.05 * rng.standard_normal(n)
+    return TensorDataset(torch.tensor(x, dtype=torch.float32).unsqueeze(1),
+                         torch.tensor(y, dtype=torch.float32).unsqueeze(1))
+
+train_src = DataLoader(make_domain(2000, False), batch_size=256, shuffle=True)
+train_tgt = DataLoader(make_domain(2000, True),  batch_size=256, shuffle=True)
+test_src  = DataLoader(make_domain(2000, False), batch_size=256)
+test_tgt  = DataLoader(make_domain(2000, True),  batch_size=256)
+
+initial = MLPRegressor(input_dim=1, latent_dim=32, hidden_dims=(64, 64))
 ```
 
 ### Source-only baseline
 
 ```python
-import copy
-
-model_so = MLPRegressor(input_dim=1, latent_dim=32, hidden_dims=(64, 64))
-
-trainer_so = SourceOnlyRegressionTrainer(
-    model_so, train_src, train_tgt, lr=1e-3
-)
+trainer_so = SourceOnlyRegressionTrainer(copy.deepcopy(initial), train_src, train_tgt, lr=1e-3)
 history_so = trainer_so.fit(epochs=30)
 
 result_so = trainer_so.evaluate(test_tgt, domain="target")
@@ -73,10 +86,8 @@ print(f"Source-only → target  RMSE={result_so['rmse']:.4f}  R²={result_so['r2
 ### MMD-aligned model
 
 ```python
-model_mmd = MLPRegressor(input_dim=1, latent_dim=32, hidden_dims=(64, 64))
-
 trainer_mmd = MMDRegressionTrainer(
-    model_mmd, train_src, train_tgt,
+    copy.deepcopy(initial), train_src, train_tgt,
     mmd_weight=0.5, warmup_epochs=5, lr=1e-3
 )
 history_mmd = trainer_mmd.fit(epochs=30)
@@ -98,21 +109,44 @@ plt.plot(epochs, [e["tgt_rmse"] for e in history_mmd], label="MMD (target)")
 plt.plot(epochs, [e["src_rmse"] for e in history_mmd], label="MMD (source)", linestyle="--")
 plt.xlabel("Epoch")
 plt.ylabel("RMSE")
-plt.title("Sine wave — target RMSE during training")
+plt.title("Sine wave — RMSE during training")
 plt.legend()
 plt.tight_layout()
 plt.show()
 ```
 
-### Typical results
+### Results from one run
+
+Running the code above on CPU (seed 0, 30 epochs, both models starting from the
+same initial weights) gave:
 
 | Model | Source RMSE | Target RMSE | Target R² |
 |-------|-------------|-------------|-----------|
-| Source-only | ~0.06 | ~0.47 | ~0.56 |
-| MMD (λ=0.5) | ~0.07 | ~0.12 | ~0.93 |
+| Source-only | 0.059 | 0.059 | 0.922 |
+| MMD (λ=0.5) | 0.106 | 0.075 | 0.874 |
 
-The domain gap is large (target RMSE ≈ 8× source) without adaptation.
-MMD alignment recovers most of the target performance.
+This is a single seed, not an average. In this run the source-only model already
+transferred, because the target inputs are covered by the source data. MMD
+alignment did not help and slightly increased both errors. Marginal alignment
+is not guaranteed to help regression: when the conditional `p(y|x)` is shared and
+the source covers the target, aligning latent marginals can distort an encoder
+that was already adequate. (Target R² is lower than source R² at a similar
+RMSE because `y` varies less on the target.)
+
+### Limitation example — a pure phase change
+
+`DataManager().load("sine_wave")` gives a different problem: source
+`y = sin(x)` and target `y = sin(x + π/3)`, with the **same** input
+distribution `x ~ Uniform(−π, π)` in both domains. Only the labelling rule
+`p(y|x)` changes. Unlabelled target inputs carry no information about the new
+phase, and with identical input distributions there is no population-level
+marginal shift for MMD to remove. A predictor that is perfect on the source has
+target MSE `1 − cos(π/3) + 0.05² = 0.5025`, i.e. **RMSE ≈ 0.709**.
+
+Training the same two models on that data (seed 0, 30 epochs, CPU) gave target
+RMSE 0.711 (source-only) and 0.724 (MMD), both at or slightly above the 0.709
+floor, with target R² ≈ 0. No method that uses only unlabelled target inputs can
+fix this kind of shift; it needs target labels or prior knowledge of the change.
 
 ---
 
@@ -120,14 +154,19 @@ MMD alignment recovers most of the target performance.
 
 ### The domain gap
 
-The California Housing dataset (scikit-learn builtin, no download required) contains
-census-block-level housing statistics.  We split by **latitude**:
+The California Housing dataset is loaded with scikit-learn's
+`fetch_california_housing`, which downloads it on first use and caches it locally
+(so the first run needs internet access). It contains census-block-group housing
+statistics. We split by **latitude**:
 
-- **Source (North, lat ≥ 36°)**: Bay Area, Sacramento, Fresno — ~11 k samples
-- **Target (South, lat < 36°)**: Greater Los Angeles, San Diego — ~9 k samples
+- **Source (North, lat ≥ 36°)**: e.g. Bay Area, Sacramento — 8,826 samples
+- **Target (South, lat < 36°)**: e.g. Greater Los Angeles, San Diego — 11,814 samples
 
-Northern and Southern California have meaningfully different price distributions, housing
-density, and income patterns — a realistic geographic covariate shift.
+Each domain is further split 80/20 into training and test sets.
+
+Northern and Southern California differ in price distributions, housing density and
+income patterns. The change may involve `p(y|x)` as well as `p(x)`, so it is not
+guaranteed to be a pure covariate shift.
 
 The prediction target is **median house value** (in units of $100 k).
 
@@ -139,8 +178,9 @@ train_src, train_tgt = dm.load("california_housing")
 test_src,  test_tgt  = dm.load("california_housing", train=False)
 ```
 
-Both domains are normalised with statistics computed from the **full** dataset, so
-feature scales are consistent across domains.
+Features are standardised with statistics fitted on the **training split only**, and the
+same transform is applied to both domains and to the test sets, so no test data
+influence the normalisation.
 
 ### Source-only baseline
 
@@ -190,16 +230,9 @@ for trainer, label in [(trainer_so, "Source-only"), (trainer_mmd, "MMD")]:
     print(f"{label:12s}  src R²={r_src['r2']:.3f}  tgt R²={r_tgt['r2']:.3f}")
 ```
 
-### Typical results
-
-| Model | Source R² | Target R² | Target RMSE |
-|-------|-----------|-----------|-------------|
-| Source-only | ~0.64 | ~0.55 | ~0.61 |
-| MMD (λ=0.3) | ~0.63 | ~0.61 | ~0.57 |
-
-> The improvement from MMD is modest but consistent.  California Housing has a relatively
-> small geographic gap — the two regions share many feature correlations.  More pronounced
-> shifts (e.g. different countries or years) would show larger gains.
+Results depend on the seed, the number of epochs and the λ value; we do not report
+reference numbers for this example here. Compare both models on the labelled target test
+set over several seeds before concluding that MMD helps.
 
 ---
 
@@ -239,4 +272,5 @@ MMDRegressionTrainer(
 )
 ```
 
-`evaluate(loader, domain)` returns `{"domain", "mse", "rmse", "r2", "n_samples"}`.
+`evaluate(loader, domain)` returns `{"domain", "mse", "rmse", "mae", "r2", "n_samples"}`
+(evaluation mode; raises `ValueError` for an empty or unlabelled loader).

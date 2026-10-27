@@ -29,9 +29,11 @@ class BaseTrainer(ABC):
     """
     Abstract base class for ShiftKit domain adaptation trainers.
 
-    All built-in trainers (MMDTrainer, DANNTrainer, SIDDATrainer, …) follow
-    this interface.  Subclass BaseTrainer to create a custom DA method that
-    works seamlessly with ShiftKit's history utilities and diagnostics.
+    All eight registered built-in trainers are BaseTrainer instances:
+    SourceOnly/MMD/LMMD/CORAL/DANN subclass it directly; SIDDA, KLIEP and KMM
+    are registered as virtual subclasses (``BaseTrainer.register``).
+    Subclass BaseTrainer to create a custom DA method that works with
+    ShiftKit's history utilities and diagnostics.
 
     Required
     --------
@@ -49,7 +51,7 @@ class BaseTrainer(ABC):
             "ce_loss":    float,
             "total_loss": float,
             "src_acc":    float,
-            "tgt_acc":    float,
+            "tgt_acc":    float,   # nan if target labels are unavailable
         }
 
     Add method-specific keys freely (e.g. ``"mmd_loss"``, ``"da_loss"``).

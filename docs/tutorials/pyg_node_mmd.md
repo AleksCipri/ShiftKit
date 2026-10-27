@@ -28,19 +28,28 @@ citation graphs, and particle physics interaction graphs.
 
 ## The domain gap
 
-We create two synthetic chain graphs, each with 300 nodes, 8 node features, and 3 classes:
+We create two synthetic graphs, each with 300 nodes, 8 node features and 3 classes,
+using **one shared labelling rule**:
+
+- each node gets a class label (balanced across the 3 classes);
+- its features are drawn around a **class-specific mean** (`class_sep=1.5` from the
+  origin) plus unit Gaussian noise, so features carry class information;
+- edges are **homophilous**: same-class pairs connect with probability `p_in=0.05`,
+  different-class pairs with `p_out=0.005` (about 80% of edges join same-class nodes).
 
 ```
-source: x ~ N(0, 1)      shift = 0.0
-target: x ~ N(1.5, 1)    shift = 1.5
+source: x = mean[y] + N(0, I)           shift = 0.0
+target: x = mean[y] + N(0, I) + 1.5     shift = 1.5   (same class means, same edge rule)
 ```
 
-The topology is identical (a bidirectional chain 0↔1↔2↔…↔299), but the feature distributions
-are offset by 1.5 standard deviations. A model trained only on the source graph will see a
-covariate shift on the target and classify poorly.
+The labelling rule is identical in both domains; only the target features are
+translated by 1.5 in every dimension (a covariate shift). A model trained only on
+the source graph sees shifted inputs on the target.
 
-MMD alignment encourages the GNN encoder to map both graphs' node embeddings into a shared
-latent space, reducing the feature-distribution gap.
+MMD alignment encourages the GNN encoder to map both graphs' node embeddings into a
+shared latent space. Matching marginal embedding distributions does not by itself
+guarantee that classes are matched correctly; it can help here because the shift is a
+simple translation shared by all classes.
 
 ---
 
@@ -50,6 +59,9 @@ latent space, reducing the feature-distribution gap.
 pip install torch-geometric   # one-time; PyG is an optional ShiftKit dependency
 python examples/pyg_node_mmd.py
 ```
+
+The script runs on CPU in a few seconds, seeds Python, NumPy and PyTorch, and
+prints its full configuration as JSON on the first line.
 
 ---
 
@@ -61,17 +73,28 @@ python examples/pyg_node_mmd.py
 import torch
 from torch_geometric.data import Data
 
-def make_domain_graph(n_nodes, feat_dim, n_classes, seed, shift=0.0):
-    torch.manual_seed(seed)
-    x = torch.randn(n_nodes, feat_dim) + shift          # node features
-    row = torch.arange(n_nodes - 1)
-    edge_index = torch.stack([row, row + 1], dim=0)     # chain topology
-    edge_index = torch.cat([edge_index, edge_index.flip(0)], dim=1)  # bidirectional
-    y = torch.randint(0, n_classes, (n_nodes,))
+def make_class_means(n_classes, feat_dim, class_sep, seed):
+    g = torch.Generator().manual_seed(seed)
+    means = torch.randn(n_classes, feat_dim, generator=g)
+    return class_sep * means / means.norm(dim=1, keepdim=True)
+
+def make_domain_graph(n_nodes, class_means, seed, shift=0.0, p_in=0.05, p_out=0.005):
+    g = torch.Generator().manual_seed(seed)
+    n_classes, feat_dim = class_means.shape
+    y = torch.arange(n_nodes) % n_classes                      # balanced labels
+    y = y[torch.randperm(n_nodes, generator=g)]
+    x = class_means[y] + torch.randn(n_nodes, feat_dim, generator=g) + shift
+
+    same = y.view(-1, 1) == y.view(1, -1)                      # homophilous edges
+    prob = torch.where(same, torch.tensor(p_in), torch.tensor(p_out))
+    upper = torch.triu(torch.rand(n_nodes, n_nodes, generator=g) < prob, diagonal=1)
+    src, dst = upper.nonzero(as_tuple=True)
+    edge_index = torch.cat([torch.stack([src, dst]), torch.stack([dst, src])], dim=1)
     return Data(x=x, edge_index=edge_index, y=y)
 
-source_graph = make_domain_graph(300, feat_dim=8, n_classes=3, seed=0, shift=0.0)
-target_graph = make_domain_graph(300, feat_dim=8, n_classes=3, seed=1, shift=1.5)
+means = make_class_means(3, feat_dim=8, class_sep=1.5, seed=0)  # shared by both domains
+source_graph = make_domain_graph(300, means, seed=1, shift=0.0)
+target_graph = make_domain_graph(300, means, seed=2, shift=1.5)
 ```
 
 Each `Data` object holds the **full graph** — message passing runs over all nodes, but
@@ -118,6 +141,19 @@ test_src, test_tgt = dm.load(
 !!! note "No download needed"
     Graphs are passed directly as `Data` objects. `DataManager` does not write to disk.
 
+!!! note "Masks are stored on the `Data` objects"
+    The first `load` call writes `train_mask`, `val_mask` and `test_mask` onto each
+    graph (source uses `split_seed`, target `split_seed + 1`). Later calls with the
+    same split parameters reuse them; calls with different parameters recompute them.
+    Masks you set yourself are never overwritten.
+
+!!! note "Validation nodes"
+    `train=True` yields train nodes, `train=False` yields test nodes. The `val_mask`
+    nodes are not used for training; load them with `split="val"` for model
+    selection, e.g. `val_src, val_tgt = dm.load("pyg_domains", split="val", ...)`.
+    Using target **labels** on validation nodes is only legitimate if your setting
+    allows a small labelled target set (see [Tuning λ](tuning.md)).
+
 ---
 
 ### 3 — Build the GNN with `pool="none"`
@@ -126,9 +162,9 @@ test_src, test_tgt = dm.load(
 from shiftkit.models import GNN
 
 model_so  = GNN(source_graph, "SAGE", hidden_channels=32, num_layers=2,
-                num_classes=3, pool="none")
+                num_classes=3, pool="none", device="cpu")
 model_mmd = GNN(source_graph, "SAGE", hidden_channels=32, num_layers=2,
-                num_classes=3, pool="none")
+                num_classes=3, pool="none", device="cpu")
 ```
 
 !!! warning "`pool=\"none\"` is required for node-level DA"
@@ -182,15 +218,21 @@ for name, trainer in [("Source-Only", so), ("MMD", mmd)]:
 
 ---
 
-## Typical results
+## Example results (one seed)
 
-| Method | Source accuracy | Target accuracy |
+Output of `python examples/pyg_node_mmd.py` (seed 0, configuration as printed by the
+script, CPU, torch 2.12 / torch-geometric 2.8.1), test nodes:
+
+| Method | Source test accuracy | Target test accuracy |
 |--------|-----------------|-----------------|
-| Source-only | ~98% | ~50–65% |
-| MMD (λ=0.5) | ~95–98% | ~65–80% |
+| Source-only | 78.3% | 33.3% |
+| MMD (λ=0.5) | 86.7% | 51.7% |
 
-*(Results vary by random seed. The shift of 1.5 is large enough that source-only models
-generalise poorly to the target; MMD alignment recovers a significant fraction of that gap.)*
+These are numbers from **one seed** on 60 test nodes per domain (chance ≈ 33%); they
+are not a benchmark and will change with the seed, the shift, `class_sep` and the
+trainer implementation. The source-only target accuracy (33.3%) is at chance level. A linear classifier on raw source features reaches ≈70% on held-out source
+nodes, confirming the labels are learnable. Repeat over several seeds before drawing
+conclusions about MMD.
 
 ---
 
@@ -247,6 +289,7 @@ model = GNN(
 | `target` | `Data` | Target domain graph |
 | `task_level` | `str` | `"node"` for node-level DA |
 | `train_ratio` | `float` | Fraction of nodes for training (default `0.6`) |
-| `val_ratio` | `float` | Fraction of nodes for validation (default `0.2`) |
+| `val_ratio` | `float` | Fraction of nodes for validation (default `0.2`); load with `split="val"` |
 | `split_seed` | `int` | Random seed for reproducible splits |
 | `split_mode` | `str` | `"stratified"` (by class) or `"random"` |
+| `split` | `str \| None` | `"train"`, `"val"` or `"test"`; overrides `train` (node-level only) |
