@@ -1,6 +1,7 @@
 """Localized conformal intervals following Lin, Trivedi & Sun (LVD).
 
-Ported from ``/home/karla/LVD/corrected_lvd/lvd_exact.py`` (same algorithm).
+Ported, with one fix (autograd state is restored after fitting), from the exact-LVD routine
+used in the galaxy uncertainty study; the algorithm is unchanged.
 
 This module follows the authors' reference implementation in
 ``models/regmodel.py::KernelMLKR`` and
