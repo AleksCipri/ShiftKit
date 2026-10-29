@@ -84,6 +84,34 @@ their Gaussian/SIDDA variants) are **not** registered; import them directly from
 - `uq_galaxies.ipynb`: calibrating the same classifier with temperature scaling and KCal, with and without labelled target images
 - Both download a subset of the [SIDDA galaxy data](https://zenodo.org/records/14583107) from Zenodo on first run (about 240 MB, a few minutes) and cache it in `./data/galaxy`
 
+
+### Run the galaxy notebooks on this branch
+
+```bash
+git clone --branch uq-test https://github.com/AleksCipri/ShiftKit.git ShiftKit-uq-test
+cd ShiftKit-uq-test
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements-notebooks.txt
+python -m ipykernel install --sys-prefix --name shiftkit-uq-test --display-name "ShiftKit uq-test"
+jupyter lab
+```
+
+Open `examples/sidda_galaxies.ipynb` or `examples/uq_galaxies.ipynb` and select the
+**ShiftKit uq-test** kernel. The notebooks locate the local package from the
+repository root or `examples/`; no editable installation is required. They include
+saved outputs. Running them downloads about 240 MB on first use, caches roughly
+960 MB, and repeats the experiments; CPU execution takes longer than the saved GPU
+runs. Other hardware or package versions may produce different numerical results.
+
+### Audit revision status
+
+This branch contains the implemented audit corrections, the uncertainty module,
+and the two galaxy notebooks. The lecture-slide corrections (F25) remain open
+because the editable slide source is unavailable; the bundled slide PDFs are
+unchanged. Existing demonstration figures and this finite set of checks do not
+establish correctness for every dataset or environment.
+
 **Diagnostics** — `shiftkit/diagnostics/plots.py`
 - `plot_latent_space`: t-SNE → two panels (by domain / by class label)
 - `compare_latent_spaces`: side-by-side grid comparing N models × 2 views
