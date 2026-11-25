@@ -16,7 +16,7 @@ If you use ShiftKit in your research, please cite it as follows.
 
 ## Plain text
 
-> Ciprijanovic, A. (2026). *ShiftKit: A Lightweight Domain Adaptation Framework for PyTorch*. GitHub. https://github.com/AleksCipri/ShiftKit
+> Ciprijanovic, A. (2026). *ShiftKit: A Scientific Domain Adaptation Framework for PyTorch*. GitHub. https://github.com/AleksCipri/ShiftKit
 
 ---
 

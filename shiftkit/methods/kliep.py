@@ -8,7 +8,7 @@ the target distribution.
 
 References
 ----------
-Sugiyama, M., Nakajima, S., Kashima, H., Bünau, P. V., & Kawanabe, M. (2008).
+Sugiyama, M., Nakajima, S., Kashima, H., Bünau, P. V., & Kawanabe, M. (2007).
 Direct importance estimation with model selection and its application to
 covariate shift adaptation.
 *Advances in Neural Information Processing Systems*, 20.

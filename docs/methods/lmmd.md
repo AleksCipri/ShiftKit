@@ -20,7 +20,7 @@ $$w_i^{(s,c)} = \frac{y_{ic}}{\sum_j y_{jc}}, \qquad w_i^{(t,c)} = \frac{\hat{p}
 > **Reference:** Zhu, Y., Zhuang, F., Wang, J., Ke, G., Chen, J., Bian, J., Xiong, H., & He, Q. (2021).
 > Deep Subdomain Adaptation Network for Image Classification.
 > *IEEE Transactions on Neural Networks and Learning Systems*, 32(4), 1713–1722.
-> [[Paper]](https://ieeexplore.ieee.org/document/9085896)
+> [[PDF]](https://arxiv.org/pdf/2106.09388)
 
 ---
 

@@ -1,16 +1,16 @@
 # Related Work
 
-ShiftKit builds on foundational methods in domain adaptation and statistical testing.
-Each entry includes a plain-text citation with a link to the official paper, followed by a BibTeX entry.
+ShiftKit builds on foundational methods in domain adaptation and statistics.
+We list some of the main references used in this repository, with each entry including a plain-text citation with a link to the official paper, followed by a BibTeX entry.
 
 ---
 
 ## Maximum Mean Discrepancy (MMD)
 
-Used by: [MMDTrainer](methods/mmd.md), [LMMDTrainer](methods/lmmd.md)
+Used by: [MMDTrainer](methods/mmd.md)
 
 Gretton, A., Borgwardt, K. M., Rasch, M. J., Schölkopf, B., & Smola, A. (2012).
-[A Kernel Two-Sample Test](https://jmlr.csail.mit.edu/papers/v13/gretton12a.html).
+[A Kernel Two-Sample Test](https://jmlr.csail.mit.edu/papers/volume13/gretton12a/gretton12a.pdf).
 *Journal of Machine Learning Research*, 13, 723–773.
 
 ```bibtex
@@ -22,6 +22,25 @@ Gretton, A., Borgwardt, K. M., Rasch, M. J., Schölkopf, B., & Smola, A. (2012).
   volume  = {13},
   pages   = {723--773},
   year    = {2012}
+}
+```
+
+## Deep Subdomain Adaptation or Local Maximum Mean Discrepancy (LMMD)
+
+Used by: [LMMDTrainer](methods/lmmd.md)
+
+Zhu, Y., Zhuang, F., Wang, J., Ke, G., Chen, J., Bian, J., Xiong, H., & He, Q. (2021). [Deep Subdomain Adaptation Network for Image Classification](https://arxiv.org/pdf/2106.09388).
+*IEEE Transactions on Neural Networks and Learning Systems*, 32(4), 1713–1722.
+
+```bibtex
+@article{Zhu2020DeepSA,
+  title={Deep Subdomain Adaptation Network for Image Classification},
+  author={Yongchun Zhu and Fu-Zhen Zhuang and Jin-Dong Wang and Guolin Ke and Jingwu Chen and Jiang Bian and Hui Xiong and Qing He},
+  journal={IEEE Transactions on Neural Networks and Learning Systems},
+  year={2020},
+  volume={32},
+  pages={1713-1722},
+  url={https://api.semanticscholar.org/CorpusID:218505698}
 }
 ```
 
@@ -51,37 +70,12 @@ Ganin, Y., Ustinova, E., Ajakan, H., Germain, P., Larochelle, H., Laviolette, F.
 
 ---
 
-## Deep Subdomain Adaptation (LMMD)
-
-Used by: [LMMDTrainer](methods/lmmd.md)
-
-Zhu, Y., Zhuang, F., Wang, J., Ke, G., Chen, J., Bian, J., Xiong, H., & He, Q. (2021).
-[Deep Subdomain Adaptation Network for Image Classification](https://ieeexplore.ieee.org/document/9085896).
-*IEEE Transactions on Neural Networks and Learning Systems*, 32(4), 1713–1722.
-DOI: 10.1109/TNNLS.2020.2988928
-
-```bibtex
-@article{zhu2021lmmd,
-  title   = {Deep Subdomain Adaptation Network for Image Classification},
-  author  = {Zhu, Yongchun and Zhuang, Fuzhen and Wang, Jindong and Ke, Guolin
-             and Chen, Jingwu and Bian, Jiang and Xiong, Hui and He, Qing},
-  journal = {IEEE Transactions on Neural Networks and Learning Systems},
-  volume  = {32},
-  number  = {4},
-  pages   = {1713--1722},
-  year    = {2021},
-  doi     = {10.1109/TNNLS.2020.2988928}
-}
-```
-
----
-
 ## Deep CORAL
 
 Used by: [CORALTrainer](methods/coral.md)
 
 Sun, B., & Saenko, K. (2016).
-[Deep CORAL: Correlation Alignment for Deep Domain Adaptation](https://arxiv.org/abs/1607.01719).
+[Deep CORAL: Correlation Alignment for Deep Domain Adaptation](https://arxiv.org/pdf/1607.01719).
 *ECCV Workshops 2016*, LNCS 9915, 443–450.
 
 ```bibtex
@@ -109,21 +103,22 @@ DOI: 10.1088/2632-2153/adf701
 
 ```bibtex
 @article{2025MLS&T...6c5032P,
-  author  = {{Pandya}, Sneh and {Patel}, Purvik and {Nord}, Brian D. and
-             {Walmsley}, Mike and {\'C}iprijanovi{\'c}, Aleksandra},
-  title   = {{SIDDA}: {SI}nkhorn Dynamic Domain Adaptation for image classification
-             with equivariant neural networks},
-  journal = {Machine Learning: Science and Technology},
-  year    = {2025},
-  month   = sep,
-  volume  = {6},
-  number  = {3},
-  eid     = {035032},
-  pages   = {035032},
-  doi     = {10.1088/2632-2153/adf701},
-  eprint  = {2501.14048},
-  archivePrefix = {arXiv},
-  primaryClass  = {stat.ML}
+       author = {{Pandya}, Sneh and {Patel}, Purvik and {Nord}, Brian D. and {Walmsley}, Mike and {{\'C}iprijanovi{\'c}}, Aleksandra},
+        title = "{SIDDA: SInkhorn Dynamic Domain Adaptation for image classification with equivariant neural networks}",
+      journal = {Machine Learning: Science and Technology},
+     keywords = {domain adaptation, optimal transport, equivariance, galaxy morphology, Machine Learning, Astrophysics of Galaxies, Artificial Intelligence, Computer Vision and Pattern Recognition},
+         year = 2025,
+        month = sep,
+       volume = {6},
+       number = {3},
+          eid = {035032},
+        pages = {035032},
+          doi = {10.1088/2632-2153/adf701},
+archivePrefix = {arXiv},
+       eprint = {2501.14048},
+ primaryClass = {stat.ML},
+       adsurl = {https://scixplorer.org/abs/2025MLS&T...6c5032P},
+      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
 }
 ```
 

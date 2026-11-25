@@ -1,5 +1,5 @@
 """
-SIDDA: SInkhorn Dynamic Domain Adaptation (Ciprijanovic et al., 2025).
+SIDDA: SInkhorn Dynamic Domain Adaptation (Pandya et al., 2025).
 
 Uses the Sinkhorn divergence as the domain alignment loss with two key ideas:
 
@@ -46,12 +46,12 @@ Pandya, S., Patel, P., Nord, B. D., Walmsley, M., & Ćiprijanović, A. (2025).
 SIDDA: SInkhorn Dynamic Domain Adaptation for image classification with equivariant neural networks. 
 Machine Learning: Science and Technology, 6(3), 035032.
 arXiv:2501.14048.
-https://arxiv.org/abs/2501.14048
+https://arxiv.org/pdf/2501.14048
 
 Sinkhorn divergence (optimal transport background):
 Feydy, J., Séjourné, T., Vialard, F.-X., Amari, S., Trouvé, A., &
 Peyré, G. (2019). Interpolating between Optimal Transport and MMD using
-Sinkhorn Divergences. AISTATS 2019. https://arxiv.org/abs/1810.08278
+Sinkhorn Divergences. AISTATS 2019. PLMR: Volume 89. https://proceedings.mlr.press/v89/feydy19a/feydy19a.pdf
 """
 
 import math

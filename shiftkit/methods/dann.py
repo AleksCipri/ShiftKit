@@ -30,7 +30,7 @@ https://jmlr.org/papers/volume17/15-239/15-239.pdf
 Xie, S., Zheng, Z., Chen, L., & Chen, C. (2018).
 Learning Semantic Representations for Unsupervised Domain Adaptation.
 ICML 2018, PMLR 80:5423–5432.
-https://proceedings.mlr.press/v80/xie18c.html
+https://proceedings.mlr.press/v80/xie18c/xie18c.pdf
 """
 
 import torch

@@ -18,6 +18,11 @@ encoder(x) ──► z ──► classify(z) ──► CE loss
 > Domain-Adversarial Training of Neural Networks.
 > *Journal of Machine Learning Research*, 17(59), 1–35.
 > [[PDF]](https://jmlr.org/papers/volume17/15-239/15-239.pdf)
+>
+> Xie, S., Zheng, Z., Chen, L., & Chen, C. (2018).
+> Learning Semantic Representations for Unsupervised Domain Adaptation.
+> *CML 2018*, PMLR 80:5423–5432.
+> [[PDF]](https://proceedings.mlr.press/v80/xie18c/xie18c.pdf)
 
 ---
 

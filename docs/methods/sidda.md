@@ -28,7 +28,12 @@ encoder(x) ──► z_tgt ──►                                     ├─�
 > **Reference:** Pandya, S., Patel, P., Nord, B. D., Walmsley, M., & Ćiprijanović, A. (2025).
 > SIDDA: SInkhorn Dynamic Domain Adaptation for image classification with equivariant neural networks.
 > *Machine Learning: Science and Technology*, 6(3), 035032.
-> [[Paper]](https://iopscience.iop.org/article/10.1088/2632-2153/adf701)
+> [[PDF]](https://iopscience.iop.org/article/10.1088/2632-2153/adf701/pdf)
+>
+>Sinkhorn divergence (optimal transport background):
+>Feydy, J., Séjourné, T., Vialard, F.-X., Amari, S., Trouvé, A., &
+>Peyré, G. (2019). Interpolating between Optimal Transport and MMD using
+>Sinkhorn Divergences. AISTATS 2019. PLMR: Volume 89. [[PDF]](https://proceedings.mlr.press/v89/feydy19a/feydy19a.pdf)
 
 !!! note "Dependency"
     SIDDA requires **geomloss** for the Sinkhorn divergence computation:

@@ -18,6 +18,13 @@ Useful for comparing against MMDTrainer to quantify the benefit of DA.
 
 Both trainers record per-epoch 'src_acc' and 'tgt_acc' so training histories
 can be compared directly.
+
+
+Reference
+---------
+Gretton, A., Borgwardt, K. M., Rasch, M. J., Schölkopf, B., & Smola, A. (2012).
+A Kernel Two-Sample Test. *Journal of Machine Learning Research*, 13, 723–773.
+https://jmlr.csail.mit.edu/papers/volume13/gretton12a/gretton12a.pdf
 """
 
 import torch

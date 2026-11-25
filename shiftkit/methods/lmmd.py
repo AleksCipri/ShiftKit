@@ -32,10 +32,10 @@ treated as fixed weights (stop-gradient), matching the original DSAN paper.
 
 Reference
 ---------
-Zhu, Y., Zhuang, F., & Wang, D. (2020).
+Zhu, Y., Zhuang, F., Wang, J., Ke, G., Chen, J., Bian, J., Xiong, H., & He, Q.  (2021).
 Deep Subdomain Adaptation Network for Image Classification.
 IEEE Transactions on Neural Networks and Learning Systems, 32(4), 1713–1722.
-https://arxiv.org/abs/2106.09388
+https://arxiv.org/pdf/2106.09388
 """
 
 import torch
